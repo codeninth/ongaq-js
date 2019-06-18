@@ -1,5 +1,5 @@
-import audioCore from "./module/AudioCore"
-import bufferYard from "./module/BufferYard"
+import AudioCore from "./module/AudioCore"
+import BufferYard from "./module/BufferYard"
 import manipulator from "./module/Manipulator"
 
 const context = AudioCore.context
@@ -14,7 +14,7 @@ class Ongaq {
       @init
     */
     init({ api_key, offline, resourcesPath, volume, bpm }){
-        bufferYard.set({ api_key, offline, resourcesPath })
+        BufferYard.set({ api_key, offline, resourcesPath })
         this.volume = volume
         this.bpm = bpm
         return false
@@ -98,7 +98,7 @@ class Ongaq {
     get params(){
         return {
             isPlaying: manipulator.isPlaying,
-            originTime: audioCore.originTime,
+            originTime: AudioCore.originTime,
             currentTime: context.currentTime,
             volume: manipulator.volume * 100
         }
