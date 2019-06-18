@@ -19,7 +19,7 @@ const context = AudioCore.getContext()
 
 const Module = (()=>{
 
-    class PartItem {
+    class Part {
 
         constructor(props){
             this.sound = props.sound
@@ -31,9 +31,8 @@ const Module = (()=>{
             this.currentNoteIndex = 0
 
             /*
-
-            以下のような graphオブジェクトを引数にとり
-            graphオブジェクトを返す関数を作成する。
+            generate a function which receives & returns Graph object.
+            like this
             ===================
 
             graph => {
@@ -50,33 +49,40 @@ const Module = (()=>{
                     } else {
                         return prevGraph
                     }
-                },graph)
+                }, graph )
             }
             this.generator = this.generator.bind(this)
 
             /*
-        @nextNoteTime 次の拍に対応するcurrentTime
-      */
+              @nextNoteTime
+              - time for next notepoint
+              - updated with AudioContext.currentTime
+            */
             this.nextNoteTime = 0
 
             /*
-        @age すべての拍がobserveされると1加算される値
-      */
+              @age
+              - get added 1 when all notepoints are observed
+            */
             this.age = 0
 
             /*
-        @age 何拍分observeされるまでactiveであるかを表す、あらかじめ割り当てられた値
-      */
+              @noteQuota
+              - how many notepoints to observe before changing to not active
+              - noteQuota is assigned when loop is imported
+            */
             this.noteQuota = 0
 
             /*
-        @consumedNotes 現在までに何拍分がobserveされたか
-      */
+              @consumedNotes
+              - observed notepoints
+            */
             this.consumedNotes = 0
 
             /*
-        @attachment graph経由generatorに渡され、ユーザの意向をgeneratorに反映させるためのデータ
-      */
+              @attachment
+              - conceptual value: user would be able to handle any value to part with this
+            */
             this.attachment = {}
 
             this.active = true
@@ -111,8 +117,8 @@ const Module = (()=>{
         observe(attachment){
 
             /*
-        - 現在から一定範囲に再生開始時刻を迎えるnoteIndexに対応するSoundTreeを取得する。
-      */
+              collect soundtrees for notepoints which come in certain range (PREFETCH_SECOND)
+            */
             let observed = []
             while(this.active && this.nextNoteTime < context.currentTime + DEFAULT.PREFETCH_SECOND){
 
@@ -143,25 +149,9 @@ const Module = (()=>{
         }
 
         /*
-      get soundTree
-    */
-        play(){
-
-            if(!this.player) return false
-            this.playingGraph = this.player(
-                graphPool.allocate({
-                    sound: this.sound,
-                    attachment: this.attachment
-                })
-            )
-            this.playingSoundTree = soundTreePool.allocate( this.playingGraph )
-            return false
-
-        }
-
-        /*
-      get soundTrees for directed noteIndex
-    */
+          @capture
+          - get soundTrees for referring notepoint
+        */
         capture(attachment){
 
             if(!this.generator) return false
@@ -184,30 +174,27 @@ const Module = (()=>{
         }
 
         /*
-      @attach
-      - generatorに渡す値を更新する
-    */
+          @attach
+        */
         attach(data = {}){
             this.attachment = Object.assign(this.attachment,data)
         }
 
         /*
-      @detach
-      - generatorに渡す値をリセットする
-    */
+          @detach
+        */
         detach(field){
             if (typeof field === "string"){
                 delete this.attachment[field]
             } else {
                 this.attachment = {}
             }
-            
         }
 
         /*
           @tag
           tags: A,B,C...
-          タグ A,B,C... を追加  
+          タグ A,B,C... を追加
         */
         tag(...tags) {
             this.tag = Array.isArray(this.tag) ? this.tag : []
@@ -240,7 +227,7 @@ const Module = (()=>{
 
     }
 
-    return PartItem
+    return Part
 
 }).call(undefined,window)
 
