@@ -3,7 +3,7 @@ import Loop from "./Loop"
 
 const DEFAULT_BPM = 100
 const DEFAULT_VOLUME = 0.5
-const context = AudioCore.getContext()
+const context = AudioCore.context
 
 const Module = (()=>{
 

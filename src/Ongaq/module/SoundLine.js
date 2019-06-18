@@ -1,6 +1,6 @@
 import AudioCore from "../module/AudioCore"
 
-let context = AudioCore.getContext()
+const context = AudioCore.context
 
 class SoundLine {
 

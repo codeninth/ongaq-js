@@ -5,8 +5,8 @@ const Module = (()=>{
 
     class AudioCore {
 
-        getContext(){ return context }
-        getOriginTime(){ return originTime }
+        get context(){ return context }
+        get originTime(){ return originTime }
 
         toAudioBuffer(o = {}){
 

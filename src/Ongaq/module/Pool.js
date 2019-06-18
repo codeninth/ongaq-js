@@ -12,7 +12,7 @@ const Module = (()=>{
 
         constructor(o){
 
-            this.x = AudioCore.getContext()
+            this.x = AudioCore.context
 
             this.name = o.name
             this.isClass = o.isClass

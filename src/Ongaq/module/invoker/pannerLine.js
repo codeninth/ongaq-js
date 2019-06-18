@@ -1,7 +1,7 @@
 import AudioCore from "../AudioCore"
 import SoundLine from "../SoundLine"
 
-let context = AudioCore.getContext()
+const context = AudioCore.context
 
 //=============================
 

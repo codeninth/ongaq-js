@@ -15,7 +15,7 @@ const DEFAULT = {
     PREFETCH_SECOND: 0.3
 }
 
-const context = AudioCore.getContext()
+const context = AudioCore.context
 
 const Module = (()=>{
 

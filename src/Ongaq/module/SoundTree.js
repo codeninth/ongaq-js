@@ -1,6 +1,6 @@
 import AudioCore from "./AudioCore"
 import * as invoker from "./invoker/invoker"
-let context = AudioCore.getContext()
+const context = AudioCore.context
 
 class SoundTree {
 

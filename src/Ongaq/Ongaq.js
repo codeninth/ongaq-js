@@ -2,7 +2,7 @@ import audioCore from "./module/AudioCore"
 import bufferYard from "./module/BufferYard"
 import manipulator from "./module/Manipulator"
 
-const context = audioCore.getContext()
+const context = AudioCore.context
 
 class Ongaq {
 
@@ -98,7 +98,7 @@ class Ongaq {
     get params(){
         return {
             isPlaying: manipulator.isPlaying,
-            originTime: audioCore.getOriginTime(),
+            originTime: audioCore.originTime,
             currentTime: context.currentTime,
             volume: manipulator.volume * 100
         }
