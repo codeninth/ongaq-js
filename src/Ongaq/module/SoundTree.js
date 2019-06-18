@@ -51,7 +51,7 @@ class SoundTree {
         layer = layer.filter(n=>n)
         for(let i = 0,l = layer.length; i<l; i++){
             layer[i].loader(layer,i)
-            // 最後のlayerのoutputをSoundTreeのoutputに接続する
+            // connect the output of the last layer to the output of SoundTree
             if(i === l - 1 && layer[i].output) layer[i].output.connect(this.output)
         }
 

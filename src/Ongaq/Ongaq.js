@@ -11,8 +11,8 @@ class Ongaq {
     }
 
     /*
-    @init
-  */
+      @init
+    */
     init({ api_key, offline, resourcesPath, volume, bpm }){
         bufferYard.set({ api_key, offline, resourcesPath })
         this.volume = volume
@@ -21,9 +21,9 @@ class Ongaq {
     }
 
     /*
-    @import
-    - jsonからtune/partオブジェクトを作成する
-  */
+      @import
+      - jsonからtune/partオブジェクトを作成する
+    */
     import(tune,o = {}){
         return new Promise((resolve,reject)=>{
             const p = manipulator.loadLoop(tune,o)
@@ -33,9 +33,9 @@ class Ongaq {
     }
 
     /*
-    @switch
-    - 次に再生するLoopを選択し、quotaを再設定する
-  */
+      @switch
+      - 次に再生するLoopを選択し、quotaを再設定する
+    */
     switch(o = {}){
         return new Promise((resolve,reject)=>{
             manipulator.switch(o) ? resolve() : reject()
@@ -51,14 +51,14 @@ class Ongaq {
     }
 
     /*
-    @set bpm
-  */
+      @set bpm
+    */
     set bpm(v){ manipulator.setBpm(v) }
 
     /*
-    @start
-    - 現在選択中のtuneを再生する
-  */
+      @start
+      - 現在選択中のtuneを再生する
+    */
     start(){
         return new Promise((resolve,reject)=>{
             manipulator.startScheduling()
@@ -67,9 +67,9 @@ class Ongaq {
     }
 
     /*
-    @pause
-    - 現在選択中のtuneを停止する
-  */
+      @pause
+      - 現在選択中のtuneを停止する
+    */
     pause(){
         return new Promise((resolve,reject)=>{
             manipulator.pauseScheduling()
@@ -93,8 +93,8 @@ class Ongaq {
     }
 
     /*
-    @get params
-  */
+      @get params
+    */
     get params(){
         return {
             isPlaying: manipulator.isPlaying,

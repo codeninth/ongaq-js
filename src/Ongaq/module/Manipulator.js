@@ -1,5 +1,5 @@
 import AudioCore from "./AudioCore"
-import Loop from "./LoopItem"
+import Loop from "./Loop"
 
 const DEFAULT_BPM = 100
 const DEFAULT_VOLUME = 0.5
