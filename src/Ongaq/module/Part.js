@@ -229,6 +229,6 @@ const Module = (()=>{
 
     return Part
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default Module

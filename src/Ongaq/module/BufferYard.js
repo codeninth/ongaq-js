@@ -170,6 +170,6 @@ const Module = (()=>{
 
     return BufferYard
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default new Module()

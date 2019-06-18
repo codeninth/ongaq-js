@@ -70,6 +70,6 @@ const Module = (()=>{
 
     return Pool
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default Module

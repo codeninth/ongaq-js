@@ -255,6 +255,6 @@ const Module = (()=>{
 
     return Manipulator
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default new Module()

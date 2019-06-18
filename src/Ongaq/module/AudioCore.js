@@ -36,6 +36,6 @@ const Module = (()=>{
 
     return AudioCore
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default new Module()

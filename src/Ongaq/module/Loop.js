@@ -231,6 +231,6 @@ const Module = (()=>{
 
     return Loop
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default Module
