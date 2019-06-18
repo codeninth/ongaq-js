@@ -38,11 +38,6 @@ class SoundTree {
                     starter: ()=>{
                         soundLines.forEach( line => line.starter && line.starter() )
                     },
-                    wash: ()=>{
-                        layer[i].instance.forEach( line =>{
-                            line.wash && line.wash()
-                        })
-                    },
                     output: context.createGain(),
                     instance: soundLines
                 }
@@ -70,17 +65,7 @@ class SoundTree {
         return this
     }
 
-    get startAble(){
-        return this.layer && this.layer[0] && typeof this.layer[0].loader === "function"
-    }
-
-    wash(){
-        this.layer.length > 0 && this.layer.forEach(l=>{
-            l.wash()
-        })
-        this.layer = []
-        return this
-    }
+    get startAble(){ return this.layer && this.layer[0] && typeof this.layer[0].loader === "function" }
 
 }
 
