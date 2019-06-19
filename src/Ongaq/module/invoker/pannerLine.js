@@ -2,7 +2,6 @@ import AudioCore from "../AudioCore"
 import SoundLine from "../SoundLine"
 
 const context = AudioCore.context
-
 //=============================
 
 const pannerLine = (({ innerWidth, innerHeight })=>{
@@ -35,21 +34,26 @@ const pannerLine = (({ innerWidth, innerHeight })=>{
 
     return data=>{
         if(data.targetIndex > 0) return false
-        let p = context.createPanner()
-
+        const p = context.createPanner()
+        const _o = [1, 0, 0]
         if(p.orientationX) {
-            p.orientationX.setValueAtTime(1, context.currentTime)
-            p.orientationY.setValueAtTime(0, context.currentTime)
-            p.orientationZ.setValueAtTime(0, context.currentTime)
+            p.orientationX.setValueAtTime(_o[0], context.currentTime)
+            p.orientationY.setValueAtTime(_o[1], context.currentTime)
+            p.orientationZ.setValueAtTime(_o[2], context.currentTime)
         } else {
-            p.setOrientation(1,0,0)
+            p.setOrientation(..._o)
         }
 
         let x = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( data.positionX )
-        p.positionX.setValueAtTime(v.w / 2 + x, context.currentTime)
-        p.positionY.setValueAtTime(v.h / 2, context.currentTime)
-        p.positionZ.setValueAtTime(200, context.currentTime)
-
+        const _p = [v.w / 2 + x, v.h / 2, 200]
+        if(p.positionX){
+          p.positionX.setValueAtTime(_p[0], context.currentTime)
+          p.positionY.setValueAtTime(_p[1], context.currentTime)
+          p.positionZ.setValueAtTime(_p[2], context.currentTime)
+        } else {
+          p.setPosition(..._p)
+        }
+        
         return new SoundLine({
             pannerNode: p,
             loader: (layer,layerIndex)=>{
