@@ -1,6 +1,6 @@
 import AudioCore from "./AudioCore"
 import * as invoker from "./invoker/invoker"
-let context = AudioCore.getContext()
+const context = AudioCore.context
 
 class SoundTree {
 
@@ -38,11 +38,6 @@ class SoundTree {
                     starter: ()=>{
                         soundLines.forEach( line => line.starter && line.starter() )
                     },
-                    wash: ()=>{
-                        layer[i].instance.forEach( line =>{
-                            line.wash && line.wash()
-                        })
-                    },
                     output: context.createGain(),
                     instance: soundLines
                 }
@@ -51,7 +46,7 @@ class SoundTree {
         layer = layer.filter(n=>n)
         for(let i = 0,l = layer.length; i<l; i++){
             layer[i].loader(layer,i)
-            // 最後のlayerのoutputをSoundTreeのoutputに接続する
+            // connect the output of the last layer to the output of SoundTree
             if(i === l - 1 && layer[i].output) layer[i].output.connect(this.output)
         }
 
@@ -70,17 +65,7 @@ class SoundTree {
         return this
     }
 
-    get startAble(){
-        return this.layer && this.layer[0] && typeof this.layer[0].loader === "function"
-    }
-
-    wash(){
-        this.layer.length > 0 && this.layer.forEach(l=>{
-            l.wash()
-        })
-        this.layer = []
-        return this
-    }
+    get startAble(){ return this.layer && this.layer[0] && typeof this.layer[0].loader === "function" }
 
 }
 

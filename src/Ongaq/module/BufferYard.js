@@ -7,8 +7,8 @@ import request from "superagent"
 import nocache from "superagent-no-cache"
 
 /*
-    "1$Ab" のような表記から
-    "1$11" のような実際のキー名にする
+    convert key name expression
+    e.g.) "A1#" -> "1$11"
 */
 const toPianoNoteName = (()=>{
     const r = /^([A-Z])+([1-4])+(b|\#)?$/
@@ -31,10 +31,10 @@ const toPianoNoteName = (()=>{
 })()
 
 /*
-    "hihat" のような表記から
-    "1$5" のような実際のキー名にする
+    convert key name expression
+    e.g.) "hihat" -> "1$5"
 */
-const toDrumNoteName = (raw="") =>{
+const toDrumNoteName = (raw = "") =>{
     return DRUM_NOTE.get(raw) || raw
 }
 
@@ -56,16 +56,15 @@ const Module = (()=>{
         }
 
         /*
-        - SoundFile API からsoundjsonをダウンロード
-        - typedArray から .mp3ファイルを復元
-        - mapにセットする
+          - load soundjsons with SoundFile API
+          - restore mp3: string -> typedArray -> .mp3
         */
         import(sounds){
 
 
             if(!Array.isArray(sounds)) return false
 
-            const soundsToLoad = sounds.filter(sound=>!buffers.get(sound))
+            const soundsToLoad = sounds.filter( sound => !buffers.get(sound) )
             if(soundsToLoad.length === 0) return new Promise(r=>r())
 
             let promises = soundsToLoad.map((sound)=>{
@@ -82,7 +81,7 @@ const Module = (()=>{
                             })
                     } else {
                         thisRequest = request
-                            .get(this.endpoint + SOUND_NAME.get(sound) + ".json")
+                            .get(`${this.endpoint}${SOUND_NAME.get(sound)}.json`)
                     }
 
                     thisRequest
@@ -138,10 +137,10 @@ const Module = (()=>{
                         })
 
                 })
-                
-                
+
+
             })
-                
+
             return Promise.all(promises)
 
 
@@ -171,6 +170,6 @@ const Module = (()=>{
 
     return BufferYard
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default new Module()

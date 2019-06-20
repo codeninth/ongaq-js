@@ -35,6 +35,6 @@ const plugin = (()=>{
 
     }
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default plugin

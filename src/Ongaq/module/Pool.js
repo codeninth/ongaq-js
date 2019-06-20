@@ -12,7 +12,7 @@ const Module = (()=>{
 
         constructor(o){
 
-            this.x = AudioCore.getContext()
+            this.x = AudioCore.context
 
             this.name = o.name
             this.isClass = o.isClass
@@ -35,10 +35,6 @@ const Module = (()=>{
 
         }
 
-        /*
-      プールにオブジェクトが残っていれば
-      その中から割り当てる。
-    */
         allocate(option){
 
             let obj = undefined
@@ -60,18 +56,12 @@ const Module = (()=>{
             return obj
         }
 
-        /*
-      プールにオブジェクトを返却する。
-    */
         retrieve(obj){
             this.pool.push(obj)
             metrics.retrived++
             this.metrics.retrived++
         }
 
-        /*
-      プールが肥大化しすぎた場合に使用を検討する。
-    */
         flush(){
             this.pool = []
         }
@@ -80,6 +70,6 @@ const Module = (()=>{
 
     return Pool
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default Module

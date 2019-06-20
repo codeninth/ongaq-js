@@ -1,9 +1,9 @@
 import AudioCore from "./AudioCore"
-import Loop from "./LoopItem"
+import Loop from "./Loop"
 
 const DEFAULT_BPM = 100
 const DEFAULT_VOLUME = 0.5
-const context = AudioCore.getContext()
+const context = AudioCore.context
 
 const Module = (()=>{
 
@@ -17,6 +17,11 @@ const Module = (()=>{
             this.isPlaying = false
             this.nextZeroTime = 0
             this.routine = this.routine.bind(this)
+            this.pauseScheduling = this.pauseScheduling.bind(this)
+            if (AudioCore.powerMode === "low"){
+                window.addEventListener("blur", () => { this.pauseScheduling() })
+            }
+            
         }
 
         set activeLoop(id){
@@ -114,7 +119,7 @@ const Module = (()=>{
 
             this.prepareCommonGain()
             this.loop.get(this.activeLoop).putTimerRight()
-            this.scheduler = window.setInterval(this.routine,50)
+            this.scheduler = window.setInterval( this.routine, AudioCore.powerMode === "middle" ? 50 : 200 )
 
         }
 
@@ -255,6 +260,6 @@ const Module = (()=>{
 
     return Manipulator
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default new Module()

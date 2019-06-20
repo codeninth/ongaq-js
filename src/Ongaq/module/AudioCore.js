@@ -2,11 +2,17 @@ const Module = (()=>{
 
     const context = new (window.AudioContext || window.webkitAudioContext)()
     const originTime = new Date().getTime()
+    const powerMode = (()=>{
+        let u = window.navigator.userAgent
+        if (["iPhone", "iPad", "iPod","Android"].some( name=>u.indexOf(name) !== -1 )) return "low"
+        else return "middle"
+    })()
 
     class AudioCore {
 
-        getContext(){ return context }
-        getOriginTime(){ return originTime }
+        get context(){ return context }
+        get originTime(){ return originTime }
+        get powerMode(){ return powerMode }
 
         toAudioBuffer(o = {}){
 
@@ -36,6 +42,6 @@ const Module = (()=>{
 
     return AudioCore
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default new Module()
