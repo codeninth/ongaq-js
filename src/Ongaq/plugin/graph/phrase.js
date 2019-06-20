@@ -4,15 +4,15 @@ import Helper from "../../module/Helper"
 /*
   o: {
     path: [
-      [["2$1","2$5"],8],
+      [["C2","G2"],8],
       [null,4],
-      [["2$8","2$11"],4,0.8]
+      [["A2","D2#"],4,0.8]
     ],
     active: n=>n===0
   }
 
-  pathの階層は
-  [ キー名, 長さ, 音量]
+  layer of path:
+  [ name_of_key, length, volume ]
 */
 const plugin = (()=>{
 
@@ -30,10 +30,10 @@ const plugin = (()=>{
             if(pair[1] > 0) distance += pair[1]
 
             /*
-        key, length を求める。
-      */
-            _key = Helper.toKeyList(pair[0],graph.noteIndex)
-            _length = Helper.toLength(pair[1],graph.noteIndex)
+                get key,length as same as "note" plugin
+            */
+            _key = Helper.toKeyList( pair[0], graph.noteIndex )
+            _length = Helper.toLength( pair[1], graph.noteIndex )
             if(!_key || !_length) return false
 
             _key.forEach(k=>{

@@ -4,7 +4,7 @@ const DEFAULT = {
 //========================================
 /*
   o: {
-    key: ["1$1","1$3"],
+    key: ["C1","G1"],
     active: n=>n%4
   }
 */
@@ -14,11 +14,10 @@ const plugin = (()=>{
     return (o = {},graph = {})=>{
 
         /*
-            ["1$2","1$8"]
-            のような配列 key を求める。
-
-            Chordオブジェクトが渡された / key() で返ってきた場合、
-            Chord.key を用いる。
+            key should be:
+                - string like "C1"
+                - array like ["C1","G1"]
+                - Chord object 
             */
         let key = ((key)=>{
             let _key
@@ -32,7 +31,7 @@ const plugin = (()=>{
                 _key = key(graph.noteIndex)
                 if(_key){
                     if(Array.isArray(_key)) return _key
-                    else if (Array.isArray(_key.key)) return _key.key
+                    else if(typeof _key === "object") return _key
                     else if(typeof _key === "string") return [_key]
                     else return false
                 } else {
@@ -40,8 +39,7 @@ const plugin = (()=>{
                 }
 
             case "object":
-                if(Array.isArray(key)) return key
-                return false
+                return key
 
             default:
                 return false
@@ -51,15 +49,15 @@ const plugin = (()=>{
         if(!key) return false
 
         /*
-      音を再生する拍数 length を求める
-    */
+            calculate relative length of note
+        */
         let length = (()=>{
             if(!o.length) return DEFAULT.NOTE_LENGTH
             switch(typeof o.length){
             case "number":
                 return o.length
             case "function":
-                return o.length(graph.noteIndex)
+                return o.length( graph.noteIndex )
             default:
                 return false
             }
