@@ -32,8 +32,8 @@ const plugin = (()=>{
             /*
                 get key,length as same as "note" plugin
             */
-            _key = Helper.toKeyList( pair[0], graph.noteIndex )
-            _length = Helper.toLength( pair[1], graph.noteIndex )
+            _key = Helper.toKeyList(pair[0], graph.noteIndex, graph.measure )
+            _length = Helper.toLength(pair[1], graph.noteIndex, graph.measure )
             if(!_key || !_length) return false
 
             _key.forEach(k=>{

@@ -158,7 +158,8 @@ const Module = (()=>{
             this.currentGraph = this.generator(
                 graphPool.allocate({
                     sound: this.sound,
-                    noteIndex: this.currentNoteIndex,
+                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
+                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
                     noteTime: this.nextNoteTime,
                     secondsPerNote: this.secondsPerNote,
                     age: this.age,

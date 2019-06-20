@@ -13,6 +13,7 @@ const Module = (()=>{
 
         constructor(option){
             this.sound = option.sound
+            this.measure = option.measure
             this.noteIndex = option.noteIndex
             this.noteTime = option.noteTime
             this.secondsPerNote = option.secondsPerNote
@@ -28,8 +29,8 @@ const Module = (()=>{
 
         pass(active){
             switch(typeof active){
-            case "function": return active(this.noteIndex)
-            case "object": return Array.isArray(active) && active.includes(this.noteIndex)
+            case "function": return active( this.noteIndex,this.measure )
+                case "object": return Array.isArray(active) && active.includes( this.noteIndex, this.measure )
             case "number": return active === this.noteIndex
             default: return true
             }

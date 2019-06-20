@@ -28,7 +28,7 @@ const plugin = (()=>{
                 return [key]
 
             case "function":
-                _key = key(graph.noteIndex)
+                _key = key( graph.noteIndex, graph.measure )
                 if(_key){
                     if(Array.isArray(_key)) return _key
                     else if(typeof _key === "object") return _key
@@ -57,7 +57,7 @@ const plugin = (()=>{
             case "number":
                 return o.length
             case "function":
-                return o.length( graph.noteIndex )
+                return o.length(graph.noteIndex, graph.measure )
             default:
                 return false
             }
