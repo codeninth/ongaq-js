@@ -221,7 +221,7 @@ const Module = (()=>{
         }
         get chapter(){ return this._chapter }
 
-        get secondsPerNote(){ return 60 / this.bpm / 8}
+        get secondsPerNote(){ return 60 / this.bpm / 8 }
 
         get absNoteIndex(){ return this.currentNoteIndex + this.age * this.measure * this.notesInMeasure }
 

@@ -18,9 +18,10 @@ const Module = (()=>{
             this.nextZeroTime = 0
             this.routine = this.routine.bind(this)
             this.pauseScheduling = this.pauseScheduling.bind(this)
-            window.addEventListener("blur",()=>{
-                this.pauseScheduling()
-            })
+            if (AudioCore.powerMode === "low"){
+                window.addEventListener("blur", () => { this.pauseScheduling() })
+            }
+            
         }
 
         set activeLoop(id){
