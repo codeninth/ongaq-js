@@ -12,7 +12,7 @@ const CONSTANTS = {
 const DEFAULT = {
     MEASURE: 1,
     NOTE_IN_MEASURE: 16,
-    PREFETCH_SECOND: 0.3
+    PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 1.5
 }
 
 const context = AudioCore.context

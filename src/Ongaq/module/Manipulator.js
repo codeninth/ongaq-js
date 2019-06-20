@@ -17,6 +17,10 @@ const Module = (()=>{
             this.isPlaying = false
             this.nextZeroTime = 0
             this.routine = this.routine.bind(this)
+            this.pauseScheduling = this.pauseScheduling.bind(this)
+            window.addEventListener("blur",()=>{
+                this.pauseScheduling()
+            })
         }
 
         set activeLoop(id){
@@ -114,7 +118,7 @@ const Module = (()=>{
 
             this.prepareCommonGain()
             this.loop.get(this.activeLoop).putTimerRight()
-            this.scheduler = window.setInterval(this.routine,50)
+            this.scheduler = window.setInterval( this.routine, AudioCore.powerMode === "middle" ? 50 : 200 )
 
         }
 
