@@ -1,8 +1,8 @@
-import audioCore from "./module/AudioCore"
-import bufferYard from "./module/BufferYard"
+import AudioCore from "./module/AudioCore"
+import BufferYard from "./module/BufferYard"
 import manipulator from "./module/Manipulator"
 
-const context = audioCore.getContext()
+const context = AudioCore.context
 
 class Ongaq {
 
@@ -11,19 +11,19 @@ class Ongaq {
     }
 
     /*
-    @init
-  */
+      @init
+    */
     init({ api_key, offline, resourcesPath, volume, bpm }){
-        bufferYard.set({ api_key, offline, resourcesPath })
+        BufferYard.set({ api_key, offline, resourcesPath })
         this.volume = volume
         this.bpm = bpm
         return false
     }
 
     /*
-    @import
-    - jsonからtune/partオブジェクトを作成する
-  */
+      @import
+      - jsonからtune/partオブジェクトを作成する
+    */
     import(tune,o = {}){
         return new Promise((resolve,reject)=>{
             const p = manipulator.loadLoop(tune,o)
@@ -33,9 +33,9 @@ class Ongaq {
     }
 
     /*
-    @switch
-    - 次に再生するLoopを選択し、quotaを再設定する
-  */
+      @switch
+      - 次に再生するLoopを選択し、quotaを再設定する
+    */
     switch(o = {}){
         return new Promise((resolve,reject)=>{
             manipulator.switch(o) ? resolve() : reject()
@@ -51,14 +51,14 @@ class Ongaq {
     }
 
     /*
-    @set bpm
-  */
+      @set bpm
+    */
     set bpm(v){ manipulator.setBpm(v) }
 
     /*
-    @start
-    - 現在選択中のtuneを再生する
-  */
+      @start
+      - 現在選択中のtuneを再生する
+    */
     start(){
         return new Promise((resolve,reject)=>{
             manipulator.startScheduling()
@@ -67,9 +67,9 @@ class Ongaq {
     }
 
     /*
-    @pause
-    - 現在選択中のtuneを停止する
-  */
+      @pause
+      - 現在選択中のtuneを停止する
+    */
     pause(){
         return new Promise((resolve,reject)=>{
             manipulator.pauseScheduling()
@@ -93,12 +93,12 @@ class Ongaq {
     }
 
     /*
-    @get params
-  */
+      @get params
+    */
     get params(){
         return {
             isPlaying: manipulator.isPlaying,
-            originTime: audioCore.getOriginTime(),
+            originTime: AudioCore.originTime,
             currentTime: context.currentTime,
             volume: manipulator.volume * 100
         }

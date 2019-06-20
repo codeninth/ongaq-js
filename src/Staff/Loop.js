@@ -5,7 +5,6 @@ class Loop {
     }
 
     init(data){
-
         this.bpm = data.bpm
         this.id = data.id
         this.tag = data.tag
@@ -26,7 +25,7 @@ class Loop {
 
     /*
         @merge
-        別のloopオブジェクトのpartをすべて追加する
+        - add all parts of other loop
     */
     merge(anotherLoop){
         if(!anotherLoop || !Array.isArray(anotherLoop.part) || anotherLoop.part.length === 0) return false

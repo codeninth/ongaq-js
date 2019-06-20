@@ -1,6 +1,6 @@
 import AudioCore from "../module/AudioCore"
 
-let context = AudioCore.getContext()
+const context = AudioCore.context
 
 class SoundLine {
 
@@ -19,7 +19,6 @@ class SoundLine {
 
         this.loader = typeof o.loader === "function" ? o.loader : null
         this.starter = typeof o.starter === "function" ? o.starter : null
-        this.wash = typeof o.wash === "function" ? o.wash : null
 
     }
 

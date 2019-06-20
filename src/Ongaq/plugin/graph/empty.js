@@ -6,6 +6,6 @@ const plugin = (()=>{
 
     return ()=>false
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default plugin

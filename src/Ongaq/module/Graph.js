@@ -46,6 +46,6 @@ const Module = (()=>{
 
     return Graph
 
-}).call(undefined,window)
+}).call(undefined,window || {})
 
 export default Module
