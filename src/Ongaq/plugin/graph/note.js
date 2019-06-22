@@ -31,7 +31,7 @@ const plugin = (()=>{
                 _key = key( graph.noteIndex, graph.measure )
                 if(_key){
                     if(Array.isArray(_key)) return _key
-                    else if(typeof _key === "object") return _key
+                    else if(typeof _key === "object") return Array.isArray(_key) ? _key : _key.key
                     else if(typeof _key === "string") return [_key]
                     else return false
                 } else {
@@ -39,7 +39,8 @@ const plugin = (()=>{
                 }
 
             case "object":
-                return key
+                // supposed to be array or Chord object
+                return Array.isArray(key) ? key : key.key
 
             default:
                 return false
@@ -57,7 +58,7 @@ const plugin = (()=>{
             case "number":
                 return o.length
             case "function":
-                return o.length(graph.noteIndex, graph.measure )
+                return o.length( graph.noteIndex, graph.measure )
             default:
                 return false
             }
