@@ -46,7 +46,7 @@ const plugin = (()=>{
                             key: k,
                             startTime: graph.noteTime + distance * graph.secondsPerNote
                         },
-                        volume: pair[2] >= 0 && pair[2] <= 1 ? pair[2] : ( o.volume >= 0 && o.volume <= 1 ? o.volume : null),
+                        volume: pair[2] >= 0 && pair[2] <= 1 ? pair[2] : ( o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null),
                         secondsPerNote: graph.secondsPerNote
                     }
                 })
