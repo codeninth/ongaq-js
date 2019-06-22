@@ -18,11 +18,12 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "eslint": "^5.15.3",
+    "hard-source-webpack-plugin": "^0.13.1",
     "karma": "4.0.1",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.1",
     "superagent": "^3.8.2",
-    "superagent-no-cache": "^0.1.1"
+    "superagent-no-cache": "^0.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1"
   },
   "dependencies": {}
 }
