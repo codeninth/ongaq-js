@@ -182,10 +182,10 @@ class Chord {
     }
 
     /*
-        @turn
+        @rotate
         1回 転回を行う
    */
-    turn() {
+    rotate() {
 
         if (!this.key) return this
 
@@ -202,7 +202,6 @@ class Chord {
         let newList = this.key.map(k => k).splice(1)
         newList.push(`${rolledOctave}$${rolledKey}`)
 
-        // this.key = newList
         return new Chord(this.name, {
             octave: this.defaultOctave,
             key: newList
