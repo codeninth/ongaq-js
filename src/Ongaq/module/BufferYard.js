@@ -61,7 +61,6 @@ const Module = (()=>{
         */
         import(sounds){
 
-
             if(!Array.isArray(sounds)) return false
 
             const soundsToLoad = sounds.filter( sound => !buffers.get(sound) )
@@ -143,15 +142,13 @@ const Module = (()=>{
 
             return Promise.all(promises)
 
-
         }
 
         ship({ sound, key }){
             if(!sound || !key || !buffers.get(sound)) return false
 
             /*
-                "1$Ab","hihat"
-                などの読みやすい記法が使われている場合、ここでファイル名に変換する
+                readable note name as "A1","hihat" will be converted here
             */
             const soundID = SOUND_NAME.get(sound)
             if(soundID < 20000) key = toPianoNoteName(key)
