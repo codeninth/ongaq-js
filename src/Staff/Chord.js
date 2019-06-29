@@ -197,7 +197,11 @@ class Chord {
         let f = first.split("$").map(n => +n)
 
         let rolledKey = f[1]
-        let rolledOctave = f[1] + l[1] > 12 ? l[0] + 1 : l[0]
+        let rolledOctave = (()=>{
+            if(f[1] > l[1]) return l[0]
+            else if(f[1] + l[1] > 12) return l[0] + 1
+            else return l[0]
+        })()
         if (rolledOctave > 4) return this
 
         let newList = this.key.map(k => k).splice(1)
