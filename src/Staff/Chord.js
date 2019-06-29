@@ -15,7 +15,7 @@ const shiftKeys = (v,key)=>{
                 - This note goes down to lower octave 
                 - If octave 1, no more getting down -> skipped
                 */
-            if (pair[0] > 1) return `${pair[0] - 1}${12 - pair[1] + v}`
+            if (pair[0] > 1) return `${ pair[0] - 1 }$${ 12 + pair[1] + v }`
             else return false
         }
         else if (v > 0 && pair[1] + v > 12) {
@@ -23,7 +23,7 @@ const shiftKeys = (v,key)=>{
                 - This note goes up to higher octave
                 - If octave 4, no more getting up -> skipped
                 */
-            if (pair[0] < 4) return `${pair[0] + 1}${pair[1] + v - 12}`
+            if (pair[0] < 4) return `${ pair[0] + 1 }$${ -12 + pair[1] + v }`
         } else {
             return false
         }
@@ -77,6 +77,7 @@ class Chord {
             })
             return { root, rootLabel }
         })()
+
         if(!rootData.root){
             this.active = false
             return false
@@ -93,7 +94,7 @@ class Chord {
             return { scheme, schemeLabel }
         })( raw.replace(rootData.rootLabel,"") )
 
-        if(!chordData.scheme || !chordData.schemeLabel){
+        if(!chordData.scheme){
             this.active = false
             return false
         }
