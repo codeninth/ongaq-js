@@ -80,7 +80,7 @@ const Module = (()=>{
                             })
                     } else {
                         thisRequest = request
-                            .get(`${this.endpoint}${SOUND_NAME.get(sound)}.json`)
+                            .get(`${this.endpoint}${SOUND_NAME.get(sound) && SOUND_NAME.get(sound).id}.json`)
                     }
 
                     thisRequest
@@ -150,7 +150,7 @@ const Module = (()=>{
             /*
                 readable note name as "A1","hihat" will be converted here
             */
-            const soundID = SOUND_NAME.get(sound)
+            const soundID = SOUND_NAME.get(sound) && SOUND_NAME.get(sound).id
             if(soundID < 20000) key = toPianoNoteName(key)
             else if(soundID < 30000) key = toDrumNoteName(key)
 
