@@ -1,6 +1,8 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
 import * as plugin from "../plugin/graph/index"
+import Manipulator from "./Manipulator"
+import Filter from "../../Staff/Filter"
 import soundTreePool from "./pool.soundtree"
 import graphPool from "./pool.graph"
 
@@ -16,6 +18,15 @@ const DEFAULT = {
 }
 
 const context = AudioCore.context
+
+const touchFilters = [
+  new Filter({
+    type: "note",
+    length: 16,
+    volume: 50
+  })
+]
+let _touchGraph, _touchSoundTree
 
 const Module = (()=>{
 
@@ -52,6 +63,17 @@ const Module = (()=>{
                 }, graph )
             }
             this.generator = this.generator.bind(this)
+
+            this.touchGenerator = graph => {
+                return touchFilters.reduce(( prevGraph, newFilter ) => {
+                    if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
+                        return prevGraph[ newFilter.type ]( newFilter.params )
+                    } else {
+                        return prevGraph
+                    }
+                }, graph )
+            }
+            this.touchGenerator = this.touchGenerator.bind(this)
 
             /*
               @nextNoteTime
@@ -94,9 +116,28 @@ const Module = (()=>{
 
         }
 
-        pause(){
-            this.active = false
+        touch(){
+
+            if(!this.touchGenerator) return false
+            _touchGraph = this.touchGenerator(
+                graphPool.allocate({
+                    sound: this.sound,
+                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
+                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
+                    noteTime: this.nextNoteTime,
+                    secondsPerNote: this.secondsPerNote,
+                    age: this.age
+                })
+            )
+
+            _touchSoundTree = soundTreePool.allocate( g )
+
+            if(_touchSoundTree.layer.length > 0) Manipulator.connect(_touchSoundTree)
+
         }
+        // pause(){
+        //     this.active = false
+        // }
 
         reset(){
             this.age = 0
