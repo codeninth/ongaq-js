@@ -7,8 +7,8 @@ const DRUM_NOTE = new Map([
     ["snare2","2$3"],
     ["tom","1$4"],
     ["tom2","2$4"],
-    ["side","1$5"],
-    ["side2","2$5"],
+    ["side","1$9"],
+    ["side2","2$9"],
     ["cymbal","1$12"],
     ["cymbal2","2$12"]
 ])

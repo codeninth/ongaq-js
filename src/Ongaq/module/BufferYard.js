@@ -46,12 +46,12 @@ const Module = (()=>{
 
         set({ api_key, offline, resourcesPath }){
             this.api_key = api_key
-            this.offline = !!offline
-            this.resourcesPath = resourcesPath || "/"
+            this.offline = offline === true
+            this.resourcesPath = resourcesPath || "/v1/sounds/"
         }
 
         get endpoint(){
-            if (this.offline === false) return `${ENDPOINT}/${this.resourcesPath}`
+            if (this.offline === false) return `${ENDPOINT}${this.resourcesPath}`
             else return `${this.resourcesPath}`
         }
 
