@@ -91,7 +91,7 @@ const Module = (()=>{
                             if(this.offline === false){
                                 result = res.body.sounds[0]
                                 if (!result || result.status !== "OK") return _reject()
-                                data = result.data
+                                data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
                             } else {
                                 //  When offline, read JSON directly
                                 data = res.body
