@@ -132,7 +132,7 @@ const Module = (()=>{
                         })
                         .catch(() => {
                             soundsToLoad.forEach(sound => buffers.delete(sound))
-                            _reject(`Cannot load sound resources. There are 2 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is invalid sound name. 2) [ ${this.api_key} ] is not a valid API key.`)
+                            _reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
                         })
 
                 })
