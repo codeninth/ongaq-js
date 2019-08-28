@@ -7,22 +7,25 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
     "lint": "eslint ./src",
-    "lint_fix": "eslint ./src --fix"
+    "lint_fix": "eslint ./src --fix",
+    "karma": "webpack -p --config test/test.webpack.config.js && ./node_modules/karma/bin/karma start"
   },
   "keywords": [],
   "author": "info@codeninth.com",
-  "license": "ISC",
+  "license": "GNU General Public License v2",
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "eslint": "^5.15.3",
-    "karma": "4.0.1",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.1",
+    "hard-source-webpack-plugin": "^0.13.1",
+    "karma": "^4.0.1",
+    "karma-jasmine": "^2.0.1",
     "superagent": "^3.8.2",
-    "superagent-no-cache": "^0.1.1"
+    "superagent-no-cache": "^0.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1"
   },
   "dependencies": {}
 }

@@ -12,18 +12,18 @@ const shiftKeys = (v,key)=>{
         if (pair[1] + v <= 12 && pair[1] + v > 0) return `${pair[0]}$${pair[1] + v}`
         else if (v < 0 && pair[1] + v <= 0) {
             /*
-                - 下のオクターブへ移動する必要がある
-                - もともと1オクターブだった場合それ以上下がれないのでこのキーはスキップする
+                - This note goes down to lower octave 
+                - If octave 1, no more getting down -> skipped
                 */
-            if (pair[0] > 1) return `${pair[0] - 1}${12 - pair[1] + v}`
+            if (pair[0] > 1) return `${ pair[0] - 1 }$${ 12 + pair[1] + v }`
             else return false
         }
         else if (v > 0 && pair[1] + v > 12) {
             /*
-                - 上のオクターブへ移動する必要がある
-                - もともと4オクターブだった場合それ以上上がれないのでこのキーはスキップする
+                - This note goes up to higher octave
+                - If octave 4, no more getting up -> skipped
                 */
-            if (pair[0] < 4) return `${pair[0] + 1}${pair[1] + v - 12}`
+            if (pair[0] < 4) return `${ pair[0] + 1 }$${ -12 + pair[1] + v }`
         } else {
             return false
         }
@@ -36,20 +36,19 @@ const shiftKeys = (v,key)=>{
 class Chord {
 
     /*
-    raw: "C#M7" のような文字列
+    raw: string like "C#M7"
     o: {
         octave: 2,
         defaultShift: 0,
-        key: ["1$5","1$11",...] // shift() などによって新しいChordオブジェクトを作る場合などに渡す
+        key: ["1$5","1$11",...] // use when create new Chord object by Chord.shift() or such methods
     }
 
     {
-      root: ルートのindex, // 1
-      rootLabel: "ルートの表記": // C
-      scheme: 何度離れた音を重ねるか // [3,4,3]
-      schemeLabel: "コードの表記" // #M7
-      key: "bufferのファイル名に対応する表記" // ["1$1","1$4"]
-      shift: 0 // 常に移調する場合の量
+      root: index of root, // 1
+      rootLabel: readable root: // C
+      scheme: distances between each neighbor // [3,4,3]
+      schemeLabel: general label // #M7
+      key: note names corresponding to sound JSON // ["1$1","1$4"]
     }
   */
     constructor(raw, o = {}){
@@ -78,6 +77,7 @@ class Chord {
             })
             return { root, rootLabel }
         })()
+
         if(!rootData.root){
             this.active = false
             return false
@@ -94,7 +94,7 @@ class Chord {
             return { scheme, schemeLabel }
         })( raw.replace(rootData.rootLabel,"") )
 
-        if(!chordData.scheme || !chordData.schemeLabel){
+        if(!chordData.scheme){
             this.active = false
             return false
         }
@@ -130,10 +130,9 @@ class Chord {
 
     /*
         @shift
-        オリジナルのコードを v だけ移調する。
+        shift original chord
     */
     shift(v){
-        // this.key = shiftKeys( v, this.originalKey )
         return new Chord(this.name, {
             octave: this.defaultOctave,
             key: shiftKeys(v, this.originalKey)
@@ -142,6 +141,7 @@ class Chord {
 
     /*
         @octave
+        change octave of original chord
     */
     octave(v){
         if (v === 0 || typeof v !== "number" || Number.isNaN(v)) return this
@@ -150,6 +150,7 @@ class Chord {
         newList = newList.map(pair => {
             if (pair[0] + v <= 4 && pair[0] + v > 0) return `${pair[0] + v}$${pair[1]}`
         }).filter(pair => pair)
+
         return new Chord(this.name, {
             octave: this.defaultOctave,
             key: newList
@@ -158,7 +159,7 @@ class Chord {
 
     /*
         @reverse
-        オリジナルのコードの構成音を逆にする。
+        make array of note names upside down
     */
     reverse(){
         let newList = this.originalKey.reverse()
@@ -170,7 +171,7 @@ class Chord {
 
     /*
         @slice
-        元のコードの構成音の一部を返す。
+        slice array of note names 
     */
     slice(start,end){
         if (Number.isNaN(start)) return this
@@ -182,10 +183,10 @@ class Chord {
     }
 
     /*
-        @turn
-        1回 転回を行う
+        @rotate
+        rotate original chord
    */
-    turn() {
+    rotate() {
 
         if (!this.key) return this
 
@@ -196,13 +197,16 @@ class Chord {
         let f = first.split("$").map(n => +n)
 
         let rolledKey = f[1]
-        let rolledOctave = f[1] + l[1] > 12 ? l[0] + 1 : l[0]
+        let rolledOctave = (()=>{
+            if(f[1] > l[1]) return l[0]
+            else if(f[1] + l[1] > 12) return l[0] + 1
+            else return l[0]
+        })()
         if (rolledOctave > 4) return this
 
         let newList = this.key.map(k => k).splice(1)
         newList.push(`${rolledOctave}$${rolledKey}`)
 
-        // this.key = newList
         return new Chord(this.name, {
             octave: this.defaultOctave,
             key: newList
@@ -210,13 +214,9 @@ class Chord {
 
     }
 
-    get route(){
-        return Array.isArray(this.key) && this.key[0]
-    }
+    get route(){ return Array.isArray(this.key) && this.key[0] }
 
-    get name(){
-        return this.rootLabel + this.schemeLabel
-    }
+    get name(){ return this.rootLabel + this.schemeLabel }
 
 }
 

@@ -4,7 +4,7 @@ const DEFAULT = {
 //========================================
 /*
   o: {
-    key: ["1$1","1$3"],
+    key: ["C1","G1"],
     active: n=>n%4
   }
 */
@@ -14,11 +14,10 @@ const plugin = (()=>{
     return (o = {},graph = {})=>{
 
         /*
-            ["1$2","1$8"]
-            のような配列 key を求める。
-
-            Chordオブジェクトが渡された / key() で返ってきた場合、
-            Chord.key を用いる。
+            key should be:
+                - string like "C1"
+                - array like ["C1","G1"]
+                - Chord object 
             */
         let key = ((key)=>{
             let _key
@@ -29,10 +28,10 @@ const plugin = (()=>{
                 return [key]
 
             case "function":
-                _key = key(graph.noteIndex)
+                _key = key( graph.noteIndex, graph.measure )
                 if(_key){
                     if(Array.isArray(_key)) return _key
-                    else if (Array.isArray(_key.key)) return _key.key
+                    else if(typeof _key === "object") return Array.isArray(_key) ? _key : _key.key
                     else if(typeof _key === "string") return [_key]
                     else return false
                 } else {
@@ -40,8 +39,8 @@ const plugin = (()=>{
                 }
 
             case "object":
-                if(Array.isArray(key)) return key
-                return false
+                // supposed to be array or Chord object
+                return Array.isArray(key) ? key : key.key
 
             default:
                 return false
@@ -51,15 +50,15 @@ const plugin = (()=>{
         if(!key) return false
 
         /*
-      音を再生する拍数 length を求める
-    */
+            calculate relative length of note
+        */
         let length = (()=>{
             if(!o.length) return DEFAULT.NOTE_LENGTH
             switch(typeof o.length){
             case "number":
                 return o.length
             case "function":
-                return o.length(graph.noteIndex)
+                return o.length( graph.noteIndex, graph.measure )
             default:
                 return false
             }
@@ -77,7 +76,7 @@ const plugin = (()=>{
                         key: k,
                         startTime: graph.noteTime
                     },
-                    volume: o.volume >= 0 && o.volume <= 1 ? o.volume : null,
+                    volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null,
                     secondsPerNote: graph.secondsPerNote,
                     targetIndex: 0
                 }

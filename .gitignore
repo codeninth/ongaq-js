@@ -3,8 +3,5 @@
 thumbs.db
 node_modules
 *.log
-*/**/htdocs
-*/**/htdocs_doc
 yarn.lock
-_psd/*
-crawl
+test/test.bundle.js

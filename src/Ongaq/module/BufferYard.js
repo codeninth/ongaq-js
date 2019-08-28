@@ -46,12 +46,12 @@ const Module = (()=>{
 
         set({ api_key, offline, resourcesPath }){
             this.api_key = api_key
-            this.offline = !!offline
-            this.resourcesPath = resourcesPath || "/"
+            this.offline = offline === true
+            this.resourcesPath = resourcesPath || "/v1/sounds/"
         }
 
         get endpoint(){
-            if (this.offline === false) return `${ENDPOINT}/${this.resourcesPath}`
+            if (this.offline === false) return `${ENDPOINT}${this.resourcesPath}`
             else return `${this.resourcesPath}`
         }
 
@@ -60,7 +60,6 @@ const Module = (()=>{
           - restore mp3: string -> typedArray -> .mp3
         */
         import(sounds){
-
 
             if(!Array.isArray(sounds)) return false
 
@@ -81,7 +80,7 @@ const Module = (()=>{
                             })
                     } else {
                         thisRequest = request
-                            .get(`${this.endpoint}${SOUND_NAME.get(sound)}.json`)
+                            .get(`${this.endpoint}${SOUND_NAME.get(sound) && SOUND_NAME.get(sound).id}.json`)
                     }
 
                     thisRequest
@@ -92,7 +91,7 @@ const Module = (()=>{
                             if(this.offline === false){
                                 result = res.body.sounds[0]
                                 if (!result || result.status !== "OK") return _reject()
-                                data = result.data
+                                data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
                             } else {
                                 //  When offline, read JSON directly
                                 data = res.body
@@ -133,7 +132,7 @@ const Module = (()=>{
                         })
                         .catch(() => {
                             soundsToLoad.forEach(sound => buffers.delete(sound))
-                            _reject(`Cannot load sound resources. There are 2 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is invalid sound name. 2) [ ${this.api_key} ] is not a valid API key.`)
+                            _reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
                         })
 
                 })
@@ -143,17 +142,15 @@ const Module = (()=>{
 
             return Promise.all(promises)
 
-
         }
 
         ship({ sound, key }){
             if(!sound || !key || !buffers.get(sound)) return false
 
             /*
-                "1$Ab","hihat"
-                などの読みやすい記法が使われている場合、ここでファイル名に変換する
+                readable note name as "A1","hihat" will be converted here
             */
-            const soundID = SOUND_NAME.get(sound)
+            const soundID = SOUND_NAME.get(sound) && SOUND_NAME.get(sound).id
             if(soundID < 20000) key = toPianoNoteName(key)
             else if(soundID < 30000) key = toDrumNoteName(key)
 

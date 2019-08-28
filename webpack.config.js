@@ -1,5 +1,6 @@
 require('webpack');
 require('babel-core/register');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const path = require('path');
 
 const webpackConfig = {
@@ -9,6 +10,9 @@ const webpackConfig = {
   output: {
     path: path.resolve('./')
   },
+  plugins: [
+    new HardSourceWebpackPlugin()
+  ],
   mode: "production"
 };
 
