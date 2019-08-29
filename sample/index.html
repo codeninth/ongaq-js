@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Ongaq JS Sample</title>
+<style>
+html {
+    height: 100%;
+}
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #fff,#bbe6f1);
+}
+main {
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 400px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    flex-flow: column;
+    align-items: center;
+    background-color: rgba(255,255,255,.6);
+    border-radius: 3px;
+    box-shadow: 0 1px 10px rgba(0,0,0,.2);
+}
+h1 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #31494e;
+    margin-top: 0;
+}
+ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+li a {
+    display: block;
+    text-decoration: none;
+    color: #33634f;
+    background-color: #aeefc4;
+    cursor: pointer;
+    transition: all .1s ease;
+    padding: 10px 20px;
+    font-size: 20px;
+    border-radius: 4px;
+}
+a:hover {
+    opacity: 0.7;
+}
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    text-align: center;
+    font-size: 14px;
+}
+footer a {
+    color: #22b4d6;
+}
+p {
+    margin: 0;
+}
+</style>
+</head>
+<body>
+    <main>
+        <h1>Ongaq JS Sample</h1>
+        <ul>
+            <li><a href="javascript:;">Play / Pause</a></li>
+        </ul>
+    </main>
+    <footer>
+        <p>[ Ongaq JS Tutrial ]</p>
+        <p><a href="https://www.ongaqjs.com/tutrial/">https://www.ongaqjs.com/tutrial/</a></p>
+    </footer>
+<!-- include ongaq.js before your original script -->
+<script src="https://asset.ongaqjs.com/ongaq.js"></script>
+<script src="./script.js"></script>
+</body>
+</html>
