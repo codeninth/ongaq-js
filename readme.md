@@ -1,7 +1,7 @@
 # Ongaq JS Docs
 
 ## Website
-https://ongaqjs.com/
+https://www.ongaqjs.com/
 
 ## Important Points of Sound Resources
 Ongaq JS will use sound resources hosted on internet by CodeNinth Ltd.
