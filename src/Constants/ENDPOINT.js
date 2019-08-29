@@ -1,2 +1,2 @@
-const ENDPOINT = "http://localhost:1911"
+const ENDPOINT = "https://api.ongaqjs.com"
 export default ENDPOINT
