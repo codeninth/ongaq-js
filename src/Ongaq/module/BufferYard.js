@@ -68,7 +68,7 @@ const Module = (()=>{
 
             let promises = soundsToLoad.map((sound)=>{
 
-                return new Promise((_resolve, _reject) => {
+                return new Promise((resolve, reject) => {
 
                     let thisRequest
                     if(this.offline === false){
@@ -90,7 +90,7 @@ const Module = (()=>{
                             let result, data
                             if(this.offline === false){
                                 result = res.body.sounds[0]
-                                if (!result || result.status !== "OK") return _reject()
+                                if (!result || result.status !== "OK") return reject()
                                 data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
                             } else {
                                 //  When offline, read JSON directly
@@ -107,32 +107,29 @@ const Module = (()=>{
 
                                 AudioCore.toAudioBuffer({
                                     src: thisNote.src,
-                                    length: thisNote.length,
-                                    resolve: audioBuffer => {
-                                        thisSoundBuffers.set(key, audioBuffer)
-                                        if (++decodedBufferLength === notes.length) {
-                                            notes = null
-                                            buffers.set(sound, thisSoundBuffers)
-                                            _resolve()
-                                        }
-
-                                    },
-                                    reject: () => {
-                                        soundsToLoad.forEach(sound => {
-                                            if (buffers.has(sound)) buffers.delete(sound)
-                                        })
-                                        _reject()
-                                    }
-
+                                    length: thisNote.length
                                 })
-
+                                .then(audioBuffer => {
+                                    thisSoundBuffers.set(key, audioBuffer)
+                                    if (++decodedBufferLength === notes.length) {
+                                        notes = null
+                                        buffers.set(sound, thisSoundBuffers)
+                                        resolve()
+                                    }
+                                })
+                                .catch(() => {
+                                    soundsToLoad.forEach(sound => {
+                                        if (buffers.has(sound)) buffers.delete(sound)
+                                    })
+                                    reject()
+                                })
                             })
 
 
                         })
                         .catch(() => {
                             soundsToLoad.forEach(sound => buffers.delete(sound))
-                            _reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
+                            reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
                         })
 
                 })
