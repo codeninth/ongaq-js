@@ -13,8 +13,8 @@ class Ongaq {
     /*
       @init
     */
-    init({ apiKey, offline, resource, volume, bpm }){
-        BufferYard.set({ apiKey, offline, resource })
+    init({ api_key, offline, resourcesPath, volume, bpm }){
+        BufferYard.set({ api_key, offline, resourcesPath })
         this.volume = volume
         this.bpm = bpm
         return false
