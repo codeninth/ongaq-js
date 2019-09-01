@@ -1,11 +1,11 @@
 import AudioCore from "./AudioCore"
 import ROOT from "../../Constants/ROOT"
 import DRUM_NOTE from "../../Constants/DRUM_NOTE"
-import SOUND_NAME from "../../Constants/SOUND_NAME"
 import ENDPOINT from "../../Constants/ENDPOINT"
 import request from "superagent"
 import nocache from "superagent-no-cache"
 
+let SOUND_NAME_MAP
 /*
     convert key name expression
     e.g.) "A1#" -> "1$11"
@@ -44,15 +44,27 @@ const Module = (()=>{
 
     class BufferYard {
 
-        set({ api_key, offline, resourcesPath }){
+        set({ api_key, offline, resource, sound_name_map }){
             this.api_key = api_key
             this.offline = offline === true
-            this.resourcesPath = resourcesPath || "/v1/sounds/"
+            this.resource = resource || "/v1/sounds/"
+            if(sound_name_map instanceof Map){
+                SOUND_NAME_MAP = sound_name_map
+            } else {
+                request.get(`${ENDPOINT}/v1/soundnamemap/`)
+                .then(result=>{
+                    if (!result || result.status !== "OK") return reject()
+                    SOUND_NAME_MAP = new Map(result.body)
+                })
+                .catch(()=>{
+                    SOUND_NAME_MAP = new Map()
+                })
+            }
         }
 
         get endpoint(){
-            if (this.offline === false) return `${ENDPOINT}${this.resourcesPath}`
-            else return `${this.resourcesPath}`
+            if (this.offline === false) return `${ENDPOINT}${this.resource}`
+            else return `${this.resource}`
         }
 
         /*
@@ -80,7 +92,7 @@ const Module = (()=>{
                             })
                     } else {
                         thisRequest = request
-                            .get(`${this.endpoint}${SOUND_NAME.get(sound) && SOUND_NAME.get(sound).id}.json`)
+                            .get(`${this.endpoint}${SOUND_NAME_MAP.get(sound) && SOUND_NAME_MAP.get(sound).id}.json`)
                     }
 
                     thisRequest
@@ -147,7 +159,7 @@ const Module = (()=>{
             /*
                 readable note name as "A1","hihat" will be converted here
             */
-            const soundID = SOUND_NAME.get(sound) && SOUND_NAME.get(sound).id
+            const soundID = SOUND_NAME_MAP.get(sound) && SOUND_NAME_MAP.get(sound).id
             if(soundID < 20000) key = toPianoNoteName(key)
             else if(soundID < 30000) key = toDrumNoteName(key)
 
