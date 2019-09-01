@@ -1,5 +1,5 @@
 const bass_drum = new Part({
-    sound: "standard_drums"
+    sound: "small_cube"
 })
 bass_drum.add("note", {
     key: ["kick"],
@@ -12,7 +12,7 @@ const loop = new Loop({
 loop.add(bass_drum)
 
 const ongaq = new Ongaq({
-    api_key: "your-api-key"
+    apiKey: "YOUR_apiKey"
 })
 ongaq.import(loop)
 .then((l) => {
