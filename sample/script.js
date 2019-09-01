@@ -12,7 +12,7 @@ const loop = new Loop({
 loop.add(bass_drum)
 
 const ongaq = new Ongaq({
-    apiKey: "YOUR_apiKey"
+    api_key: "YOUR_API_KEY"
 })
 ongaq.import(loop)
 .then((l) => {
