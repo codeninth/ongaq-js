@@ -1,10 +1,10 @@
 import AudioCore from "./AudioCore"
 import ROOT from "../../Constants/ROOT"
 import DRUM_NOTE from "../../Constants/DRUM_NOTE"
-import SOUND_NAME from "../../Constants/SOUND_NAME"
 import ENDPOINT from "../../Constants/ENDPOINT"
 import request from "superagent"
 import nocache from "superagent-no-cache"
+let SOUND_NAME
 
 /*
     convert key name expression
@@ -44,15 +44,25 @@ const Module = (()=>{
 
     class BufferYard {
 
-        set({ api_key, offline, resourcesPath }){
-            this.api_key = api_key
+        set({ apiKey, offline, resource, soundNameMap }){
+            this.apiKey = apiKey
             this.offline = offline === true
-            this.resourcesPath = resourcesPath || "/v1/sounds/"
+            this.resource = resource || "/v1/sounds/"
+            if (soundNameMap instanceof Map){
+                SOUND_NAME = soundNameMap
+            } else {
+                request.get(`${this.endpoint}/v1/soundnamemap/`)
+                    .set("Content-Type", "application/json")
+                    .use(nocache)
+                    .then(res=>{
+                        SOUND_NAME = new Map(res.body)
+                    })
+            }
         }
 
         get endpoint(){
-            if (this.offline === false) return `${ENDPOINT}${this.resourcesPath}`
-            else return `${this.resourcesPath}`
+            if (this.offline === false) return `${ENDPOINT}${this.resource}`
+            else return `${this.resource}`
         }
 
         /*
@@ -76,7 +86,7 @@ const Module = (()=>{
                             .get(this.endpoint)
                             .query({
                                 sound: sound,
-                                api_key: this.api_key
+                                apiKey: this.apiKey
                             })
                     } else {
                         thisRequest = request
@@ -129,7 +139,7 @@ const Module = (()=>{
                         })
                         .catch(() => {
                             soundsToLoad.forEach(sound => buffers.delete(sound))
-                            reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
+                            reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.apiKey} ] is not a valid API key.`)
                         })
 
                 })
@@ -142,7 +152,7 @@ const Module = (()=>{
         }
 
         ship({ sound, key }){
-            if(!sound || !key || !buffers.get(sound)) return false
+            if (!SOUND_NAME || !sound || !key || !buffers.get(sound)) return false
 
             /*
                 readable note name as "A1","hihat" will be converted here
