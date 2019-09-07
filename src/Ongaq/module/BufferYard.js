@@ -47,12 +47,13 @@ const Module = (()=>{
         set({ api_key, offline, resource, sound_name_map }){
             this.api_key = api_key
             this.offline = offline === true
-            this.resource = resource || "/v1/sounds/"
+            this.resource = resource || "/sounds/"
             if(sound_name_map instanceof Map){
                 SOUND_NAME_MAP = sound_name_map
             } else {
-                request.get(`${ENDPOINT}/v1/soundnamemap/`)
+                request.get(`${ENDPOINT}/soundnamemap/`)
                 .then(result=>{
+                    console.log(result)
                     if (!result || result.status !== "OK") return reject()
                     SOUND_NAME_MAP = new Map(result.body)
                 })
