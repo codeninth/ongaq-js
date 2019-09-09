@@ -53,9 +53,8 @@ const Module = (()=>{
             } else {
                 request.get(`${ENDPOINT}/soundnamemap/`)
                 .then(result=>{
-                    console.log(result)
                     if (!result || result.status !== "OK") return reject()
-                    SOUND_NAME_MAP = new Map(result.body)
+                    SOUND_NAME_MAP = new Map(result.body.data)
                 })
                 .catch(()=>{
                     SOUND_NAME_MAP = new Map()
