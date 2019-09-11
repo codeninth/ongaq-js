@@ -5,7 +5,7 @@
   "main": "gulpfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prod": "webpack",
+    "start": "webpack",
     "lint": "eslint ./src",
     "lint_fix": "eslint ./src --fix",
     "karma": "webpack -p --config test/test.webpack.config.js && ./node_modules/karma/bin/karma start"
