@@ -53,11 +53,14 @@ const Module = (()=>{
             } else {
                 request.get(`${ENDPOINT}/soundnamemap/`)
                 .then(result=>{
-                    if (!result || result.status !== "OK") return reject()
+                    if (!result || result.body.statusCode !== 200){
+                      throw new Error("Cannot download instrumental master data.")
+                      return false
+                    }
                     SOUND_NAME_MAP = new Map(result.body.data)
                 })
                 .catch(()=>{
-                    SOUND_NAME_MAP = new Map()
+                  throw new Error("Cannot download instrumental master data.")
                 })
             }
         }
@@ -155,14 +158,12 @@ const Module = (()=>{
 
         ship({ sound, key }){
             if(!sound || !key || !buffers.get(sound)) return false
-
             /*
                 readable note name as "A1","hihat" will be converted here
             */
             const soundID = SOUND_NAME_MAP.get(sound) && SOUND_NAME_MAP.get(sound).id
             if(soundID < 20000) key = toPianoNoteName(key)
             else if(soundID < 30000) key = toDrumNoteName(key)
-
             if(Array.isArray(key)){
                 return key.map(k=>buffers.get(sound).get(k)).filter(b=>b)
             } else if(typeof key === "string") {
