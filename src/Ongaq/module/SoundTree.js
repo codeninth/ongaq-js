@@ -15,9 +15,6 @@ class SoundTree {
         this.layer = this.invokeAll()
     }
 
-    /*
-    map にしたがってインスタンスを配置
-  */
     invokeAll(){
 
         if(!Array.isArray(this.graph.layer)) return false
