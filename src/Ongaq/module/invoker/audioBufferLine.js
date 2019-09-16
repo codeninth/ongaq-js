@@ -27,6 +27,7 @@ const audioBufferLine = ({ buffer, volume })=>{
     s.connect(g)
 
     return new SoundLine({
+        name: "audioBufferLine",
         audioBufferNode: s,
         gainNode: g,
         loader: (layer,layerIndex)=>{

@@ -16,7 +16,7 @@ class SoundLine {
             return g
         })( context.createGain() )
         this.output = o.output || this.gainNode
-
+        this.name = o.name
         this.loader = typeof o.loader === "function" ? o.loader : null
         this.starter = typeof o.starter === "function" ? o.starter : null
 
