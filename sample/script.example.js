@@ -7,6 +7,13 @@ my_drums.add(
         active: n => n % 8 === 0
     })
 )
+my_drums.add(
+    new Filter({
+        key: ["hihat"],
+        active: n => n % 8 === 4
+    })
+)
+
 
 const my_guitar = new Part({
     sound: "nylon_guitar",
