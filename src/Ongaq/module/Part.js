@@ -14,7 +14,7 @@ const CONSTANTS = {
 const DEFAULT = {
     MEASURE: 1,
     NOTE_IN_MEASURE: 16,
-    PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 1.5
+    PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 2.0
 }
 
 const context = AudioCore.context
@@ -157,12 +157,23 @@ const Module = (()=>{
 
         observe(attachment){
 
-            /*
-              collect soundtrees for notepoints which come in certain range (PREFETCH_SECOND)
-            */
             let observed = []
-            while(this.active && this.nextNoteTime < context.currentTime + DEFAULT.PREFETCH_SECOND){
 
+            /*
+                keep nextNoteTime being always behind secondToPrefetch
+            */
+            let secondToPrefetch = context.currentTime + DEFAULT.PREFETCH_SECOND
+            while (
+                this.nextNoteTime - secondToPrefetch > 0 &&
+                this.nextNoteTime - secondToPrefetch < DEFAULT.PREFETCH_SECOND
+            ){
+                secondToPrefetch += DEFAULT.PREFETCH_SECOND
+            }
+
+            /*
+                collect soundtrees for notepoints which come in certain range
+                */
+            while (this.active && this.nextNoteTime < secondToPrefetch){
                 if(this.consumedNotes >= this.noteQuota) break
 
                 attachment = typeof attachment === "object" ? Object.assign(attachment,this.attachment) : this.attachment
@@ -210,8 +221,9 @@ const Module = (()=>{
 
             this.currentSoundTree = soundTreePool.allocate( this.currentGraph )
 
-            if(this.currentSoundTree.layer.length > 0) return this.currentSoundTree
-            return false
+            if(this.currentSoundTree.layer.length > 0){
+                return this.currentSoundTree
+            } return false
 
         }
 

@@ -11,6 +11,7 @@ const delayLine = ({ delayTime, targetIndex })=>{
     d.delayTime.value = delayTime
 
     return new SoundLine({
+        name: "delayLine",
         delayNode: d,
         loader: (layer,layerIndex)=>{
             if(layerIndex === 0 || !layer[layerIndex-1]) return false

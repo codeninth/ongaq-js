@@ -15,9 +15,6 @@ class SoundTree {
         this.layer = this.invokeAll()
     }
 
-    /*
-    map にしたがってインスタンスを配置
-  */
     invokeAll(){
 
         if(!Array.isArray(this.graph.layer)) return false
@@ -32,6 +29,7 @@ class SoundTree {
 
             if(soundLines.length > 0){
                 layer[i] = {
+                    name: soundLines[0].name,
                     loader: (totalLayer,totalLayerIndex)=>{
                         soundLines.forEach( line => line.loader && line.loader(totalLayer,totalLayerIndex) )
                     },
@@ -46,8 +44,8 @@ class SoundTree {
         layer = layer.filter(n=>n)
         for(let i = 0,l = layer.length; i<l; i++){
             layer[i].loader(layer,i)
-            // connect the output of the last layer to the output of SoundTree
-            if(i === l - 1 && layer[i].output) layer[i].output.connect(this.output)
+            // connect output of layers to that of SoundTree
+            if(layer[i].name === "audioBufferLine") layer[i].output.connect(this.output)
         }
 
         return layer
@@ -61,7 +59,7 @@ class SoundTree {
 
     start(){
         if(!this.startAble) return false
-        this.layer[0].starter()
+        this.layer.forEach(l=>l.starter())
         return this
     }
 

@@ -55,7 +55,7 @@ const pannerLine = (({ innerWidth, innerHeight })=>{
         }
         
         return new SoundLine({
-            pannerNode: p,
+            name: "pannerLine",
             loader: (layer,layerIndex)=>{
                 if(layerIndex === 0 || !layer[layerIndex-1]) return false
                 layer[layerIndex-1].output.connect(p)

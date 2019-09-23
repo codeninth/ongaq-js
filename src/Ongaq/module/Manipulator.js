@@ -113,21 +113,18 @@ const Module = (()=>{
       - 一定の間隔でobserveを実行していく
     */
         startScheduling(){
-
             if(this.isPlaying || this.loop.size === 0) return false
             this.isPlaying = true
 
             this.prepareCommonGain()
             this.loop.get(this.activeLoop).putTimerRight()
             this.scheduler = window.setInterval( this.routine, AudioCore.powerMode === "middle" ? 50 : 200 )
-
         }
 
         /*
       @pauseScheduling
     */
         pauseScheduling(){
-
             if(!this.isPlaying) return false
             if(this.scheduler){
                 window.clearInterval(this.scheduler)
@@ -135,7 +132,6 @@ const Module = (()=>{
             }
             this.isPlaying = false
             this.removeCommonGain()
-
         }
 
         /*
