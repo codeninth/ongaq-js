@@ -21,14 +21,15 @@ class Ongaq {
     }
 
     /*
-      @import
+      @add
       - jsonからtune/partオブジェクトを作成する
     */
-    import(tune,o = {}){
+    add(part,o = {}){
         return new Promise((resolve,reject)=>{
-            const p = manipulator.loadLoop(tune,o)
-            p.then(resolve)
-            p.catch(reject)
+          part.bpm = part.bpm || this.bpm
+          const p = manipulator.add(part)
+          p.then(resolve)
+          p.catch(reject)
         })
     }
 
@@ -53,7 +54,9 @@ class Ongaq {
     /*
       @set bpm
     */
-    set bpm(v){ manipulator.setBpm(v) }
+    set bpm(v){
+      manipulator.setBpm(v)
+    }
 
     /*
       @start

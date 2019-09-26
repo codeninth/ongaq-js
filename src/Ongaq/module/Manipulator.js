@@ -1,8 +1,10 @@
 import AudioCore from "./AudioCore"
-import Loop from "./Loop"
+import Part from "./Part"
 
 const DEFAULT_BPM = 100
 const DEFAULT_VOLUME = 0.5
+const DEFAULT_NOTESINMEASURE = 16
+const DEFAULT_MEASURE = 1
 const context = AudioCore.context
 
 const Module = (()=>{
@@ -10,8 +12,8 @@ const Module = (()=>{
     class Manipulator {
 
         constructor(){
-            this.loop = new Map()
-            this.activeLoop = ""
+            this.parts = new Map()
+            // this.activeLoop = ""
             this.previousVolume = DEFAULT_VOLUME
             this.volume = DEFAULT_VOLUME
             this.isPlaying = false
@@ -24,26 +26,28 @@ const Module = (()=>{
             
         }
 
-        set activeLoop(id){
-            if(typeof id !== "string") return false
-            this._activeLoop = id
-        }
+        // set activeLoop(id){
+        //     if(typeof id !== "string") return false
+        //     this._activeLoop = id
+        // }
 
-        get activeLoop(){ return this._activeLoop }
+        // get activeLoop(){ return this._activeLoop }
 
         /*
-      @loadLoop
-    */
-        loadLoop(loop){
+            @add
+            */
+        add(part){
 
-            loop.bpm = loop.bpm || DEFAULT_BPM
+            part.bpm = part.bpm || DEFAULT_BPM
+            part.notesInMeasure = part.notesInMeasure || DEFAULT_NOTESINMEASURE
+            part.measure = part.measure || DEFAULT_MEASURE
 
             return new Promise((resolve,reject)=>{
-                const l = new Loop(loop,{
+                const p = new Part(part,{
                     onLoad: ()=>{
-                        this.loop.set(l.id, l)
-                        this.activeLoop = this.activeLoop || l.id
-                        resolve(l)
+                        this.parts.set(p.id, p)
+                        // this.activeLoop = this.activeLoop || l.id
+                        resolve(p)
                     },
                     onError: err=>{
                         reject(err)
@@ -104,26 +108,39 @@ const Module = (()=>{
     */
         setBpm(v){
             if(typeof v !== "number" || v < 60 || v > 180) return false
-            this.loop.forEach(t=>{ t.bpm = v })
+            this.parts.forEach(p=>{ p.bpm = v })
             return false
         }
 
         /*
-      @startScheduling
-      - 一定の間隔でobserveを実行していく
-    */
+            @startScheduling
+            - 一定の間隔でobserveを実行していく
+            */
         startScheduling(){
-            if(this.isPlaying || this.loop.size === 0) return false
+            if(this.isPlaying || this.parts.size === 0) return false
             this.isPlaying = true
 
             this.prepareCommonGain()
-            this.loop.get(this.activeLoop).putTimerRight()
+            this.parts.forEach(p=>{
+                p.putTimerRight(context.currentTime)
+            })
+
+            let list = []
+            let limitAge = null // TODO
+            /*
+              set noteQuota of every part following to the longest part of this loop.
+            */
+            this.parts.forEach(p => list.push(p.measure))
+            let cap = limitAge ? Math.max(...list) * limitAge : Infinity
+            this.parts.forEach(p => { p.setQuota(cap) })
+
+            // this.loop.get(this.activeLoop).putTimerRight()
             this.scheduler = window.setInterval( this.routine, AudioCore.powerMode === "middle" ? 50 : 200 )
         }
 
         /*
-      @pauseScheduling
-    */
+            @pauseScheduling
+            */
         pauseScheduling(){
             if(!this.isPlaying) return false
             if(this.scheduler){
@@ -135,43 +152,42 @@ const Module = (()=>{
         }
 
         /*
-      @routine
-      - 各loopに対してobserveを行う
-      - 次のageの開始時間（=nextZeroTime）が返ってきたら保持する
-    */
+            @routine
+            - 各loopに対してobserveを行う
+            - 次のageの開始時間（=nextZeroTime）が返ってきたら保持する
+            */
         routine(){
-            let plan = this.loop.get(this.activeLoop).observe()
-            if(Array.isArray(plan.soundTree)){
-                plan.soundTree.forEach(tree=>{
-                    if(tree.layer && tree.layer.length > 0) this.connect(tree)
+            let collected = []
+            let _soundTree
+            this.parts.forEach(p=>{
+                _soundTree = p.observe()
+                if(_soundTree) _soundTree = _soundTree.filter(i=>i)
+                if(_soundTree.length > 0) collected = collected.concat( _soundTree )
+            })
+            if(collected.length > 0){
+                collected.forEach(i=>{
+                    if(i.layer && i.layer.length > 0) this.connect(i)
                 })
             }
-            this.nextZeroTime = plan.nextZeroTime || this.nextZeroTime
+            // TODO
+            // this.nextZeroTime = plan.nextZeroTime || this.nextZeroTime
         }
 
 
         /*
-      @switch
-      - 現在のactiveLoopをreset
-        -> quotaを再設定、ageを0に
-      - 新しいidでactiveLoopを設定
-      - nextZeroTimeを次のloopの1拍目にする
-    */
+            @switch
+            - 現在のactiveLoopをreset
+                -> quotaを再設定、ageを0に
+            - 新しいidでactiveLoopを設定
+            - nextZeroTimeを次のloopの1拍目にする
+            */
         switch({ id, limitAge }){
 
             /*
-        idが不正, loopが読み込まれていない場合はreject
-      */
-            if(
-                !id ||
-                !(this.loop instanceof Map) ||
-                !this.loop.has(id)
-            ) return false
-
-            /*
-        idが変わらない場合処理は必要ない
-      */
-            if(id === this.activeLoop) return true
+                idが変わらない場合処理は必要ない
+            */
+            return true
+            // if(id === this.activeLoop) return true
 
             if(this.activeLoop){
                 let activeLoop = this.loop.get(this.activeLoop)
@@ -193,16 +209,16 @@ const Module = (()=>{
         }
 
         /*
-      @find
-      次のような形でLoop, Partオブジェクトを取得する
+            @find
+            次のような形でLoop, Partオブジェクトを取得する
 
-      {
-        resource: "part",
-        data: {
-          id: "guitar_part"
-        }
-      }
-    */
+            {
+                resource: "part",
+                data: {
+                id: "guitar_part"
+                }
+            }
+            */
         find({ resource, data }){
 
             const keys = ["id","tag"]

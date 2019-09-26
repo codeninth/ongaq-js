@@ -5,6 +5,8 @@ import Manipulator from "./Manipulator"
 import Filter from "../../Staff/Filter"
 import soundTreePool from "./pool.soundtree"
 import graphPool from "./pool.graph"
+import BufferYard from "./BufferYard"
+
 
 const CONSTANTS = {
     BPM_MIN: 60,
@@ -19,26 +21,26 @@ const DEFAULT = {
 
 const context = AudioCore.context
 
-const touchFilters = [
-  new Filter({
-    type: "note",
-    length: 16,
-    volume: 50
-  })
-]
-let _touchGraph, _touchSoundTree
+// const touchFilters = [
+//   new Filter({
+//     type: "note",
+//     length: 16,
+//     volume: 50
+//   })
+// ]
+// let _touchGraph, _touchSoundTree
 
 const Module = (()=>{
 
     class Part {
 
-        constructor(props){
+        constructor(props,handler){
             this.sound = props.sound
             this.id = props.id || Helper.getUUID()
             this.tag = Array.isArray(props.tag) ? props.tag : []
             this.bpm = props.bpm
-            this.measure = props.measure || DEFAULT.MEASURE
-            this.notesInMeasure = props.notesInMeasure || DEFAULT.NOTE_IN_MEASURE
+            this.measure = props.measure
+            this.notesInMeasure = props.notesInMeasure
             this.currentNoteIndex = 0
 
             /*
@@ -64,16 +66,16 @@ const Module = (()=>{
             }
             this.generator = this.generator.bind(this)
 
-            this.touchGenerator = graph => {
-                return touchFilters.reduce(( prevGraph, newFilter ) => {
-                    if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
-                        return prevGraph[ newFilter.type ]( newFilter.params )
-                    } else {
-                        return prevGraph
-                    }
-                }, graph )
-            }
-            this.touchGenerator = this.touchGenerator.bind(this)
+            // this.touchGenerator = graph => {
+            //     return touchFilters.reduce(( prevGraph, newFilter ) => {
+            //         if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
+            //             return prevGraph[ newFilter.type ]( newFilter.params )
+            //         } else {
+            //             return prevGraph
+            //         }
+            //     }, graph )
+            // }
+            // this.touchGenerator = this.touchGenerator.bind(this)
 
             /*
               @nextNoteTime
@@ -107,34 +109,40 @@ const Module = (()=>{
             */
             this.attachment = {}
 
-            this.active = true
+            this.active = false
             this.mute = !!props.mute
 
             this.putTimerRight()
 
             this.observe = this.observe.bind(this)
-
-        }
-
-        touch(){
-
-            if(!this.touchGenerator) return false
-            _touchGraph = this.touchGenerator(
-                graphPool.allocate({
-                    sound: this.sound,
-                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
-                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
-                    noteTime: this.nextNoteTime,
-                    secondsPerNote: this.secondsPerNote,
-                    age: this.age
+            BufferYard.import([this.sound])
+                .then(() => {
+                    console.log(this.sound)
+                    this.active = true
+                    handler.onLoad && handler.onLoad()
                 })
-            )
-
-            _touchSoundTree = soundTreePool.allocate( g )
-
-            if(_touchSoundTree.layer.length > 0) Manipulator.connect(_touchSoundTree)
-
+                .catch((err) => { handler.onError && handler.onError(err) })
         }
+
+        // touch(){
+
+        //     if(!this.touchGenerator) return false
+        //     _touchGraph = this.touchGenerator(
+        //         graphPool.allocate({
+        //             sound: this.sound,
+        //             measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
+        //             noteIndex: this.currentNoteIndex % this.notesInMeasure,
+        //             noteTime: this.nextNoteTime,
+        //             secondsPerNote: this.secondsPerNote,
+        //             age: this.age
+        //         })
+        //     )
+
+        //     _touchSoundTree = soundTreePool.allocate( g )
+
+        //     if(_touchSoundTree.layer.length > 0) Manipulator.connect(_touchSoundTree)
+
+        // }
         // pause(){
         //     this.active = false
         // }
@@ -169,7 +177,7 @@ const Module = (()=>{
             ){
                 secondToPrefetch += DEFAULT.PREFETCH_SECOND
             }
-
+            console.log(this.nextNoteTime)
             /*
                 collect soundtrees for notepoints which come in certain range
                 */
