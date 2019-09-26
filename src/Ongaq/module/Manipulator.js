@@ -21,7 +21,7 @@ const Module = (()=>{
             if (AudioCore.powerMode === "low"){
                 window.addEventListener("blur", () => { this.pauseScheduling() })
             }
-            
+
         }
 
         set activeLoop(id){
@@ -32,23 +32,42 @@ const Module = (()=>{
         get activeLoop(){ return this._activeLoop }
 
         /*
-      @loadLoop
-    */
+          @loadLoop
+        */
         loadLoop(loop){
 
             loop.bpm = loop.bpm || DEFAULT_BPM
 
             return new Promise((resolve,reject)=>{
-                const l = new Loop(loop,{
-                    onLoad: ()=>{
-                        this.loop.set(l.id, l)
-                        this.activeLoop = this.activeLoop || l.id
-                        resolve(l)
-                    },
-                    onError: err=>{
-                        reject(err)
-                    }
-                })
+
+              const _resolve = (_private)=>{
+                console.log(_private)
+                const proxy = new Proxy(loop, handler)
+                this.activeLoop = this.activeLoop || _private.id
+                this.loop.set( _private.id, proxy )
+                console.log(proxy)
+                resolve(proxy)
+              }
+              const handler = (()=>{
+                  const _private = new Loop(loop,{
+                      onLoad: ()=>{ _resolve(_private) },
+                      onError: err=>{ reject(err) }
+                  })
+                  const publicKeys = Object.keys(loop)
+                  return {
+                      get: (_public, prop)=>{
+                        // console.log(typeof _private[prop] === "function", prop.indexOf("_") === 0)
+                        return _private[prop]
+                      },
+                      set: (_public, prop, value)=>{
+                        // if( prop.indexOf("_") === 0 ) _private[prop] = value
+                        // else _public[prop] = value
+                        console.log(prop,value)
+                        _private[prop] = value
+                      }
+                  }
+              })()
+
             })
         }
 
