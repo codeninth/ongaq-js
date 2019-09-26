@@ -54,10 +54,9 @@ class BufferYard {
                     .set("Content-Type", "application/json")
                     .use(nocache)
                     .then(res => {
-                        let result, data
-                        result = res.body.sounds[0]
+                        let result = res.body.sounds[0]
                         if (!result || result.status !== "OK") return reject()
-                        data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
+                        let data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
 
                         let notes = Object.keys(data.note)
                         let thisSoundBuffers = new Map()
