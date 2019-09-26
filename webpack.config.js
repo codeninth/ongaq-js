@@ -11,7 +11,7 @@ const webpackConfig = {
     path: path.resolve('./')
   },
   plugins: [
-    new HardSourceWebpackPlugin()
+    // new HardSourceWebpackPlugin()
   ],
   mode: "production"
 };
