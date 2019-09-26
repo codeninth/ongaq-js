@@ -21,12 +21,12 @@ class Ongaq {
     }
 
     /*
-      @import
-      - jsonからtune/partオブジェクトを作成する
+      @add
+      - add Loop object to context
     */
-    import(tune,o = {}){
+    add(loop,o = {}){
         return new Promise((resolve,reject)=>{
-            const p = manipulator.loadLoop(tune,o)
+            const p = manipulator.loadLoop(loop,o)
             p.then(resolve)
             p.catch(reject)
         })
