@@ -1,8 +1,8 @@
 import AudioCore from "./AudioCore"
 import Loop from "./Loop"
+import Part from "./Part"
+import DEFAULT from "./default"
 
-const DEFAULT_BPM = 100
-const DEFAULT_VOLUME = 0.5
 const context = AudioCore.context
 
 const Module = (()=>{
@@ -11,9 +11,11 @@ const Module = (()=>{
 
         constructor(){
             this.loop = new Map()
-            this.activeLoop = ""
-            this.previousVolume = DEFAULT_VOLUME
-            this.volume = DEFAULT_VOLUME
+            this.loop.set("activeLoop",new Map())
+            this.activeLoop = "activeLoop"
+            // this.activeLoop = ""
+            this.previousVolume = DEFAULT.VOLUME
+            this.volume = DEFAULT.VOLUME
             this.isPlaying = false
             this.nextZeroTime = 0
             this.routine = this.routine.bind(this)
@@ -30,6 +32,31 @@ const Module = (()=>{
         }
 
         get activeLoop(){ return this._activeLoop }
+
+        /*
+          @createPart
+        */
+        createPart( _public = {}, option = {} ){
+
+          const _private = new Part( _public, option )
+          console.log(_private)
+          console.log(" ******* ")
+          const handler = {
+            set: (obj,prop,value)=>{
+              _private[prop] = value
+            },
+            get: (target,prop)=>{
+              console.log(prop)
+              console.log(_private[prop])
+              return _private[prop]
+            }
+          }
+
+          this.loop.get("activeLoop").set( _private.id, _private )
+          console.log(this.loop)
+          return new Proxy( _public, handler )
+
+        }
 
         /*
           @loadLoop

@@ -1,7 +1,8 @@
 import AudioCore from "./module/AudioCore"
+import Helper from "./module/Helper"
 import BufferYard from "./module/BufferYard"
 import manipulator from "./module/Manipulator"
-
+import DEFAULT from "./module/default"
 const context = AudioCore.context
 
 class Ongaq {
@@ -18,6 +19,15 @@ class Ongaq {
         this.volume = volume
         this.bpm = bpm
         return false
+    }
+
+    createPart(init){
+      return manipulator.createPart(init,{
+        id: Helper.getUUID(),
+        bpm: this.bpm || DEFAULT.BPM,
+        measure: DEFAULT.MEASURE,
+        notesInMeasure: DEFAULT.NOTES_IN_MEASURE
+      })
     }
 
     /*

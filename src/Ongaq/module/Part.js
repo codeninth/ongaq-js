@@ -1,5 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
+import BufferYard from "./BufferYard"
 import * as plugin from "../plugin/graph/index"
 import Manipulator from "./Manipulator"
 import Filter from "../../Staff/Filter"
@@ -12,69 +13,28 @@ const CONSTANTS = {
 }
 
 const DEFAULT = {
-    MEASURE: 1,
-    NOTE_IN_MEASURE: 16,
+    // MEASURE: 1,
+    // NOTE_IN_MEASURE: 16,
     PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 2.0
 }
 
 const context = AudioCore.context
 
-const touchFilters = [
-  new Filter({
-    type: "note",
-    length: 16,
-    volume: 50
-  })
-]
-let _touchGraph, _touchSoundTree
-
 const Module = (()=>{
 
     class Part {
 
-        constructor(props){
+        constructor(props = {}, option = {}){
             this.sound = props.sound
-            this.id = props.id || Helper.getUUID()
-            this.tag = Array.isArray(props.tag) ? props.tag : []
-            this.bpm = props.bpm
-            this.measure = props.measure || DEFAULT.MEASURE
-            this.notesInMeasure = props.notesInMeasure || DEFAULT.NOTE_IN_MEASURE
+            this.id = props.id || option.id
+            this.tag = Array.isArray(props.tag) ? props.tag : (Array.isArray(option.tag) ? option.tag : [])
+            this.bpm = props.bpm || option.bpm
+            this.measure = props.measure || option.measure
+            this.notesInMeasure = props.notesInMeasure || option.noteInMeasure
             this.currentNoteIndex = 0
 
-            /*
-            generate a function which receives & returns Graph object.
-            like this
-            ===================
-
-            graph => {
-                return graph
-                    .note({ ... })
-                    .arrpegio({ ... })
-                }
-            */
             this.filters = props.filters
-            this.generator = graph => {
-                return props.filters.reduce(( prevGraph, newFilter ) => {
-                    if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
-                        return prevGraph[ newFilter.type ]( newFilter.params )
-                    } else {
-                        return prevGraph
-                    }
-                }, graph )
-            }
-            this.generator = this.generator.bind(this)
-
-            this.touchGenerator = graph => {
-                return touchFilters.reduce(( prevGraph, newFilter ) => {
-                    if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
-                        return prevGraph[ newFilter.type ]( newFilter.params )
-                    } else {
-                        return prevGraph
-                    }
-                }, graph )
-            }
-            this.touchGenerator = this.touchGenerator.bind(this)
-
+            this.generator = this.getGenerator( this.filters )
             /*
               @nextNoteTime
               - time for next notepoint
@@ -114,30 +74,49 @@ const Module = (()=>{
 
             this.observe = this.observe.bind(this)
 
-        }
-
-        touch(){
-
-            if(!this.touchGenerator) return false
-            _touchGraph = this.touchGenerator(
-                graphPool.allocate({
-                    sound: this.sound,
-                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
-                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
-                    noteTime: this.nextNoteTime,
-                    secondsPerNote: this.secondsPerNote,
-                    age: this.age
-                })
-            )
-
-            _touchSoundTree = soundTreePool.allocate( g )
-
-            if(_touchSoundTree.layer.length > 0) Manipulator.connect(_touchSoundTree)
+            const result = BufferYard.import(this.sound)
+            console.log(result)
+            this.active = true
+            // BufferYard.import(this.sound)
+              // .then(()=>{
+              //   console.log(this)
+              //   this.active = true
+              //   option.onLoad && option.onLoad()
+              // })
+              // .catch((err)=>{ option.onError && option.onError(err) })
 
         }
-        // pause(){
-        //     this.active = false
-        // }
+
+        /*
+          generate a function which receives & returns Graph object.
+          like this
+          ===================
+
+          graph => {
+              return graph
+                  .note({ ... })
+                .arrpegio({ ... })
+            }
+        */
+        getGenerator(filters){
+          const generator = graph => {
+              return filters.reduce(( prevGraph, newFilter ) => {
+                  if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
+                      return prevGraph[ newFilter.type ]( newFilter.params )
+                  } else {
+                      return prevGraph
+                  }
+              }, graph )
+          }
+          return generator.bind(this)
+        }
+
+        add(filter){
+          console.log(this.filters)
+          console.log(filter)
+          this.filters.push(filter)
+          this.generator = this.getGenerator( this.filters )
+        }
 
         reset(){
             this.age = 0
