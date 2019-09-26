@@ -1,10 +1,7 @@
 import AudioCore from "./AudioCore"
 import Part from "./Part"
+import DEFAULTS from "./defaults"
 
-const DEFAULT_BPM = 100
-const DEFAULT_VOLUME = 0.5
-const DEFAULT_NOTESINMEASURE = 16
-const DEFAULT_MEASURE = 1
 const context = AudioCore.context
 
 const Module = (()=>{
@@ -13,9 +10,8 @@ const Module = (()=>{
 
         constructor(){
             this.parts = new Map()
-            // this.activeLoop = ""
-            this.previousVolume = DEFAULT_VOLUME
-            this.volume = DEFAULT_VOLUME
+            this.previousVolume = DEFAULTS.VOLUME
+            this.volume = DEFAULTS.VOLUME
             this.isPlaying = false
             this.nextZeroTime = 0
             this.routine = this.routine.bind(this)
@@ -26,27 +22,19 @@ const Module = (()=>{
             
         }
 
-        // set activeLoop(id){
-        //     if(typeof id !== "string") return false
-        //     this._activeLoop = id
-        // }
-
-        // get activeLoop(){ return this._activeLoop }
-
         /*
             @add
             */
         add(part){
 
-            part.bpm = part.bpm || DEFAULT_BPM
-            part.notesInMeasure = part.notesInMeasure || DEFAULT_NOTESINMEASURE
-            part.measure = part.measure || DEFAULT_MEASURE
+            part.bpm = part.bpm || DEFAULTS.BPM
+            part.notesInMeasure = part.notesInMeasure || DEFAULTS.NOTES_IN_MEASURE
+            part.measure = part.measure || DEFAULTS.MEASURE
 
             return new Promise((resolve,reject)=>{
                 const p = new Part(part,{
                     onLoad: ()=>{
                         this.parts.set(p.id, p)
-                        // this.activeLoop = this.activeLoop || l.id
                         resolve(p)
                     },
                     onError: err=>{
@@ -181,32 +169,32 @@ const Module = (()=>{
             - 新しいidでactiveLoopを設定
             - nextZeroTimeを次のloopの1拍目にする
             */
-        switch({ id, limitAge }){
+        // switch({ id, limitAge }){
 
-            /*
-                idが変わらない場合処理は必要ない
-            */
-            return true
-            // if(id === this.activeLoop) return true
+        //     /*
+        //         idが変わらない場合処理は必要ない
+        //     */
+        //     return true
+        //     // if(id === this.activeLoop) return true
 
-            if(this.activeLoop){
-                let activeLoop = this.loop.get(this.activeLoop)
-                activeLoop.reset()
-            }
+        //     if(this.activeLoop){
+        //         let activeLoop = this.loop.get(this.activeLoop)
+        //         activeLoop.reset()
+        //     }
 
-            this.activeLoop = id
+        //     this.activeLoop = id
 
-            window.setTimeout(()=>{
-                // ノイズを防ぐためタイムラグを設ける
-                this.loop.get(id).standBy({
-                    nextZeroTime: this.nextZeroTime,
-                    limitAge
-                })
-            },5)
+        //     window.setTimeout(()=>{
+        //         // ノイズを防ぐためタイムラグを設ける
+        //         this.loop.get(id).standBy({
+        //             nextZeroTime: this.nextZeroTime,
+        //             limitAge
+        //         })
+        //     },5)
 
-            return true
+        //     return true
 
-        }
+        // }
 
         /*
             @find

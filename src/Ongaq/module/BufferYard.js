@@ -44,30 +44,25 @@ const Module = (()=>{
 
     class BufferYard {
 
-        set({ api_key, offline, resource, sound_name_map }){
+        set({ api_key }){
             this.api_key = api_key
-            this.offline = offline === true
-            this.resource = resource || "/sounds/"
-            if(sound_name_map instanceof Map){
-                SOUND_NAME_MAP = sound_name_map
-            } else {
-                request.get(`${ENDPOINT}/soundnamemap/`)
+            
+            request
+                .get(`${ENDPOINT}/soundnamemap/`)
                 .then(result=>{
                     if (!result || result.body.statusCode !== 200){
                       throw new Error("Cannot download instrumental master data.")
-                      return false
                     }
                     SOUND_NAME_MAP = new Map(result.body.data)
                 })
                 .catch(()=>{
                   throw new Error("Cannot download instrumental master data.")
                 })
-            }
+            
         }
 
         get endpoint(){
-            if (this.offline === false) return `${ENDPOINT}${this.resource}`
-            else return `${this.resource}`
+            return `${ENDPOINT}/sounds/`
         }
 
         /*
@@ -85,32 +80,19 @@ const Module = (()=>{
 
                 return new Promise((resolve, reject) => {
 
-                    let thisRequest
-                    if(this.offline === false){
-                        thisRequest = request
-                            .get(this.endpoint)
-                            .query({
-                                sound: sound,
-                                api_key: this.api_key
-                            })
-                    } else {
-                        thisRequest = request
-                            .get(`${this.endpoint}${SOUND_NAME_MAP.get(sound) && SOUND_NAME_MAP.get(sound).id}.json`)
-                    }
-
-                    thisRequest
+                    request
+                        .get(this.endpoint)
+                        .query({
+                            sound: sound,
+                            api_key: this.api_key
+                        })
                         .set("Content-Type", "application/json")
                         .use(nocache)
                         .then(res => {
                             let result, data
-                            if(this.offline === false){
-                                result = res.body.sounds[0]
-                                if (!result || result.status !== "OK") return reject()
-                                data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
-                            } else {
-                                //  When offline, read JSON directly
-                                data = res.body
-                            }
+                            result = res.body.sounds[0]
+                            if (!result || result.status !== "OK") return reject()
+                            data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
 
                             let notes = Object.keys(data.note)
                             let thisSoundBuffers = new Map()

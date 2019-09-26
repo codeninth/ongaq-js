@@ -13,8 +13,8 @@ class Ongaq {
     /*
       @init
     */
-    init({ api_key, offline, resourcesPath, volume, bpm }){
-        BufferYard.set({ api_key, offline, resourcesPath })
+    init({ api_key, volume, bpm }){
+        BufferYard.set({ api_key })
         this.volume = volume
         this.bpm = bpm
         return false
@@ -37,11 +37,11 @@ class Ongaq {
       @switch
       - 次に再生するLoopを選択し、quotaを再設定する
     */
-    switch(o = {}){
-        return new Promise((resolve,reject)=>{
-            manipulator.switch(o) ? resolve() : reject()
-        })
-    }
+    // switch(o = {}){
+    //     return new Promise((resolve,reject)=>{
+    //         manipulator.switch(o) ? resolve() : reject()
+    //     })
+    // }
 
     /*
       @set volume
@@ -56,6 +56,10 @@ class Ongaq {
     */
     set bpm(v){
       manipulator.setBpm(v)
+      this._bpm = v
+    }
+    get bpm(){
+      return this._bpm
     }
 
     /*

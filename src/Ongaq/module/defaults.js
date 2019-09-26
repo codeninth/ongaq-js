@@ -1,6 +1,7 @@
 import AudioCore from "./AudioCore"
 
 const VALUES = {
+    BPM: 120,
     MIN_BPM: 60,
     MAX_BPM: 180,
     MEASURE: 1,
