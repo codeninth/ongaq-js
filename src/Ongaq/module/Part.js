@@ -84,7 +84,7 @@ const Module = (()=>{
             this.observe = this.observe.bind(this)
             BufferYard.import([this.sound])
                 .then(() => {
-                    console.log(this.sound)
+                    console.log(this)
                     this.active = true
                     handler.onLoad && handler.onLoad()
                 })
@@ -226,7 +226,7 @@ const Module = (()=>{
         }
         get chapter(){ return this._chapter }
 
-        get secondsPerNote(){ return 60 / this.bpm / 8 }
+        get secondsPerNote(){ return 60 / this._bpm / 8 }
 
         get absNoteIndex(){ return this.currentNoteIndex + this.age * this.measure * this.notesInMeasure }
 
