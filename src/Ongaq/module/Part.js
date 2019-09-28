@@ -18,8 +18,8 @@ const Module = (()=>{
             this.tag = Array.isArray(props.tag) ? props.tag : []
             this.bpm = props.bpm
             this.measure = props.measure
-            this.notesInMeasure = props.notesInMeasure
-            this.currentBeatIndex = 0
+            this._beatsInMeasure = props._beatsInMeasure
+            this._currentBeatIndex = 0
 
             /*
             generate a function which receives & returns Graph object.
@@ -45,11 +45,11 @@ const Module = (()=>{
             this.generator = this.generator.bind(this)
 
             /*
-              @nextNoteTime
+              @_nextBeatTime
               - time for next notepoint
               - updated with AudioContext.currentTime
             */
-            this.nextNoteTime = 0
+            this._nextBeatTime = 0
 
             /*
               @age
@@ -58,16 +58,16 @@ const Module = (()=>{
             this.age = 0
 
             /*
-              @noteQuota
+              @_beatQuota
               - how many beats to observe before changing to not active
             */
-            this.noteQuota = 0
+            this._beatQuota = 0
 
             /*
-              @consumedBeats
+              @_consumedBeats
               - observed beats
             */
-            this.consumedBeats = 0
+            this._consumedBeats = 0
 
             /*
               @attachment
@@ -92,17 +92,17 @@ const Module = (()=>{
 
         reset(){
             this.age = 0
-            this.currentBeatIndex = 0
-            this.consumedBeats = 0
-            this.noteQuota = 0
+            this._currentBeatIndex = 0
+            this._consumedBeats = 0
+            this._beatQuota = 0
         }
 
-        putTimerRight(nextZeroTime){
-            this.nextNoteTime = nextZeroTime || context.currentTime
+        putTimerRight(_nextZeroTime){
+            this._nextBeatTime = _nextZeroTime || context.currentTime
         }
 
         setQuota(totalCap){
-            this.noteQuota = totalCap * this.notesInMeasure
+            this._beatQuota = totalCap * this._beatsInMeasure
             this.active = true
         }
 
@@ -111,35 +111,35 @@ const Module = (()=>{
             let observed = []
 
             /*
-                keep nextNoteTime being always behind secondToPrefetch
+                keep _nextBeatTime being always behind secondToPrefetch
             */
             let secondToPrefetch = context.currentTime + DEFAULTS.PREFETCH_SECOND
             while (
-                this.nextNoteTime - secondToPrefetch > 0 &&
-                this.nextNoteTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
+                this._nextBeatTime - secondToPrefetch > 0 &&
+                this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
             ){
                 secondToPrefetch += DEFAULTS.PREFETCH_SECOND
             }
             /*
                 collect soundtrees for notepoints which come in certain range
                 */
-            while (this.active && this.nextNoteTime < secondToPrefetch){
-                if(this.consumedBeats >= this.noteQuota) break
+            while (this.active && this._nextBeatTime < secondToPrefetch){
+                if(this._consumedBeats >= this._beatQuota) break
 
                 attachment = typeof attachment === "object" ? Object.assign(attachment,this.attachment) : this.attachment
                 let thisMomentObserved = !this.mute && this.capture(attachment)
                 if(thisMomentObserved && thisMomentObserved.layer.length > 0) observed = observed.concat(thisMomentObserved)
 
-                this.nextNoteTime += this.secondsPerNote
+                this._nextBeatTime += this.secondsPerNote
 
-                if(this.currentBeatIndex + 1 >= this.measure * this.notesInMeasure){
-                    this.currentBeatIndex = 0
+                if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
+                    this._currentBeatIndex = 0
                     this.age++
                 } else {
-                    this.currentBeatIndex++
+                    this._currentBeatIndex++
                 }
 
-                if(++this.consumedBeats >= this.noteQuota){
+                if(++this._consumedBeats >= this._beatQuota){
                     this.active = false
                     break
                 }
@@ -160,9 +160,9 @@ const Module = (()=>{
             this.currentGraph = this.generator(
                 graphPool.allocate({
                     sound: this.sound,
-                    measure: Math.floor( this.currentBeatIndex / this.notesInMeasure ),
-                    noteIndex: this.currentBeatIndex % this.notesInMeasure,
-                    noteTime: this.nextNoteTime,
+                    measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
+                    noteIndex: this._currentBeatIndex % this._beatsInMeasure,
+                    noteTime: this._nextBeatTime,
                     secondsPerNote: this.secondsPerNote,
                     age: this.age,
                     attachment: attachment

@@ -18,7 +18,7 @@ class Ongaq {
     init({ api_key, volume, bpm }){
       this.parts = new Map()
       this.isPlaying = false
-      this.nextZeroTime = 0
+      this._nextZeroTime = 0
       this.routine = this.routine.bind(this)
       this.volume = volume || DEFAULTS.VOLUME
       this.previousVolume = this.volume
@@ -36,7 +36,7 @@ class Ongaq {
     add(part){
         return new Promise((resolve,reject)=>{
           part.bpm = part.bpm || this.bpm
-          part.notesInMeasure = part.notesInMeasure || DEFAULTS.NOTES_IN_MEASURE
+          part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
           part.measure = part.measure || DEFAULTS.MEASURE
 
           const p = new Part(part, {
@@ -103,7 +103,7 @@ class Ongaq {
       let list = []
       let limitAge = null // TODO
       /*
-        set noteQuota of every part following to the longest part
+        set _beatQuota of every part following to the longest part
       */
       this.parts.forEach(p => list.push(p.measure))
       let cap = limitAge ? Math.max(...list) * limitAge : Infinity
@@ -128,7 +128,7 @@ class Ongaq {
     /*
       @routine
       - 各loopに対してobserveを行う
-      - 次のageの開始時間（=nextZeroTime）が返ってきたら保持する
+      - 次のageの開始時間（=_nextZeroTime）が返ってきたら保持する
       */
     routine() {
       let collected = []
@@ -144,7 +144,7 @@ class Ongaq {
         })
       }
       // TODO
-      // this.nextZeroTime = plan.nextZeroTime || this.nextZeroTime
+      // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
     }
 
     /*

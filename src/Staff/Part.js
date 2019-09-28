@@ -9,7 +9,7 @@ class Part {
         this.sound = data.sound
         this.tag = data.tag
         this.measure = data.measure
-        this.notesInMeasure = data.notesInMeasure
+        this._beatsInMeasure = data._beatsInMeasure
         this._filters = []
         this.mute = !!data.mute
     }
