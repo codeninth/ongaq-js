@@ -103,7 +103,7 @@ class Ongaq {
       let list = []
       let limitAge = null // TODO
       /*
-        set noteQuota of every part following to the longest part of this loop.
+        set noteQuota of every part following to the longest part
       */
       this.parts.forEach(p => list.push(p.measure))
       let cap = limitAge ? Math.max(...list) * limitAge : Infinity

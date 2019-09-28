@@ -6,6 +6,5 @@ export default {
     Ongaq,
     ONGAQ_CONSTANTS,
     Chord: Staff.Chord,
-    Loop: Staff.Loop,
     Part: Staff.Part
 }

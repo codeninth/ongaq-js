@@ -19,7 +19,7 @@ const Module = (()=>{
             this.bpm = props.bpm
             this.measure = props.measure
             this.notesInMeasure = props.notesInMeasure
-            this.currentNoteIndex = 0
+            this.currentBeatIndex = 0
 
             /*
             generate a function which receives & returns Graph object.
@@ -53,22 +53,21 @@ const Module = (()=>{
 
             /*
               @age
-              - get added 1 when all notepoints are observed
+              - get added 1 when all beats are observed
             */
             this.age = 0
 
             /*
               @noteQuota
-              - how many notepoints to observe before changing to not active
-              - noteQuota is assigned when loop is imported
+              - how many beats to observe before changing to not active
             */
             this.noteQuota = 0
 
             /*
-              @consumedNotes
-              - observed notepoints
+              @consumedBeats
+              - observed beats
             */
-            this.consumedNotes = 0
+            this.consumedBeats = 0
 
             /*
               @attachment
@@ -93,8 +92,8 @@ const Module = (()=>{
 
         reset(){
             this.age = 0
-            this.currentNoteIndex = 0
-            this.consumedNotes = 0
+            this.currentBeatIndex = 0
+            this.consumedBeats = 0
             this.noteQuota = 0
         }
 
@@ -102,8 +101,8 @@ const Module = (()=>{
             this.nextNoteTime = nextZeroTime || context.currentTime
         }
 
-        setQuota(loopQuota){
-            this.noteQuota = loopQuota * this.notesInMeasure
+        setQuota(totalCap){
+            this.noteQuota = totalCap * this.notesInMeasure
             this.active = true
         }
 
@@ -125,7 +124,7 @@ const Module = (()=>{
                 collect soundtrees for notepoints which come in certain range
                 */
             while (this.active && this.nextNoteTime < secondToPrefetch){
-                if(this.consumedNotes >= this.noteQuota) break
+                if(this.consumedBeats >= this.noteQuota) break
 
                 attachment = typeof attachment === "object" ? Object.assign(attachment,this.attachment) : this.attachment
                 let thisMomentObserved = !this.mute && this.capture(attachment)
@@ -133,14 +132,14 @@ const Module = (()=>{
 
                 this.nextNoteTime += this.secondsPerNote
 
-                if(this.currentNoteIndex + 1 >= this.measure * this.notesInMeasure){
-                    this.currentNoteIndex = 0
+                if(this.currentBeatIndex + 1 >= this.measure * this.notesInMeasure){
+                    this.currentBeatIndex = 0
                     this.age++
                 } else {
-                    this.currentNoteIndex++
+                    this.currentBeatIndex++
                 }
 
-                if(++this.consumedNotes >= this.noteQuota){
+                if(++this.consumedBeats >= this.noteQuota){
                     this.active = false
                     break
                 }
@@ -161,8 +160,8 @@ const Module = (()=>{
             this.currentGraph = this.generator(
                 graphPool.allocate({
                     sound: this.sound,
-                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
-                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
+                    measure: Math.floor( this.currentBeatIndex / this.notesInMeasure ),
+                    noteIndex: this.currentBeatIndex % this.notesInMeasure,
                     noteTime: this.nextNoteTime,
                     secondsPerNote: this.secondsPerNote,
                     age: this.age,
@@ -220,15 +219,7 @@ const Module = (()=>{
         }
         get bpm(){ return this._bpm }
 
-        set chapter(raw){
-            if(!Array.isArray(raw)) return false
-            this._chapter = raw
-        }
-        get chapter(){ return this._chapter }
-
         get secondsPerNote(){ return 60 / this._bpm / 8 }
-
-        get absNoteIndex(){ return this.currentNoteIndex + this.age * this.measure * this.notesInMeasure }
 
     }
 
