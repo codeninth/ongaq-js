@@ -1,8 +1,11 @@
 import AudioCore from "./module/AudioCore"
-import Part from "./module/Part"
 import BufferYard from "./module/BufferYard"
 import Helper from "./module/Helper"
 import DEFAULTS from "./module/defaults"
+import DRUM_NOTE from "../Constants/DRUM_NOTE"
+import ROOT from "../Constants/ROOT"
+import SCHEME from "../Constants/SCHEME"
+import VERSION from "../Constants/VERSION"
 
 const context = AudioCore.context
 
@@ -210,6 +213,16 @@ class Ongaq {
         volume: this.volume
       }
     }
+
+    get constants(){
+      return {
+        DRUM_NOTE,
+        ROOT,
+        SCHEME
+      }
+    }
+
+    get version(){ return VERSION }
 
     set volume(v){
       if (typeof v !== "number" || v < 0 || v > 100) return false
