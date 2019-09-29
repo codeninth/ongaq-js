@@ -18,7 +18,6 @@ class Ongaq {
     init({ api_key, volume, bpm, onReady }){
       this.parts = new Map()
       this.isPlaying = false
-      this._nextZeroTime = 0
       this.routine = this.routine.bind(this)
       this.volume = volume || DEFAULTS.VOLUME
       this.previousVolume = this.volume
@@ -27,6 +26,7 @@ class Ongaq {
       if (AudioCore.powerMode === "low") {
         window.addEventListener("blur", () => { this.pauseScheduling() }) 
       }
+      this._nextZeroTime = 0
       BufferYard.set({ api_key })
     }
 
@@ -53,26 +53,7 @@ class Ongaq {
               })
               if (isAllPartsLoaded) this.onReady && this.onReady()
           }).catch(reject)
-          // const p = new Part(part, {
-          //   onLoad: () => {
-          //     this.parts.set(p.id, p)
-          //     let isAllPartsLoaded = true
-          //     /*
-          //       when all parts got loaded own sound,
-          //       fire this.onReady
-          //     */
-          //     if(this.parts.size === 0) isAllPartsLoaded = false
-          //     this.parts.forEach(p=>{
-          //       console.log(p._isLoading)
-          //       if(!p._isLoading) isAllPartsLoaded = false
-          //     })
-          //     if (isAllPartsLoaded) this.onReady && this.onReady()
-          //     resolve(p)
-          //   },
-          //   onError: err => {
-          //     reject(err)
-          //   }
-          // })
+
         })
     }
 

@@ -33,7 +33,7 @@ class Part {
             @age
             - get added 1 when all beats are observed
         */
-        this.age = 0
+        this._age = 0
 
         /*
             @_beatQuota
@@ -86,7 +86,6 @@ class Part {
             }, graph)
         }
         this._generator = this._generator.bind(this)
-        console.log(this)
     }
 
     loadSound(){
@@ -107,7 +106,7 @@ class Part {
     }
 
     reset(){
-        this.age = 0
+        this._age = 0
         this._currentBeatIndex = 0
         this._consumedBeats = 0
         this._beatQuota = 0
@@ -150,7 +149,7 @@ class Part {
 
             if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
                 this._currentBeatIndex = 0
-                this.age++
+                this._age++
             } else {
                 this._currentBeatIndex++
             }
@@ -179,7 +178,7 @@ class Part {
                 noteIndex: this._currentBeatIndex % this._beatsInMeasure,
                 noteTime: this._nextBeatTime,
                 _secondsPerBeat: this._secondsPerBeat,
-                age: this.age,
+                age: this._age,
                 attachment: attachment
             })
         )
