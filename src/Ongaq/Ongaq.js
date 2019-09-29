@@ -15,7 +15,7 @@ class Ongaq {
     /*
       @init
     */
-    init({ api_key, volume, bpm }){
+    init({ api_key, volume, bpm, onReady }){
       this.parts = new Map()
       this.isPlaying = false
       this._nextZeroTime = 0
@@ -23,6 +23,7 @@ class Ongaq {
       this.volume = volume || DEFAULTS.VOLUME
       this.previousVolume = this.volume
       this.bpm = bpm || DEFAULTS.BPM
+      this.onReady = typeof onReady === "function" && onReady 
       if (AudioCore.powerMode === "low") {
         window.addEventListener("blur", () => { this.pauseScheduling() }) 
       }
@@ -38,16 +39,40 @@ class Ongaq {
           part.bpm = part.bpm || this.bpm
           part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
           part.measure = part.measure || DEFAULTS.MEASURE
-
-          const p = new Part(part, {
-            onLoad: () => {
-              this.parts.set(p.id, p)
-              resolve(p)
-            },
-            onError: err => {
-              reject(err)
-            }
-          })
+          this.parts.set(part.id, part)
+          
+          if(typeof part.loadSound !== "function") return reject()
+          part.loadSound().then(()=>{
+            let isAllPartsLoaded = true
+              /*
+                when all parts got loaded own sound,
+                fire this.onReady
+              */
+              this.parts.forEach(p=>{
+                if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
+              })
+              if (isAllPartsLoaded) this.onReady && this.onReady()
+          }).catch(reject)
+          // const p = new Part(part, {
+          //   onLoad: () => {
+          //     this.parts.set(p.id, p)
+          //     let isAllPartsLoaded = true
+          //     /*
+          //       when all parts got loaded own sound,
+          //       fire this.onReady
+          //     */
+          //     if(this.parts.size === 0) isAllPartsLoaded = false
+          //     this.parts.forEach(p=>{
+          //       console.log(p._isLoading)
+          //       if(!p._isLoading) isAllPartsLoaded = false
+          //     })
+          //     if (isAllPartsLoaded) this.onReady && this.onReady()
+          //     resolve(p)
+          //   },
+          //   onError: err => {
+          //     reject(err)
+          //   }
+          // })
         })
     }
 
@@ -194,12 +219,15 @@ class Ongaq {
       @get params
     */
     get params(){
-        return {
-            isPlaying: this.isPlaying,
-            originTime: AudioCore.originTime,
-            currentTime: context.currentTime,
-            volume: this.volume
-        }
+      let loading = false
+      this.parts.forEach(p=>{ if(p._isLoading) loading = true })
+      return {
+        loading: loading,
+        isPlaying: this.isPlaying,
+        originTime: AudioCore.originTime,
+        currentTime: context.currentTime,
+        volume: this.volume
+      }
     }
 
     set volume(v){

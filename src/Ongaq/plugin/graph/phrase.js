@@ -42,12 +42,12 @@ const plugin = (()=>{
                     data: {
                         buffer: {
                             sound: graph.sound,
-                            length: pair[1] * graph.secondsPerNote,
+                            length: pair[1] * graph._secondsPerBeat,
                             key: k,
-                            startTime: graph.noteTime + distance * graph.secondsPerNote
+                            startTime: graph.noteTime + distance * graph._secondsPerBeat
                         },
                         volume: pair[2] >= 0 && pair[2] <= 1 ? pair[2] : ( o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null),
-                        secondsPerNote: graph.secondsPerNote
+                        _secondsPerBeat: graph._secondsPerBeat
                     }
                 })
             })

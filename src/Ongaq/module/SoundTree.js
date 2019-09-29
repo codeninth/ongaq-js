@@ -11,7 +11,7 @@ class SoundTree {
     init(graph){
         this.graph = graph
         this.output = context.createGain()
-        this.secondsPerNote = graph.secondsPerNote
+        this._secondsPerBeat = graph._secondsPerBeat
         this.layer = this.invokeAll()
     }
 

@@ -25,7 +25,7 @@ const plugin = (()=>{
             newLayer.push({
                 invoker: "delayLine",
                 data: {
-                    delayTime: (graph.secondsPerNote * (i <= 3 ? i : 3) * step),
+                    delayTime: (graph._secondsPerBeat * (i <= 3 ? i : 3) * step),
                     targetIndex: i
                 }
             })

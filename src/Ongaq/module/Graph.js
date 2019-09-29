@@ -14,7 +14,7 @@ class Graph {
         this.measure = option.measure
         this.noteIndex = option.noteIndex
         this.noteTime = option.noteTime
-        this.secondsPerNote = option.secondsPerNote
+        this._secondsPerBeat = option._secondsPerBeat
         this.age = option.age
         this.layer = []
     }

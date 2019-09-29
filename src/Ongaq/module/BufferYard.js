@@ -15,7 +15,6 @@ class BufferYard {
 
     set({ api_key }) {
         this.api_key = api_key
-
         request
             .get(`${ENDPOINT}/soundnamemap/`)
             .then(result => {
@@ -27,20 +26,17 @@ class BufferYard {
             .catch(() => {
                 throw new Error("Cannot download instrumental master data.")
             })
-
     }
 
     /*
       - load soundjsons with SoundFile API
       - restore mp3: string -> typedArray -> .mp3
     */
-    import(sounds) {
+    import(_sound) {
 
-        if (!Array.isArray(sounds)) return false
-
-        const soundsToLoad = sounds.filter(sound => !buffers.get(sound))
-        if (soundsToLoad.length === 0) return new Promise(r => r())
-
+        // this sound is already loaded
+        if (buffers.get(_sound)) return new Promise(r => r()) 
+        let soundsToLoad = [_sound]
         let promises = soundsToLoad.map((sound) => {
 
             return new Promise((resolve, reject) => {
@@ -54,6 +50,7 @@ class BufferYard {
                     .set("Content-Type", "application/json")
                     .use(nocache)
                     .then(res => {
+
                         let result = res.body.sounds[0]
                         if (!result || result.status !== "OK") return reject()
                         let data = typeof result.data === "string" ? JSON.parse(result.data) : result.data
@@ -61,28 +58,30 @@ class BufferYard {
                         let notes = Object.keys(data.note)
                         let thisSoundBuffers = new Map()
                         let decodedBufferLength = 0
+
                         notes.forEach(key => {
 
                             let thisNote = data.note[key]
 
-                            AudioCore.toAudioBuffer({
+                            AudioCore
+                            .toAudioBuffer({
                                 src: thisNote.src,
                                 length: thisNote.length
                             })
-                                .then(audioBuffer => {
-                                    thisSoundBuffers.set(key, audioBuffer)
-                                    if (++decodedBufferLength === notes.length) {
-                                        notes = null
-                                        buffers.set(sound, thisSoundBuffers)
-                                        resolve()
-                                    }
+                            .then(audioBuffer => {
+                                thisSoundBuffers.set(key, audioBuffer)
+                                if (++decodedBufferLength === notes.length) {
+                                    notes = null
+                                    buffers.set(sound, thisSoundBuffers)
+                                    resolve()
+                                }
+                            })
+                            .catch(() => {
+                                soundsToLoad.forEach(sound => {
+                                    if (buffers.has(sound)) buffers.delete(sound)
                                 })
-                                .catch(() => {
-                                    soundsToLoad.forEach(sound => {
-                                        if (buffers.has(sound)) buffers.delete(sound)
-                                    })
-                                    reject()
-                                })
+                                reject()
+                            })
                         })
 
 
