@@ -175,8 +175,8 @@ class Part {
             graphPool.allocate({
                 sound: this.sound,
                 measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
-                noteIndex: this._currentBeatIndex % this._beatsInMeasure,
-                noteTime: this._nextBeatTime,
+                beatIndex: this._currentBeatIndex % this._beatsInMeasure,
+                beatTime: this._nextBeatTime,
                 _secondsPerBeat: this._secondsPerBeat,
                 age: this._age,
                 attachment: attachment

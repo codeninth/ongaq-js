@@ -12,8 +12,8 @@ class Graph {
     constructor(option) {
         this.sound = option.sound
         this.measure = option.measure
-        this.noteIndex = option.noteIndex
-        this.noteTime = option.noteTime
+        this.beatIndex = option.beatIndex
+        this.beatTime = option.beatTime
         this._secondsPerBeat = option._secondsPerBeat
         this.age = option.age
         this.layer = []
@@ -27,9 +27,9 @@ class Graph {
 
     pass(active) {
         switch (typeof active) {
-            case "function": return active(this.noteIndex, this.measure)
-            case "object": return Array.isArray(active) && active.includes(this.noteIndex)
-            case "number": return active === this.noteIndex
+            case "function": return active(this.beatIndex, this.measure)
+            case "object": return Array.isArray(active) && active.includes(this.beatIndex)
+            case "number": return active === this.beatIndex
             default: return true
         }
     }

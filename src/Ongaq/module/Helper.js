@@ -61,11 +61,11 @@ const Helper =  {
         型がさまざまな可能性のある引数から
         ["C2#","A2"] のような配列か false を返す。
     */
-    toKeyList: (raw,noteIndex,measure)=>{
+    toKeyList: (raw,beatIndex,measure)=>{
         if(!raw) return false
         else if(Array.isArray(raw)) return raw
         else if(Array.isArray(raw.list)) return raw.list
-        else if (typeof raw === "function") return noteIndex >= 0 && raw(noteIndex, measure)
+        else if (typeof raw === "function") return beatIndex >= 0 && raw(beatIndex, measure)
         else if(typeof raw === "string") return [raw]
         else return false
     },
@@ -78,12 +78,12 @@ const Helper =  {
         型がさまざまな可能性のある引数から
         何拍分かを表す相対値を整数で返す。
     */
-    toLength: (raw,noteIndex,measure)=>{
+    toLength: (raw,beatIndex,measure)=>{
         switch(typeof raw){
         case "number":
             return raw
         case "function":
-            return noteIndex >= 0 && raw(noteIndex,measure)
+            return beatIndex >= 0 && raw(beatIndex,measure)
         default:
             return false
         }

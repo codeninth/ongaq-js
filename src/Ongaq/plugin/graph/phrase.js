@@ -32,8 +32,8 @@ const plugin = (()=>{
             /*
                 get key,length as same as "note" plugin
             */
-            _key = Helper.toKeyList(pair[0], graph.noteIndex, graph.measure )
-            _length = Helper.toLength(pair[1], graph.noteIndex, graph.measure )
+            _key = Helper.toKeyList(pair[0], graph.beatIndex, graph.measure )
+            _length = Helper.toLength(pair[1], graph.beatIndex, graph.measure )
             if(!_key || !_length) return false
 
             _key.forEach(k=>{
@@ -44,7 +44,7 @@ const plugin = (()=>{
                             sound: graph.sound,
                             length: pair[1] * graph._secondsPerBeat,
                             key: k,
-                            startTime: graph.noteTime + distance * graph._secondsPerBeat
+                            startTime: graph.beatTime + distance * graph._secondsPerBeat
                         },
                         volume: pair[2] >= 0 && pair[2] <= 1 ? pair[2] : ( o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null),
                         _secondsPerBeat: graph._secondsPerBeat
