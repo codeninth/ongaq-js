@@ -12,18 +12,18 @@ const context = AudioCore.context
 class Ongaq {
 
     constructor(o){
-        this.init(o)
+        this._init(o)
     }
 
     /*
-      @init
+      @_init
     */
-    init({ api_key, volume, bpm, onReady }){
+    _init({ api_key, volume, bpm, onReady }){
       this.parts = new Map()
       this.isPlaying = false
-      this.routine = this.routine.bind(this)
+      this._routine = this._routine.bind(this)
       this.volume = volume || DEFAULTS.VOLUME
-      this.previousVolume = this.volume
+      this._previousVolume = this.volume
       this.bpm = bpm || DEFAULTS.BPM
       this.onReady = typeof onReady === "function" && onReady 
       if (AudioCore.powerMode === "low") {
@@ -38,14 +38,16 @@ class Ongaq {
       - jsonからtune/partオブジェクトを作成する
     */
     add(part){
+
         return new Promise((resolve,reject)=>{
+
           part.bpm = part.bpm || this.bpm
           part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
           part.measure = part.measure || DEFAULTS.MEASURE
           this.parts.set(part.id, part)
           
-          if(typeof part.loadSound !== "function") return reject()
-          part.loadSound().then(()=>{
+          if(typeof part._loadSound !== "function") return reject()
+          part._loadSound().then(()=>{
             let isAllPartsLoaded = true
               /*
                 when all parts got loaded own sound,
@@ -55,17 +57,18 @@ class Ongaq {
                 if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
               })
               if (isAllPartsLoaded) this.onReady && this.onReady()
+              return resolve()
           }).catch(reject)
 
         })
     }
 
     /*
-      @prepareCommonGain
+      @_prepareCommonGain
       - すべてのaudioNodeが経由するGainNodeを作成
       - playのタイミングで毎回作り直す
     */
-    prepareCommonGain() {
+    _prepareCommonGain() {
       if (this.commonGain) return false
       if (!this.commonComp) {
         this.commonComp = context.createDynamicsCompressor()
@@ -73,27 +76,27 @@ class Ongaq {
       }
       this.commonGain = context.createGain()
       this.commonGain.connect(this.commonComp)
-      this.commonGain.gain.setValueAtTime(this.previousVolume || this.volume, 0)
+      this.commonGain.gain.setValueAtTime(this._previousVolume || this.volume, 0)
     }
 
     /*
-      @removeCommonGain
+      @_removeCommonGain
     */
-    removeCommonGain() {
+    _removeCommonGain() {
       if (!this.commonGain) return false
       this.commonGain.gain.setValueAtTime(0, 0)
       this.commonGain = null
+      return false
     }
 
     /*
-      @connect
-      - SoundTreeをcommonGainに出力する
+      @_connect
     */
-    connect(tree) {
+    _connect(tree) {
       if (!tree || !this.isPlaying) return false
       tree.connect(this.commonGain).start()
       tree = null
-      return true
+      return false
     }
 
     /*
@@ -104,9 +107,9 @@ class Ongaq {
       if (this.isPlaying || this.parts.size === 0) return false
       this.isPlaying = true
 
-      this.prepareCommonGain()
+      this._prepareCommonGain()
       this.parts.forEach(p => {
-        p.putTimerRight(context.currentTime)
+        p._putTimerRight(context.currentTime)
       })
 
       let list = []
@@ -116,9 +119,10 @@ class Ongaq {
       */
       this.parts.forEach(p => list.push(p.measure))
       let cap = limitAge ? Math.max(...list) * limitAge : Infinity
-      this.parts.forEach(p => { p.setQuota(cap) })
+      this.parts.forEach(p => { p._setQuota(cap) })
 
-      this.scheduler = window.setInterval(this.routine, AudioCore.powerMode === "middle" ? 50 : 200)
+      this._scheduler = window.setInterval(this._routine, AudioCore.powerMode === "middle" ? 50 : 200)
+      return false
     }
 
     /*
@@ -126,30 +130,30 @@ class Ongaq {
       */
     pause() {
       if (!this.isPlaying) return false
-      if (this.scheduler) {
-        window.clearInterval(this.scheduler)
-        this.scheduler = null
+      if (this._scheduler) {
+        window.clearInterval(this._scheduler)
+        this._scheduler = null
       }
       this.isPlaying = false
-      this.removeCommonGain()
+      this._removeCommonGain()
+      return false
     }
 
     /*
-      @routine
-      - 各loopに対してobserveを行う
-      - 次のageの開始時間（=_nextZeroTime）が返ってきたら保持する
+      @_routine
+      - 各partに対してobserveを行う
       */
-    routine() {
+    _routine() {
       let collected = []
       let _soundTree
       this.parts.forEach(p => {
-        _soundTree = p.observe()
+        _soundTree = p._observe()
         if (_soundTree) _soundTree = _soundTree.filter(i => i)
         if (_soundTree.length > 0) collected = collected.concat(_soundTree)
       })
       if (collected.length > 0) {
         collected.forEach(i => {
-          if (i.layer && i.layer.length > 0) this.connect(i)
+          if (i.layer && i.layer.length > 0) this._connect(i)
         })
       }
       // TODO
@@ -158,43 +162,18 @@ class Ongaq {
 
     /*
     @find
-    次のような形でLoop, Partオブジェクトを取得する
-
-    {
-      resource: "part",
-      data: {
-        name: "guitar_part"
-      }
-    }
-  */
-  find({ data }) {
-
-    const keys = ["id", "tag"]
-    let result = void 0
-
-    const method = (o, d) => {
-      /*
-      条件指定がないか、条件とマッチする場合に返却
+    collect part by tags
     */
-      if (!d) {
+  find(...tags) {
+    
+    let result = void 0
+    if(tags.length === 0) return result
+    this.parts.forEach(p =>{
+      if(tags.some(tag=>p.tags.include(tag))){
         result = result || []
-        result.push(o)
-      } else {
-        for (let q in d) {
-          if (!keys.includes(q)) continue
-          else if (
-            (q === "tag" && o[q].includes(d[q])) ||
-            (q !== "tag" && o[q] === d[q])
-          ) {
-            result = result || []
-            result.push(o)
-          }
-        }
+        result.push(p)
       }
-    }
-
-    this.parts.forEach(p => method(p, data))
-
+    })
     return result
 
   }
@@ -226,9 +205,12 @@ class Ongaq {
 
     set volume(v){
       if (typeof v !== "number" || v < 0 || v > 100) return false
-      if (v > 0) this.previousVolume = this._volume
+      if (v > 0) this._previousVolume = this._volume
       this._volume = v / 100
-      this.commonGain && this.commonGain.gain.setValueAtTime(this._volume, time !== undefined ? time : context.currentTime + 0.01)
+      this.commonGain && this.commonGain.gain.setValueAtTime(
+        this._volume,
+        time !== undefined ? time : context.currentTime + 0.01
+      )
     }
 
     get volume(){

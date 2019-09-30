@@ -15,7 +15,7 @@ class Part {
         this.sound = props.sound
         this.handler = handler
         this.id = props.id || Helper.getUUID()
-        this.tag = Array.isArray(props.tag) ? props.tag : []
+        this.tags = Array.isArray(props.tags) ? props.tags : []
         this.bpm = props.bpm
         this.measure = props.measure
         this._isLoading = false
@@ -56,9 +56,9 @@ class Part {
         this.active = false
         this.mute = !!props.mute
 
-        this.putTimerRight()
+        this._putTimerRight()
 
-        this.observe = this.observe.bind(this)
+        this._observe = this._observe.bind(this)
     }
 
     add(newFilter){
@@ -88,7 +88,7 @@ class Part {
         this._generator = this._generator.bind(this)
     }
 
-    loadSound(){
+    _loadSound(){
         this._isLoading = true
         return new Promise((resolve,reject)=>{
             BufferYard.import(this.sound)
@@ -105,23 +105,23 @@ class Part {
         })
     }
 
-    reset(){
+    _reset(){
         this._age = 0
         this._currentBeatIndex = 0
         this._consumedBeats = 0
         this._beatQuota = 0
     }
 
-    putTimerRight(_nextZeroTime){
+    _putTimerRight(_nextZeroTime){
         this._nextBeatTime = _nextZeroTime || context.currentTime
     }
 
-    setQuota(totalCap){
+    _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
         this.active = true
     }
 
-    observe(attachment){
+    _observe(){
 
         let observed = []
 
@@ -141,8 +141,7 @@ class Part {
         while (this.active && this._nextBeatTime < secondToPrefetch){
             if(this._consumedBeats >= this._beatQuota) break
 
-            attachment = typeof attachment === "object" ? Object.assign(attachment,this.attachment) : this.attachment
-            let thisMomentObserved = !this.mute && this.capture(attachment)
+            let thisMomentObserved = !this.mute && this._capture()
             if(thisMomentObserved && thisMomentObserved.layer.length > 0) observed = observed.concat(thisMomentObserved)
 
             this._nextBeatTime += this._secondsPerBeat
@@ -168,7 +167,7 @@ class Part {
         @capture
         - get soundTrees for referring notepoint
     */
-    capture(attachment){
+    _capture(){
 
         if(!this._generator) return false
         this._currentGraph = this._generator(
@@ -179,7 +178,7 @@ class Part {
                 beatTime: this._nextBeatTime,
                 _secondsPerBeat: this._secondsPerBeat,
                 age: this._age,
-                attachment: attachment
+                attachment: this._attachment
             })
         )
 
@@ -194,7 +193,7 @@ class Part {
         @attach
     */
     attach(data = {}){
-        this.attachment = Object.assign(this.attachment,data)
+        this._attachment = Object.assign(this._attachment,data)
     }
 
     /*
@@ -202,9 +201,9 @@ class Part {
     */
     detach(field){
         if (typeof field === "string"){
-            delete this.attachment[field]
+            delete this._attachment[field]
         } else {
-            this.attachment = {}
+            this._attachment = {}
         }
     }
 
@@ -214,11 +213,10 @@ class Part {
         タグ A,B,C... を追加
         */
     tag(...tags) {
-        this.tag = Array.isArray(this.tag) ? this.tag : []
+        this.tags = Array.isArray(this.tags) ? this.tags : []
         tags.forEach(tag => {
-            if (!this.tag.includes(tag)) this.tag.push(tag)
+            if (!this.tags.includes(tag)) this.tags.push(tag)
         })
-        return false
     }
 
     set mute(v){
