@@ -232,5 +232,5 @@ class Part {
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }
 
 }
-window.Part = window.Part || Part
+
 export default Part

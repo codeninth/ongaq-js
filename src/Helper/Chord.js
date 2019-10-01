@@ -220,6 +220,4 @@ class Chord {
 
 }
 
-window.Chord = window.Chord || Chord
-
 export default Chord
