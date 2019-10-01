@@ -28,7 +28,7 @@ const plugin = (()=>{
             case "number":
                 return Helper.toInt(x,{ max: 90, min: -90 }) / 30
             case "function":
-                return Helper.toInt( x(graph.noteIndex), { max: 90, min: -90 } ) / 30
+                return Helper.toInt( x(graph.beatIndex), { max: 90, min: -90 } ) / 30
             default:
                 return 0
             }

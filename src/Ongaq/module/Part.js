@@ -1,47 +1,69 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
 import * as plugin from "../plugin/graph/index"
-import Manipulator from "./Manipulator"
-import Filter from "../../Staff/Filter"
 import soundTreePool from "./pool.soundtree"
 import graphPool from "./pool.graph"
-
-const CONSTANTS = {
-    BPM_MIN: 60,
-    BPM_MAX: 180
-}
-
-const DEFAULT = {
-    MEASURE: 1,
-    NOTE_IN_MEASURE: 16,
-    PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 2.0
-}
+import BufferYard from "./BufferYard"
+import DEFAULTS from "./defaults"
 
 const context = AudioCore.context
 
-const touchFilters = [
-  new Filter({
-    type: "note",
-    length: 16,
-    volume: 50
-  })
-]
-let _touchGraph, _touchSoundTree
 
-const Module = (()=>{
+class Part {
 
-    class Part {
+    constructor(props,handler = {}){
+        this.sound = props.sound
+        this.handler = handler
+        this.id = props.id || Helper.getUUID()
+        this.tags = Array.isArray(props.tags) ? props.tags : []
+        this.bpm = props.bpm
+        this.measure = props.measure
+        this._isLoading = false
+        this._beatsInMeasure = props._beatsInMeasure
+        this._currentBeatIndex = 0
 
-        constructor(props){
-            this.sound = props.sound
-            this.id = props.id || Helper.getUUID()
-            this.tag = Array.isArray(props.tag) ? props.tag : []
-            this.bpm = props.bpm
-            this.measure = props.measure || DEFAULT.MEASURE
-            this.notesInMeasure = props.notesInMeasure || DEFAULT.NOTE_IN_MEASURE
-            this.currentNoteIndex = 0
+        /*
+            @_nextBeatTime
+            - time for next notepoint
+            - updated with AudioContext.currentTime
+        */
+        this._nextBeatTime = 0
 
-            /*
+        /*
+            @age
+            - get added 1 when all beats are observed
+        */
+        this._age = 0
+
+        /*
+            @_beatQuota
+            - how many beats to observe before changing to not active
+        */
+        this._beatQuota = 0
+
+        /*
+            @_consumedBeats
+            - observed beats
+        */
+        this._consumedBeats = 0
+
+        /*
+            @attachment
+            - conceptual value: user would be able to handle any value to part with this
+        */
+        this.attachment = {}
+
+        this.active = false
+        this.mute = !!props.mute
+
+        this._putTimerRight()
+
+        this._observe = this._observe.bind(this)
+    }
+
+    add(newFilter){
+        if(!newFilter) return false
+        /*
             generate a function which receives & returns Graph object.
             like this
             ===================
@@ -52,237 +74,163 @@ const Module = (()=>{
                     .arrpegio({ ... })
                 }
             */
-            this.filters = props.filters
-            this.generator = graph => {
-                return props.filters.reduce(( prevGraph, newFilter ) => {
-                    if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
-                        return prevGraph[ newFilter.type ]( newFilter.params )
-                    } else {
-                        return prevGraph
-                    }
-                }, graph )
-            }
-            this.generator = this.generator.bind(this)
-
-            this.touchGenerator = graph => {
-                return touchFilters.reduce(( prevGraph, newFilter ) => {
-                    if (Object.hasOwnProperty.call( plugin, newFilter.type ) ){
-                        return prevGraph[ newFilter.type ]( newFilter.params )
-                    } else {
-                        return prevGraph
-                    }
-                }, graph )
-            }
-            this.touchGenerator = this.touchGenerator.bind(this)
-
-            /*
-              @nextNoteTime
-              - time for next notepoint
-              - updated with AudioContext.currentTime
-            */
-            this.nextNoteTime = 0
-
-            /*
-              @age
-              - get added 1 when all notepoints are observed
-            */
-            this.age = 0
-
-            /*
-              @noteQuota
-              - how many notepoints to observe before changing to not active
-              - noteQuota is assigned when loop is imported
-            */
-            this.noteQuota = 0
-
-            /*
-              @consumedNotes
-              - observed notepoints
-            */
-            this.consumedNotes = 0
-
-            /*
-              @attachment
-              - conceptual value: user would be able to handle any value to part with this
-            */
-            this.attachment = {}
-
-            this.active = true
-            this.mute = !!props.mute
-
-            this.putTimerRight()
-
-            this.observe = this.observe.bind(this)
-
-        }
-
-        touch(){
-
-            if(!this.touchGenerator) return false
-            _touchGraph = this.touchGenerator(
-                graphPool.allocate({
-                    sound: this.sound,
-                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
-                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
-                    noteTime: this.nextNoteTime,
-                    secondsPerNote: this.secondsPerNote,
-                    age: this.age
-                })
-            )
-
-            _touchSoundTree = soundTreePool.allocate( g )
-
-            if(_touchSoundTree.layer.length > 0) Manipulator.connect(_touchSoundTree)
-
-        }
-        // pause(){
-        //     this.active = false
-        // }
-
-        reset(){
-            this.age = 0
-            this.currentNoteIndex = 0
-            this.consumedNotes = 0
-            this.noteQuota = 0
-        }
-
-        putTimerRight(nextZeroTime){
-            this.nextNoteTime = nextZeroTime || context.currentTime
-        }
-
-        setQuota(loopQuota){
-            this.noteQuota = loopQuota * this.notesInMeasure
-            this.active = true
-        }
-
-        observe(attachment){
-
-            let observed = []
-
-            /*
-                keep nextNoteTime being always behind secondToPrefetch
-            */
-            let secondToPrefetch = context.currentTime + DEFAULT.PREFETCH_SECOND
-            while (
-                this.nextNoteTime - secondToPrefetch > 0 &&
-                this.nextNoteTime - secondToPrefetch < DEFAULT.PREFETCH_SECOND
-            ){
-                secondToPrefetch += DEFAULT.PREFETCH_SECOND
-            }
-
-            /*
-                collect soundtrees for notepoints which come in certain range
-                */
-            while (this.active && this.nextNoteTime < secondToPrefetch){
-                if(this.consumedNotes >= this.noteQuota) break
-
-                attachment = typeof attachment === "object" ? Object.assign(attachment,this.attachment) : this.attachment
-                let thisMomentObserved = !this.mute && this.capture(attachment)
-                if(thisMomentObserved && thisMomentObserved.layer.length > 0) observed = observed.concat(thisMomentObserved)
-
-                this.nextNoteTime += this.secondsPerNote
-
-                if(this.currentNoteIndex + 1 >= this.measure * this.notesInMeasure){
-                    this.currentNoteIndex = 0
-                    this.age++
+        this.filters = this.filters || []
+        this.filters.push(newFilter)
+        this._generator = graph => {
+            return this.filters.reduce((prevGraph, nextFilter) => {
+                if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
+                    return prevGraph[nextFilter.type](nextFilter.params)
                 } else {
-                    this.currentNoteIndex++
+                    return prevGraph
                 }
-
-                if(++this.consumedNotes >= this.noteQuota){
-                    this.active = false
-                    break
-                }
-
-            }
-
-            return observed
-
+            }, graph)
         }
+        this._generator = this._generator.bind(this)
+    }
 
-        /*
-          @capture
-          - get soundTrees for referring notepoint
+    /*
+        @attach
+    */
+    attach(data = {}) {
+        this._attachment = Object.assign(this._attachment, data)
+    }
+
+    /*
+        @detach
+    */
+    detach(field) {
+        if (typeof field === "string") delete this._attachment[field]
+        else this._attachment = {}
+    }
+
+    /*
+        @tag
+        tags: A,B,C...
+        タグ A,B,C... を追加
         */
-        capture(attachment){
+    tag(...tags) {
+        this.tags = Array.isArray(this.tags) ? this.tags : []
+        tags.forEach(tag => {
+            if (!this.tags.includes(tag)) this.tags.push(tag)
+        })
+    }
 
-            if(!this.generator) return false
-            this.currentGraph = this.generator(
-                graphPool.allocate({
-                    sound: this.sound,
-                    measure: Math.floor( this.currentNoteIndex / this.notesInMeasure ),
-                    noteIndex: this.currentNoteIndex % this.notesInMeasure,
-                    noteTime: this.nextNoteTime,
-                    secondsPerNote: this.secondsPerNote,
-                    age: this.age,
-                    attachment: attachment
+    set mute(v) {
+        if (typeof v === "boolean") this._mute = v
+    }
+    get mute() { return this._mute }
+
+    set bpm(v) {
+        let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
+        if (bpm) this._bpm = bpm
+    }
+    get bpm() { return this._bpm }
+
+    _loadSound(){
+        this._isLoading = true
+        return new Promise((resolve,reject)=>{
+            BufferYard.import(this.sound)
+                .then(() => {
+                    this._isLoading = false
+                    this.active = true
+                    resolve()
                 })
-            )
+                .catch(err => {
+                    this._isLoading = false
+                    this._loadingFailed = true
+                    reject(err)
+                })
+        })
+    }
 
-            this.currentSoundTree = soundTreePool.allocate( this.currentGraph )
+    _reset(){
+        this._age = 0
+        this._currentBeatIndex = 0
+        this._consumedBeats = 0
+        this._beatQuota = 0
+    }
 
-            if(this.currentSoundTree.layer.length > 0){
-                return this.currentSoundTree
-            } return false
+    _putTimerRight(_nextZeroTime){
+        this._nextBeatTime = _nextZeroTime || context.currentTime
+    }
 
-        }
+    _setQuota(totalCap){
+        this._beatQuota = totalCap * this._beatsInMeasure
+        this.active = true
+    }
+
+    _observe(){
+
+        let observed
 
         /*
-          @attach
+            keep _nextBeatTime being always behind secondToPrefetch
         */
-        attach(data = {}){
-            this.attachment = Object.assign(this.attachment,data)
+        let secondToPrefetch = context.currentTime + DEFAULTS.PREFETCH_SECOND
+        while (
+            this._nextBeatTime - secondToPrefetch > 0 &&
+            this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
+        ){
+            secondToPrefetch += DEFAULTS.PREFETCH_SECOND
         }
-
         /*
-          @detach
-        */
-        detach(field){
-            if (typeof field === "string"){
-                delete this.attachment[field]
+            collect soundtrees for notepoints which come in certain range
+            */
+        while (this.active && this._nextBeatTime < secondToPrefetch){
+            if(this._consumedBeats >= this._beatQuota) break
+
+            let thisMomentObserved = !this.mute && this._capture()
+            if(thisMomentObserved && thisMomentObserved.layer.length > 0){
+                observed = observed || []
+                observed = observed.concat(thisMomentObserved)
+            }
+
+            this._nextBeatTime += this._secondsPerBeat
+
+            if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
+                this._currentBeatIndex = 0
+                this._age++
             } else {
-                this.attachment = {}
+                this._currentBeatIndex++
+            }
+
+            if(++this._consumedBeats >= this._beatQuota){
+                this.active = false
+                break
             }
         }
-
-        /*
-          @tag
-          tags: A,B,C...
-          タグ A,B,C... を追加
-        */
-        tag(...tags) {
-            this.tag = Array.isArray(this.tag) ? this.tag : []
-            tags.forEach(tag => {
-                if (!this.tag.includes(tag)) this.tag.push(tag)
-            })
-            return false
-        }
-
-        set mute(v){
-            if(typeof v === "boolean") this._mute = v
-        }
-        get mute(){ return this._mute }
-
-        set bpm(v){
-            let bpm = Helper.toInt(v,{ max: CONSTANTS.BPM_MAX, min: CONSTANTS.BPM_MIN })
-            if(bpm) this._bpm = bpm
-        }
-        get bpm(){ return this._bpm }
-
-        set chapter(raw){
-            if(!Array.isArray(raw)) return false
-            this._chapter = raw
-        }
-        get chapter(){ return this._chapter }
-
-        get secondsPerNote(){ return 60 / this.bpm / 8 }
-
-        get absNoteIndex(){ return this.currentNoteIndex + this.age * this.measure * this.notesInMeasure }
+        return observed
 
     }
 
-    return Part
+    /*
+        @capture
+        - get soundTrees for referring notepoint
+    */
+    _capture(){
 
-}).call(undefined,window || {})
+        if(!this._generator) return false
+        this._currentGraph = this._generator(
+            graphPool.allocate({
+                sound: this.sound,
+                measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
+                beatIndex: this._currentBeatIndex % this._beatsInMeasure,
+                beatTime: this._nextBeatTime,
+                _secondsPerBeat: this._secondsPerBeat,
+                age: this._age,
+                attachment: this._attachment
+            })
+        )
 
-export default Module
+        this._currentSoundTree = soundTreePool.allocate( this._currentGraph )
+
+        if (this._currentSoundTree.layer.length > 0) return this._currentSoundTree
+        else return false
+
+    }
+
+    get _secondsPerBeat(){ return 60 / this._bpm / 8 }
+
+}
+window.Part = window.Part || Part
+export default Part
