@@ -1,37 +1,6 @@
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
-
-const shiftKeys = (v,key)=>{
-
-    if (v === 0 || v <= -13 || v >= 13) return key
-    else if (!Array.isArray(key) ) return []
-    
-    let shifted = key.map(m => m.split("$").map(n => +n))
-
-    shifted = shifted.map(pair => {
-        if (pair[1] + v <= 12 && pair[1] + v > 0) return `${pair[0]}$${pair[1] + v}`
-        else if (v < 0 && pair[1] + v <= 0) {
-            /*
-                - This note goes down to lower octave 
-                - If octave 1, no more getting down -> skipped
-                */
-            if (pair[0] > 1) return `${ pair[0] - 1 }$${ 12 + pair[1] + v }`
-            else return false
-        }
-        else if (v > 0 && pair[1] + v > 12) {
-            /*
-                - This note goes up to higher octave
-                - If octave 4, no more getting up -> skipped
-                */
-            if (pair[0] < 4) return `${ pair[0] + 1 }$${ -12 + pair[1] + v }`
-        } else {
-            return false
-        }
-
-    }).filter(pair => pair)
-
-    return shifted
-}
+import shiftKeys from "./shiftKeys"
 
 class Chord {
 
@@ -52,80 +21,7 @@ class Chord {
     }
   */
     constructor(raw, o = {}){
-        this.init(raw,o)
-    }
-
-    init(raw,o){
-
-        this.active = true
-        this.defaultShift = o.defaultShift || 0
-        this.defaultOctave = o.octave > 0 && o.octave <= 4 ? o.octave : 2
-
-        if(typeof raw !== "string"){
-            this.active = false
-            return false
-        }
-
-        let rootData = (()=>{
-            let result = [], root, rootLabel
-            ROOT.forEach((v,k)=>{
-                result = raw.match( new RegExp("^"+k) )
-                if(result && result[0] === k){
-                    root = v
-                    rootLabel = k
-                }
-            })
-            return { root, rootLabel }
-        })()
-
-        if(!rootData.root){
-            this.active = false
-            return false
-        }
-
-        let chordData = ((chord)=>{
-            let scheme, schemeLabel
-            SCHEME.forEach((v,k)=>{
-                if(k === chord){
-                    scheme = v
-                    schemeLabel = k
-                }
-            })
-            return { scheme, schemeLabel }
-        })( raw.replace(rootData.rootLabel,"") )
-
-        if(!chordData.scheme){
-            this.active = false
-            return false
-        }
-
-        let key = (()=>{
-
-            if(o.key) return o.key
-
-            let key = []
-            let currentKey = rootData.root
-            let currentOctave = this.defaultOctave
-
-            key.push(`${currentOctave}$${currentKey}`)
-
-            chordData.scheme.forEach(s=>{
-                let doOctaveUp = currentKey + s > 12
-                currentOctave = doOctaveUp ? currentOctave + 1 : currentOctave
-                currentKey = doOctaveUp ? currentKey + s - 12 : currentKey + s
-                if(currentOctave <= 4) key.push(`${currentOctave}$${currentKey}`)
-            })
-            return key
-
-        })()
-
-        this.rootLabel = rootData.rootLabel
-        this.defaultOctave = o.octave
-        this.scheme = chordData.scheme
-        this.schemeLabel = chordData.schemeLabel
-        this.originalKey = shiftKeys( this.defaultShift, key.map(k => k) )
-        this.key = shiftKeys( this.defaultShift, key )
-
+        this._init(raw,o)
     }
 
     /*
@@ -218,6 +114,79 @@ class Chord {
 
     get name(){ return this.rootLabel + this.schemeLabel }
 
+    _init(raw, o) {
+
+        this.active = true
+        this.defaultShift = o.defaultShift || 0
+        this.defaultOctave = o.octave > 0 && o.octave <= 4 ? o.octave : 2
+
+        if (typeof raw !== "string") {
+            this.active = false
+            return false
+        }
+
+        let rootData = (() => {
+            let result = [], root, rootLabel
+            ROOT.forEach((v, k) => {
+                result = raw.match(new RegExp("^" + k))
+                if (result && result[0] === k) {
+                    root = v
+                    rootLabel = k
+                }
+            })
+            return { root, rootLabel }
+        })()
+
+        if (!rootData.root) {
+            this.active = false
+            return false
+        }
+
+        let chordData = ((chord) => {
+            let scheme, schemeLabel
+            SCHEME.forEach((v, k) => {
+                if (k === chord) {
+                    scheme = v
+                    schemeLabel = k
+                }
+            })
+            return { scheme, schemeLabel }
+        })(raw.replace(rootData.rootLabel, ""))
+
+        if (!chordData.scheme) {
+            this.active = false
+            return false
+        }
+
+        let key = (() => {
+
+            if (o.key) return o.key
+
+            let key = []
+            let currentKey = rootData.root
+            let currentOctave = this.defaultOctave
+
+            key.push(`${currentOctave}$${currentKey}`)
+
+            chordData.scheme.forEach(s => {
+                let doOctaveUp = currentKey + s > 12
+                currentOctave = doOctaveUp ? currentOctave + 1 : currentOctave
+                currentKey = doOctaveUp ? currentKey + s - 12 : currentKey + s
+                if (currentOctave <= 4) key.push(`${currentOctave}$${currentKey}`)
+            })
+            return key
+
+        })()
+
+        this.rootLabel = rootData.rootLabel
+        this.defaultOctave = o.octave
+        this.scheme = chordData.scheme
+        this.schemeLabel = chordData.schemeLabel
+        this.originalKey = shiftKeys(this.defaultShift, key.map(k => k))
+        this.key = shiftKeys(this.defaultShift, key)
+
+    }
+    
 }
 
 export default Chord
