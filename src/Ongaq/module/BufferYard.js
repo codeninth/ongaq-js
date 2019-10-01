@@ -61,22 +61,22 @@ class BufferYard {
                         let thisNote = data.note[key]
 
                         AudioCore
-                        .toAudioBuffer({
-                            src: thisNote.src,
-                            length: thisNote.length
-                        })
-                        .then(audioBuffer => {
-                            thisSoundBuffers.set(key, audioBuffer)
-                            if (++decodedBufferLength === notes.length) {
-                                notes = null
-                                buffers.set(sound, thisSoundBuffers)
-                                resolve()
-                            }
-                        })
-                        .catch(() => {
-                            if (buffers.has(sound)) buffers.delete(sound)
-                            reject()
-                        })
+                            .toAudioBuffer({
+                                src: thisNote.src,
+                                length: thisNote.length
+                            })
+                            .then(audioBuffer => {
+                                thisSoundBuffers.set(key, audioBuffer)
+                                if (++decodedBufferLength === notes.length) {
+                                    notes = null
+                                    buffers.set(sound, thisSoundBuffers)
+                                    resolve()
+                                }
+                            })
+                            .catch(() => {
+                                if (buffers.has(sound)) buffers.delete(sound)
+                                reject()
+                            })
                     })
 
 

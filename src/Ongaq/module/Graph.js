@@ -27,10 +27,10 @@ class Graph {
 
     pass(active) {
         switch (typeof active) {
-            case "function": return active(this.beatIndex, this.measure)
-            case "object": return Array.isArray(active) && active.includes(this.beatIndex)
-            case "number": return active === this.beatIndex
-            default: return true
+        case "function": return active(this.beatIndex, this.measure)
+        case "object": return Array.isArray(active) && active.includes(this.beatIndex)
+        case "number": return active === this.beatIndex
+        default: return true
         }
     }
 

@@ -47,11 +47,11 @@ const pannerLine = (({ innerWidth, innerHeight })=>{
         let x = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( data.positionX )
         const _p = [v.w / 2 + x, v.h / 2, 200]
         if(p.positionX){
-          p.positionX.setValueAtTime(_p[0], context.currentTime)
-          p.positionY.setValueAtTime(_p[1], context.currentTime)
-          p.positionZ.setValueAtTime(_p[2], context.currentTime)
+            p.positionX.setValueAtTime(_p[0], context.currentTime)
+            p.positionY.setValueAtTime(_p[1], context.currentTime)
+            p.positionZ.setValueAtTime(_p[2], context.currentTime)
         } else {
-          p.setPosition(..._p)
+            p.setPosition(..._p)
         }
         
         return new SoundLine({
