@@ -138,7 +138,7 @@ class Part {
                 .catch(err => {
                     this._isLoading = false
                     this._loadingFailed = true
-                    reject()
+                    reject(err)
                 })
         })
     }

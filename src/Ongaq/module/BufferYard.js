@@ -74,9 +74,7 @@ class BufferYard {
                             }
                         })
                         .catch(() => {
-                            soundsToLoad.forEach(sound => {
-                                if (buffers.has(sound)) buffers.delete(sound)
-                            })
+                            if (buffers.has(sound)) buffers.delete(sound)
                             reject()
                         })
                     })
@@ -84,8 +82,8 @@ class BufferYard {
 
                 })
                 .catch(() => {
-                    soundsToLoad.forEach(sound => buffers.delete(sound))
-                    reject(`Cannot load sound resources. There are 3 possible reasons: 1) Some of [ ${soundsToLoad.join(",")} ] is/are invalid instrumental name. 2) Some of them is/are not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
+                    if (buffers.has(sound)) buffers.delete(sound)
+                    reject(`Cannot load sound resources. There are 3 possible reasons: 1) [ ${sound} ] is invalid instrumental name. 2) [ ${sound} ] is not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
                 })
 
         })

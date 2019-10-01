@@ -4,7 +4,7 @@ import ROOT from "../../Constants/ROOT"
     convert key name expression
     e.g.) "A1#" -> "1$11"
 */
-const r = /^([A-Z])+([1-4])+(b|\#)?$/
+const r = /^([A-Z])+([1-4])+(b|#)?$/
 
 export default (raw = "") => {
     if (r.test(raw) === false) {

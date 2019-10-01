@@ -133,7 +133,7 @@ class Ongaq {
     this._volume = v / 100
     this.commonGain && this.commonGain.gain.setValueAtTime(
       this._volume,
-      time !== undefined ? time : context.currentTime + 0.01
+      context.currentTime + 0.01
     )
   }
 
