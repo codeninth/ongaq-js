@@ -16,24 +16,6 @@ class Ongaq {
     }
 
     /*
-      @_init
-    */
-    _init({ api_key, volume, bpm, onReady }){
-      this.parts = new Map()
-      this.isPlaying = false
-      this._routine = this._routine.bind(this)
-      this.volume = volume || DEFAULTS.VOLUME
-      this._previousVolume = this.volume
-      this.bpm = bpm || DEFAULTS.BPM
-      this.onReady = typeof onReady === "function" && onReady 
-      if (AudioCore.powerMode === "low") {
-        window.addEventListener("blur", () => { this.pauseScheduling() }) 
-      }
-      this._nextZeroTime = 0
-      BufferYard.set({ api_key })
-    }
-
-    /*
       @add
       - jsonからtune/partオブジェクトを作成する
     */
@@ -41,12 +23,13 @@ class Ongaq {
 
         return new Promise((resolve,reject)=>{
 
+          if (typeof part._loadSound !== "function") return reject(`not a Part object`)
+
           part.bpm = part.bpm || this.bpm
           part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
           part.measure = part.measure || DEFAULTS.MEASURE
           this.parts.set(part.id, part)
           
-          if(typeof part._loadSound !== "function") return reject()
           part._loadSound().then(()=>{
             let isAllPartsLoaded = true
               /*
@@ -61,6 +44,131 @@ class Ongaq {
           }).catch(reject)
 
         })
+    }
+
+    /*
+      @start
+      - 一定の間隔でobserveを実行していく
+      */
+    start() {
+      if (this.isPlaying || this.parts.size === 0) return false
+      this.isPlaying = true
+
+      this._prepareCommonGain()
+      this.parts.forEach(p => { p._putTimerRight(context.currentTime) })
+
+      let list = []
+      let limitAge = null // TODO
+      /*
+        set _beatQuota of every part following to the longest part
+      */
+      this.parts.forEach(p => list.push(p.measure))
+      let cap = limitAge ? Math.max(...list) * limitAge : Infinity
+      this.parts.forEach(p => { p._setQuota(cap) })
+
+      this._scheduler = window.setInterval(this._routine, AudioCore.powerMode === "middle" ? 50 : 200)
+      return false
+    }
+
+    /*
+      @pause
+      */
+    pause() {
+      if (!this.isPlaying) return false
+      if (this._scheduler) {
+        window.clearInterval(this._scheduler)
+        this._scheduler = null
+      }
+      this.isPlaying = false
+      this._removeCommonGain()
+      return false
+    }
+
+  /*
+  @find
+  collect part by tags
+  */
+  find(...tags) {
+
+    let result = void 0
+    if (tags.length === 0) return result
+    this.parts.forEach(p => {
+      if (tags.every(tag => p.tags.include(tag))) {
+        result = result || []
+        result.push(p)
+      }
+    })
+    return result
+
+  }
+
+  /*
+      @get params
+    */
+  get params() {
+    let loading = false
+    this.parts.forEach(p => { if (p._isLoading) loading = true })
+    return {
+      loading: loading,
+      isPlaying: this.isPlaying,
+      originTime: AudioCore.originTime,
+      currentTime: context.currentTime,
+      volume: this.volume
+    }
+  }
+
+  get constants() {
+    return {
+      DRUM_NOTE,
+      ROOT,
+      SCHEME
+    }
+  }
+
+  get version() { return VERSION }
+
+  set volume(v) {
+    if (typeof v !== "number" || v < 0 || v > 100) return false
+    if (v > 0) this._previousVolume = this._volume
+    this._volume = v / 100
+    this.commonGain && this.commonGain.gain.setValueAtTime(
+      this._volume,
+      time !== undefined ? time : context.currentTime + 0.01
+    )
+  }
+
+  get volume() {
+    return this._volume * 100
+  }
+
+  set bpm(v) {
+    let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
+    if (!bpm) return false
+    this._bpm = bpm
+    this.parts.forEach(p => { p.bpm = bpm })
+  }
+
+  get bpm() {
+    return this._bpm
+  }
+
+    /*
+      @_init
+    */
+    
+    _init({ api_key, volume, bpm, onReady }){
+      this.parts = new Map()
+      this.isPlaying = false
+      this.volume = volume || DEFAULTS.VOLUME
+      this._previousVolume = this.volume
+      this._nextZeroTime = 0
+      this.bpm = bpm || DEFAULTS.BPM
+      if (AudioCore.powerMode === "low") {
+        window.addEventListener("blur", () => { this.pauseScheduling() }) 
+      }
+      this.onReady = typeof onReady === "function" && onReady 
+      this._routine = this._routine.bind(this)
+      BufferYard.set({ api_key })
     }
 
     /*
@@ -92,50 +200,10 @@ class Ongaq {
     /*
       @_connect
     */
-    _connect(tree) {
-      if (!tree || !this.isPlaying) return false
-      tree.connect(this.commonGain).start()
-      tree = null
-      return false
-    }
-
-    /*
-      @start
-      - 一定の間隔でobserveを実行していく
-      */
-    start() {
-      if (this.isPlaying || this.parts.size === 0) return false
-      this.isPlaying = true
-
-      this._prepareCommonGain()
-      this.parts.forEach(p => {
-        p._putTimerRight(context.currentTime)
-      })
-
-      let list = []
-      let limitAge = null // TODO
-      /*
-        set _beatQuota of every part following to the longest part
-      */
-      this.parts.forEach(p => list.push(p.measure))
-      let cap = limitAge ? Math.max(...list) * limitAge : Infinity
-      this.parts.forEach(p => { p._setQuota(cap) })
-
-      this._scheduler = window.setInterval(this._routine, AudioCore.powerMode === "middle" ? 50 : 200)
-      return false
-    }
-
-    /*
-      @pause
-      */
-    pause() {
-      if (!this.isPlaying) return false
-      if (this._scheduler) {
-        window.clearInterval(this._scheduler)
-        this._scheduler = null
-      }
-      this.isPlaying = false
-      this._removeCommonGain()
+    _connect(node) {
+      if (!node || !this.isPlaying) return false
+      node.connect(this.commonGain).start()
+      node = null
       return false
     }
 
@@ -144,88 +212,21 @@ class Ongaq {
       - 各partに対してobserveを行う
       */
     _routine() {
-      let collected = []
-      let _soundTree
+      let collected
+      let objects
       this.parts.forEach(p => {
-        _soundTree = p._observe()
-        if (_soundTree) _soundTree = _soundTree.filter(i => i)
-        if (_soundTree.length > 0) collected = collected.concat(_soundTree)
+        objects = p._observe()
+        if (objects && objects.length > 0){
+          collected = collected || []
+          collected = collected.concat(objects)
+        }
       })
-      if (collected.length > 0) {
-        collected.forEach(i => {
-          if (i.layer && i.layer.length > 0) this._connect(i)
-        })
-      }
+      if(!collected || collected.length === 0) return false
+      collected.forEach(i => {
+        if (i.layer && i.layer.length > 0) this._connect(i)
+      })
       // TODO
       // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
-    }
-
-    /*
-    @find
-    collect part by tags
-    */
-  find(...tags) {
-    
-    let result = void 0
-    if(tags.length === 0) return result
-    this.parts.forEach(p =>{
-      if(tags.some(tag=>p.tags.include(tag))){
-        result = result || []
-        result.push(p)
-      }
-    })
-    return result
-
-  }
-
-    /*
-      @get params
-    */
-    get params(){
-      let loading = false
-      this.parts.forEach(p=>{ if(p._isLoading) loading = true })
-      return {
-        loading: loading,
-        isPlaying: this.isPlaying,
-        originTime: AudioCore.originTime,
-        currentTime: context.currentTime,
-        volume: this.volume
-      }
-    }
-
-    get constants(){
-      return {
-        DRUM_NOTE,
-        ROOT,
-        SCHEME
-      }
-    }
-
-    get version(){ return VERSION }
-
-    set volume(v){
-      if (typeof v !== "number" || v < 0 || v > 100) return false
-      if (v > 0) this._previousVolume = this._volume
-      this._volume = v / 100
-      this.commonGain && this.commonGain.gain.setValueAtTime(
-        this._volume,
-        time !== undefined ? time : context.currentTime + 0.01
-      )
-    }
-
-    get volume(){
-      return this._volume * 100
-    }
-
-    set bpm(v){
-      let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
-      if (!bpm) return false
-      this._bpm = bpm
-      this.parts.forEach(p => { p.bpm = bpm })
-    }
-
-    get bpm(){
-      return this._bpm 
     }
 
 }

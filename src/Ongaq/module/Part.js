@@ -88,6 +88,44 @@ class Part {
         this._generator = this._generator.bind(this)
     }
 
+    /*
+        @attach
+    */
+    attach(data = {}) {
+        this._attachment = Object.assign(this._attachment, data)
+    }
+
+    /*
+        @detach
+    */
+    detach(field) {
+        if (typeof field === "string") delete this._attachment[field]
+        else this._attachment = {}
+    }
+
+    /*
+        @tag
+        tags: A,B,C...
+        タグ A,B,C... を追加
+        */
+    tag(...tags) {
+        this.tags = Array.isArray(this.tags) ? this.tags : []
+        tags.forEach(tag => {
+            if (!this.tags.includes(tag)) this.tags.push(tag)
+        })
+    }
+
+    set mute(v) {
+        if (typeof v === "boolean") this._mute = v
+    }
+    get mute() { return this._mute }
+
+    set bpm(v) {
+        let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
+        if (bpm) this._bpm = bpm
+    }
+    get bpm() { return this._bpm }
+
     _loadSound(){
         this._isLoading = true
         return new Promise((resolve,reject)=>{
@@ -123,7 +161,7 @@ class Part {
 
     _observe(){
 
-        let observed = []
+        let observed
 
         /*
             keep _nextBeatTime being always behind secondToPrefetch
@@ -142,7 +180,10 @@ class Part {
             if(this._consumedBeats >= this._beatQuota) break
 
             let thisMomentObserved = !this.mute && this._capture()
-            if(thisMomentObserved && thisMomentObserved.layer.length > 0) observed = observed.concat(thisMomentObserved)
+            if(thisMomentObserved && thisMomentObserved.layer.length > 0){
+                observed = observed || []
+                observed = observed.concat(thisMomentObserved)
+            }
 
             this._nextBeatTime += this._secondsPerBeat
 
@@ -158,7 +199,6 @@ class Part {
                 break
             }
         }
-
         return observed
 
     }
@@ -188,47 +228,6 @@ class Part {
         else return false
 
     }
-
-    /*
-        @attach
-    */
-    attach(data = {}){
-        this._attachment = Object.assign(this._attachment,data)
-    }
-
-    /*
-        @detach
-    */
-    detach(field){
-        if (typeof field === "string"){
-            delete this._attachment[field]
-        } else {
-            this._attachment = {}
-        }
-    }
-
-    /*
-        @tag
-        tags: A,B,C...
-        タグ A,B,C... を追加
-        */
-    tag(...tags) {
-        this.tags = Array.isArray(this.tags) ? this.tags : []
-        tags.forEach(tag => {
-            if (!this.tags.includes(tag)) this.tags.push(tag)
-        })
-    }
-
-    set mute(v){
-        if(typeof v === "boolean") this._mute = v
-    }
-    get mute(){ return this._mute }
-
-    set bpm(v){
-        let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
-        if(bpm) this._bpm = bpm
-    }
-    get bpm(){ return this._bpm }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }
 
