@@ -4,7 +4,7 @@ class Filter {
         this.init(params)
     }
 
-    init(params = { type }){
+    init(params = { type: null }){
         this.type = typeof params.type === "string" ? params.type : "note"
         this.params = params
         delete params.type

@@ -28,7 +28,7 @@ const plugin = (()=>{
                 return [key]
 
             case "function":
-                _key = key( graph.noteIndex, graph.measure )
+                _key = key( graph.beatIndex, graph.measure )
                 if(_key){
                     if(Array.isArray(_key)) return _key
                     else if(typeof _key === "object") return Array.isArray(_key) ? _key : _key.key
@@ -58,7 +58,7 @@ const plugin = (()=>{
             case "number":
                 return o.length
             case "function":
-                return o.length( graph.noteIndex, graph.measure )
+                return o.length( graph.beatIndex, graph.measure )
             default:
                 return false
             }
@@ -72,12 +72,12 @@ const plugin = (()=>{
                 data: {
                     buffer: {
                         sound: graph.sound,
-                        length: length * graph.secondsPerNote,
+                        length: length * graph._secondsPerBeat,
                         key: k,
-                        startTime: graph.noteTime
+                        startTime: graph.beatTime
                     },
                     volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null,
-                    secondsPerNote: graph.secondsPerNote,
+                    _secondsPerBeat: graph._secondsPerBeat,
                     targetIndex: 0
                 }
             }
