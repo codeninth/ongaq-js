@@ -56,6 +56,11 @@ li a {
     font-size: 20px;
     border-radius: 4px;
 }
+li a:not(.start):not(.pause) {
+    background-color: #eee;
+    cursor: default;
+    transition: none;
+}
 a:before {
     display: inline;
     text-transform: capitalize;
@@ -66,7 +71,11 @@ a.start:before {
 a.pause:before {
     content: "pause"
 }
-a:hover {
+a:not(.start):not(.pause):before {
+    content: "...loading"
+}
+a.start:hover,
+a.pause:hover {
     opacity: 0.7;
 }
 footer {
@@ -91,7 +100,7 @@ p {
     <main>
         <h1>Ongaq JS Sample</h1>
         <ul>
-            <li><a id="button" class="start" href="javascript:;"></a></li>
+            <li><a id="button" class="" href="javascript:;"></a></li>
         </ul>
     </main>
     <footer>
