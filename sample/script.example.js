@@ -14,7 +14,6 @@ my_drums.add(
     })
 )
 
-
 const my_guitar = new Part({
     sound: "nylon_guitar",
     measure: 4
@@ -26,28 +25,24 @@ my_guitar.add(new Filter({
     active: (n,m)=> n === 0 && m === 1
 }))
 
-const loop = new Loop({
-    id: "my-first-loop",
-    bpm: 110
-})
-loop.add(my_drums)
-loop.add(my_guitar)
-
 const ongaq = new Ongaq({
     api_key: "master_api_key_00",
-    volume: 50
-})
-
-ongaq.import(loop).then(() => {
-    console.log("ready to start.")
-    const button = document.getElementById("button")
-    button.onclick = () => {
-        if(ongaq.params.isPlaying){
-            ongaq.pause()
-            button.className = "start"
-        } else {
-            ongaq.start()
-            button.className = "pause"
+    bpm: 130,
+    volume: 40,
+    onReady: ()=>{
+        const button = document.getElementById("button")
+        button.className = "start"
+        button.onclick = () => {
+            if (ongaq.params.isPlaying) {
+                ongaq.pause()
+                button.className = "start"
+            } else {
+                ongaq.start()
+                button.className = "pause"
+            }
         }
     }
 })
+ongaq.add(my_drums)
+ongaq.add(my_guitar)
+
