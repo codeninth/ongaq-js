@@ -25,21 +25,20 @@ const plugin = ( o = {}, graph = {} )=>{
     if(positionX === 0) return false
 
     return PrevElement=>{
-
-      if(!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return empty()
-
-      const newNodes = [ make("panner",{ positionX }) ]
-      const terminal = [ newNodes[0].terminal ]
-      PrevElement.terminal.forEach((pn,i)=>{
-        pn.terminal.connect( newNodes[0].terminal )
+      
+      if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
+      const newNode = make("panner",{ positionX })
+      const terminal = [ newNode.terminal ]
+      
+      PrevElement.terminal.forEach(pn=>{
+        pn.connect( newNode.terminal )
       })
-
       return {
         priority: MY_PRIORITY,
         terminal: terminal,
         initizalize: ()=>{
           PrevElement.initizalize()
-          newNodes.forEach(n=>n.initizalize())
+          newNode.initizalize()
         }
       }
 

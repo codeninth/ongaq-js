@@ -48,9 +48,10 @@ class Graph {
         else if(a.priority < b.priority) return -1
         else 0
       })
-      return this.layer.reduce(( accumulator, currentValue )=>{
-        return currentValue( accumulator() )
-      }, plugin.empty() )
+      console.log(this.layer)
+      return this.layer.reduce(( element, currentFunction )=>{
+        return currentFunction( element )
+      }, plugin.empty()() )
     }
 
 }

@@ -15,7 +15,7 @@ const plugin = (o = {},graph = {})=>{
 
     return PrevElement=>{
 
-      if(!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return empty()
+      if (!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return PrevElement
 
       let newNodes = []
       for(let i = 0, max = PrevElement.terminal.length, delayTime; i<max; i++){
@@ -25,7 +25,7 @@ const plugin = (o = {},graph = {})=>{
 
       let terminal = []
       PrevElement.terminal.forEach((pn,i)=>{
-        pn.terminal.connect( newNodes[i].terminal )
+        pn.connect( newNodes[i].terminal )
         terminal.push( newNodes[i].terminal )
       })
       newNodes = newNodes.slice( 0, PrevElement.terminal.length )

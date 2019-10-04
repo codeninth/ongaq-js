@@ -38,7 +38,7 @@ const makePanner = ({ positionX })=>{
         p.setOrientation(..._o)
     }
 
-    const x = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( data.positionX )
+    const x = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( positionX )
     const _p = [v.w / 2 + x, v.h / 2, 200]
     if(p.positionX){
         p.positionX.setValueAtTime(_p[0], context.currentTime)
