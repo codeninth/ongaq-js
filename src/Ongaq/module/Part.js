@@ -77,13 +77,13 @@ class Part {
         this.filters = this.filters || []
         this.filters.push(newFilter)
         this._generator = graph => {
-            return this.filters.reduce((prevGraph, nextFilter) => {
-                if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-                    return prevGraph[nextFilter.type](nextFilter.params)
-                } else {
-                    return prevGraph
-                }
-            }, graph)
+          return this.filters.reduce((prevGraph, nextFilter) => {
+            if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
+              prevGraph[nextFilter.type](nextFilter.params)
+            } else {
+              return prevGraph
+            }
+          }, graph)
         }
         this._generator = this._generator.bind(this)
     }
@@ -179,10 +179,10 @@ class Part {
         while (this.active && this._nextBeatTime < secondToPrefetch){
             if(this._consumedBeats >= this._beatQuota) break
 
-            let thisMomentObserved = !this.mute && this._capture()
-            if(thisMomentObserved && thisMomentObserved.layer.length > 0){
+            let element = !this.mute && this._capture()
+            if(element){
                 observed = observed || []
-                observed = observed.concat(thisMomentObserved)
+                observed = observed.concat(element)
             }
 
             this._nextBeatTime += this._secondsPerBeat
@@ -221,11 +221,8 @@ class Part {
                 attachment: this._attachment
             })
         )
-
-        this._currentSoundTree = soundTreePool.allocate( this._currentGraph )
-
-        if (this._currentSoundTree.layer.length > 0) return this._currentSoundTree
-        else return false
+        // [ element, element, ... ]
+        return this._currentGraph.prepared ? this._currentGraph.reduce() : false
 
     }
 

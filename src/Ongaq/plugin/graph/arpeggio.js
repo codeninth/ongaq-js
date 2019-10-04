@@ -1,4 +1,7 @@
-//========================================
+import empty from "./empty"
+import make from "../../module/make"
+const MY_PRIORITY = 240
+
 /*
   o: {
     step: 0.5 // relative length
@@ -7,29 +10,36 @@
 */
 const plugin = (o = {},graph = {})=>{
 
-    let newLayer = []
+    const step = typeof o.step === "number" && o.step < 16 ? o.step : 1
+    const range = typeof o.step === "number" && (o.range > 0 && o.range < 9) ? o.range : 3
 
-    let targetLayer = (()=>{
-        if(graph.layer.length === 0) return false
-        for(let i = graph.layer.length - 1,l = 0; i>=l; i--){
-            if(graph.layer[i][0].invoker === "audioBufferLine") return graph.layer[i]
+    return PrevElement=>{
+
+      if(!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return empty()
+
+      let newNodes = []
+      for(let i = 0, max = PrevElement.terminal.length, delayTime; i<max; i++){
+        delayTime = graph._secondsPerBeat * (i <= range ? i : range) * step
+        newNodes.push( make("delay",{ delayTime }) )
+      }
+
+      let terminal = []
+      PrevElement.terminal.forEach((pn,i)=>{
+        pn.terminal.connect( newNodes[i].terminal )
+        terminal.push( newNodes[i].terminal )
+      })
+      newNodes = newNodes.slice( 0, PrevElement.terminal.length )
+
+      return {
+        priority: MY_PRIORITY,
+        terminal: terminal,
+        initizalize: ()=>{
+          PrevElement.initizalize()
+          newNodes.forEach(n=>n.initizalize())
         }
-        return false
-    })()
-    if(!targetLayer) return false
-    let step = typeof o.step === "number" && o.step < 16 ? o.step : 1
+      }
 
-    targetLayer.forEach((target,i)=>{
-        newLayer.push({
-            invoker: "delayLine",
-            data: {
-                delayTime: (graph._secondsPerBeat * (i <= 3 ? i : 3) * step),
-                targetIndex: i
-            }
-        })
-    })
-
-    return newLayer
+    }
 
 }
 

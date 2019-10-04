@@ -16,6 +16,7 @@ class Graph {
         this.beatTime = option.beatTime
         this._secondsPerBeat = option._secondsPerBeat
         this.age = option.age
+        this.prepared = false
         this.layer = []
     }
 
@@ -36,9 +37,25 @@ class Graph {
 
     develop(method, o) {
         if (!this.pass(o.active)) return this
-        let newLayer = plugin[method](o, this)
-        if (newLayer) this.layer.push(newLayer)
+        const element = plugin[method](o, this)
+        if(element){
+          this.layer.push( element )
+          this.prepared = true
+        }
         return this
+    }
+
+    reduce(){
+      if(!this.prepared) return ()=>{}
+      this.layer.sort((a,b)=>{
+        if(a.priority > b.priority) return 1
+        else if(a.priority < b.priority) return -1
+        else 0
+      })
+      console.log(this.layer)
+      return this.layer.reduce(( accumulator, currentValue )=>{
+        return currentValue( accumulator )
+      })
     }
 
 }

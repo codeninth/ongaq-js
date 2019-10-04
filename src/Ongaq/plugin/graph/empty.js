@@ -1,11 +1,16 @@
-//========================================
-/*
+const MY_PRIORITY = 10
+const Element = ()=>{
 
-*/
-const plugin = (()=>{
+  return PrevElement=>{
+    return {
+      priority: MY_PRIORITY,
+      terminal: PrevElement.terminal || [],
+      initizalize: ()=>{
+        return PrevElement.initizalize()
+      }
+    }
+  }
 
-    return ()=>false
+}
 
-}).call(undefined,window || {})
-
-export default plugin
+export default Element

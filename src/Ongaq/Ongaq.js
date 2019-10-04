@@ -28,7 +28,7 @@ class Ongaq {
             part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
             part.measure = part.measure || DEFAULTS.MEASURE
             this.parts.set(part.id, part)
-          
+
             part._loadSound().then(()=>{
                 let isAllPartsLoaded = true
                 /*
@@ -154,7 +154,7 @@ class Ongaq {
     /*
       @_init
     */
-    
+
     _init({ api_key, volume, bpm, onReady }){
         this.parts = new Map()
         this.isPlaying = false
@@ -163,9 +163,9 @@ class Ongaq {
         this._nextZeroTime = 0
         this.bpm = bpm || DEFAULTS.BPM
         if (AudioCore.powerMode === "low") {
-            window.addEventListener("blur", () => { this.pauseScheduling() }) 
+            window.addEventListener("blur", () => { this.pauseScheduling() })
         }
-        this.onReady = typeof onReady === "function" && onReady 
+        this.onReady = typeof onReady === "function" && onReady
         this._routine = this._routine.bind(this)
         BufferYard.set({ api_key })
     }
@@ -199,11 +199,13 @@ class Ongaq {
     /*
       @_connect
     */
-    _connect(node) {
-        if (!node || !this.isPlaying) return false
-        node.connect(this.commonGain).start()
-        node = null
-        return false
+    _connect(elem) {
+        if (!elem || !this.isPlaying) return false
+        elem.terminal.forEach(t=>{
+          this.commonGain.connect( t )
+        })
+        elem.forEach(e=>e.initizalize())
+        elem = null
     }
 
     /*
@@ -212,18 +214,16 @@ class Ongaq {
       */
     _routine() {
         let collected
-        let nodes
+        let elements
         this.parts.forEach(p => {
-            nodes = p._observe()
-            if (nodes && nodes.length > 0){
+            elements = p._observe()
+            if (elements && elements.length > 0){
                 collected = collected || []
-                collected = collected.concat(nodes)
+                collected = collected.concat(elements)
             }
         })
         if(!collected || collected.length === 0) return false
-        collected.forEach(i => {
-            if (i.layer && i.layer.length > 0) this._connect(i)
-        })
+        collected.forEach(elem => { this._connect(elem) })
         // TODO
         // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
     }
