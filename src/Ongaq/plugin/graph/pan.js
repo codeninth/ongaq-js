@@ -1,13 +1,47 @@
 import Helper from "../../module/Helper"
-import empty from "./empty"
 import make from "../../module/make"
-const MY_PRIORITY = 340
+import PRIORITY from "../../plugin/graph/PRIORITY"
+const MY_PRIORITY = PRIORITY.pan
 
 /*
   o: {
     x: 90
   }
 */
+const pannerPool = new Map()
+const functionPool = new Map()
+
+const generate = ( positionX )=>{
+
+  return PrevElement => {
+
+    if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
+    let newNode
+    if (pannerPool.get(positionX)) {
+      newNode = pannerPool.get(positionX)
+    } else {
+      pannerPool.set(positionX, make("panner", { positionX }))
+      newNode = pannerPool.get(positionX)
+    }
+    const terminal = [newNode.terminal]
+
+    PrevElement.terminal.forEach(pn => {
+      pn.connect(newNode.terminal)
+    })
+    return {
+      priority: MY_PRIORITY,
+      terminal: terminal,
+      initizalize: () => {
+        PrevElement.initizalize()
+        newNode.initizalize()
+      }
+    }
+
+  }
+
+}
+
+
 const plugin = ( o = {}, graph = {} )=>{
 
     const positionX = ((x)=>{
@@ -23,25 +57,11 @@ const plugin = ( o = {}, graph = {} )=>{
         }
     })(o.x)
     if(positionX === 0) return false
-
-    return PrevElement=>{
-      
-      if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
-      const newNode = make("panner",{ positionX })
-      const terminal = [ newNode.terminal ]
-      
-      PrevElement.terminal.forEach(pn=>{
-        pn.connect( newNode.terminal )
-      })
-      return {
-        priority: MY_PRIORITY,
-        terminal: terminal,
-        initizalize: ()=>{
-          PrevElement.initizalize()
-          newNode.initizalize()
-        }
-      }
-
+    
+    if(functionPool.get(positionX)) return functionPool.get(positionX)
+    else {
+      functionPool.set( positionX, generate(positionX) )
+      return functionPool.get(positionX)
     }
 
 }
