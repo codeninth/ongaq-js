@@ -45,7 +45,7 @@ ul {
     margin: 0;
     padding: 0;
 }
-li a {
+li .button {
     display: block;
     text-decoration: none;
     color: #33634f;
@@ -56,17 +56,26 @@ li a {
     font-size: 20px;
     border-radius: 4px;
 }
-a:before {
+li .button:not(.start):not(.pause) {
+    background-color: #eee;
+    cursor: default;
+    transition: none;
+}
+.button:before {
     display: inline;
     text-transform: capitalize;
 }
-a.start:before {
+.button.start:before {
     content: "start"
 }
-a.pause:before {
+.button.pause:before {
     content: "pause"
 }
-a:hover {
+.button:not(.start):not(.pause):before {
+    content: "...loading"
+}
+.button.start:hover,
+.button.pause:hover {
     opacity: 0.7;
 }
 footer {
@@ -91,7 +100,7 @@ p {
     <main>
         <h1>Ongaq JS Sample</h1>
         <ul>
-            <li><a id="button" class="start" href="javascript:;"></a></li>
+            <li><a id="button" class="button" href="javascript:;"></a></li>
         </ul>
     </main>
     <footer>
@@ -99,7 +108,8 @@ p {
         <p><a href="https://www.ongaqjs.com/tutrial/">https://www.ongaqjs.com/tutrial/</a></p>
     </footer>
 <!-- include ongaq.js before your original script -->
-<script src="https://asset.ongaqjs.com/ongaq.js"></script>
+<script src="../build/ongaq.js"></script>
+<!-- <script src="https://asset.ongaqjs.com/ongaq.js"></script> -->
 <script src="./script.js"></script>
 </body>
 </html>

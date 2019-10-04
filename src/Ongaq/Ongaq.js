@@ -17,7 +17,6 @@ class Ongaq {
 
     /*
       @add
-      - jsonからtune/partオブジェクトを作成する
     */
     add(part){
 
@@ -48,7 +47,7 @@ class Ongaq {
 
     /*
       @start
-      - 一定の間隔でobserveを実行していく
+      - 一定の間隔で _observe を実行していく
       */
     start() {
         if (this.isPlaying || this.parts.size === 0) return false
@@ -213,12 +212,12 @@ class Ongaq {
       */
     _routine() {
         let collected
-        let objects
+        let nodes
         this.parts.forEach(p => {
-            objects = p._observe()
-            if (objects && objects.length > 0){
+            nodes = p._observe()
+            if (nodes && nodes.length > 0){
                 collected = collected || []
-                collected = collected.concat(objects)
+                collected = collected.concat(nodes)
             }
         })
         if(!collected || collected.length === 0) return false
@@ -230,7 +229,5 @@ class Ongaq {
     }
 
 }
-
-window.Ongaq = window.Ongaq || Ongaq
 
 export default Ongaq

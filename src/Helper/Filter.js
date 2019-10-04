@@ -12,6 +12,4 @@ class Filter {
 
 }
 
-window.Filter = window.Filter || Filter
-
 export default Filter
