@@ -71,9 +71,8 @@ const plugin = ( o = {}, graph = {} )=>{
   */
 
   return PrevElement=>{
-
     let newNodes = key.map(k=>{
-      return make("audioBuffer",{
+      return make("audiobuffer",{
         buffer: {
           sound: graph.sound,
           length: length * graph._secondsPerBeat,
@@ -83,7 +82,6 @@ const plugin = ( o = {}, graph = {} )=>{
         volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null
       })
     })
-
     const terminal = PrevElement.terminal || []
     terminal.push(...newNodes.map(n=>n.terminal))
 
@@ -92,7 +90,9 @@ const plugin = ( o = {}, graph = {} )=>{
       terminal: terminal,
       initizalize: ()=>{
         PrevElement.initizalize()
-        newNodes.forEach(n=>n.initizalize())
+        newNodes.forEach(n=>{
+          n.initizalize()
+        })
       }
     }
 

@@ -79,7 +79,7 @@ class Part {
         this._generator = graph => {
           return this.filters.reduce((prevGraph, nextFilter) => {
             if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-              prevGraph[nextFilter.type](nextFilter.params)
+              return prevGraph[nextFilter.type](nextFilter.params)
             } else {
               return prevGraph
             }
@@ -221,8 +221,7 @@ class Part {
                 attachment: this._attachment
             })
         )
-        // [ element, element, ... ]
-        return this._currentGraph.prepared ? this._currentGraph.reduce() : false
+        return this._currentGraph.reduce()
 
     }
 

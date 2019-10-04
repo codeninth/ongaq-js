@@ -4,9 +4,9 @@ const Element = ()=>{
   return PrevElement=>{
     return {
       priority: MY_PRIORITY,
-      terminal: PrevElement.terminal || [],
+      terminal: PrevElement ? (PrevElement.terminal || []) : [],
       initizalize: ()=>{
-        return PrevElement.initizalize()
+        return PrevElement && PrevElement.initizalize()
       }
     }
   }

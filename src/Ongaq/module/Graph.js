@@ -20,10 +20,9 @@ class Graph {
         this.layer = []
     }
 
+    arpeggio(o = {}) { return this.develop("arpeggio", o) }
     note(o = {}) { return this.develop("note", o) }
     pan(o = {}) { return this.develop("pan", o) }
-    arpeggio(o = {}) { return this.develop("arpeggio", o) }
-    empty(o = {}) { return this.develop("empty", o) }
     phrase(o = {}) { return this.develop("phrase", o) }
 
     pass(active) {
@@ -38,24 +37,20 @@ class Graph {
     develop(method, o) {
         if (!this.pass(o.active)) return this
         const element = plugin[method](o, this)
-        if(element){
-          this.layer.push( element )
-          this.prepared = true
-        }
+        if(element) this.layer.push( element )
         return this
     }
 
     reduce(){
-      if(!this.prepared) return ()=>{}
+      if(this.layer.length === 0) return null
       this.layer.sort((a,b)=>{
         if(a.priority > b.priority) return 1
         else if(a.priority < b.priority) return -1
         else 0
       })
-      console.log(this.layer)
       return this.layer.reduce(( accumulator, currentValue )=>{
-        return currentValue( accumulator )
-      })
+        return currentValue( accumulator() )
+      }, plugin.empty() )
     }
 
 }
