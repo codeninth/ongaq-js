@@ -1,6 +1,6 @@
-import empty from "./empty"
 import make from "../../module/make"
-const MY_PRIORITY = 240
+import PRIORITY from "../../plugin/graph/PRIORITY"
+const MY_PRIORITY = PRIORITY.arpeggio
 
 /*
   o: {

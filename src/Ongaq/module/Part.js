@@ -62,7 +62,7 @@ class Part {
     }
 
     add(newFilter){
-        if(!newFilter) return false
+        if(!newFilter || !newFilter.priority || newFilter.priority === -1) return false
         /*
             generate a function which receives & returns Graph object.
             like this
@@ -76,6 +76,11 @@ class Part {
             */
         this.filters = this.filters || []
         this.filters.push(newFilter)
+        this.filters.sort((a,b)=>{
+            if(a.priority > b.priority) return 1
+            else if(a.priority < b.priority) return -1
+            else return 0
+        })
         this._generator = graph => {
           return this.filters.reduce((prevGraph, nextFilter) => {
             if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {

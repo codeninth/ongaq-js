@@ -1,4 +1,5 @@
-const MY_PRIORITY = 10
+import PRIORITY from "../../plugin/graph/PRIORITY"
+const MY_PRIORITY = PRIORITY.empty
 const Element = ()=>{
 
   return PrevElement=>{

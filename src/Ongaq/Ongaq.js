@@ -201,7 +201,6 @@ class Ongaq {
     */
     _connect(elem) {
         if (!elem || !this.isPlaying) return false
-        if(!elem.terminal) console.log(elem)
         elem.terminal.forEach(t=>{
           t.connect( this.commonGain )
         })

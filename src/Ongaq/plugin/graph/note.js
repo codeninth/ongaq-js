@@ -1,6 +1,6 @@
-import empty from "./empty"
 import make from "../../module/make"
-const MY_PRIORITY = 140
+import PRIORITY from "../../plugin/graph/PRIORITY"
+const MY_PRIORITY = PRIORITY.note
 const DEFAULT_NOTE_LENGTH = 4
 
 /*
