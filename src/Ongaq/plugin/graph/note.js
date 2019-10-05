@@ -82,12 +82,10 @@ const plugin = ( o = {}, graph = {} )=>{
         })
         
         PrevElement.terminal[0] = PrevElement.terminal[0] || []
-        PrevElement.terminal[0].push(...newNodes.map(n => n.terminal))
+        PrevElement.terminal[0].push(...newNodes)
         PrevElement.priority = MY_PRIORITY
-        PrevElement._inits.push(()=>{
-            newNodes.forEach(n => n.initizalize() )
-        })
-
+        PrevElement._length = length * graph._secondsPerBeat
+        PrevElement._startTime = graph.beatTime
         return PrevElement
 
     }

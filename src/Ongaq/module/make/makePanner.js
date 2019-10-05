@@ -48,10 +48,7 @@ const makePanner = ({ positionX })=>{
         p.setPosition(..._p)
     }
 
-    return {
-        terminal: p,
-        initizalize: ()=>{}
-    }
+    return p
 
 }
 

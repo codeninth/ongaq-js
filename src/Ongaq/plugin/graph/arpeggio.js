@@ -1,6 +1,9 @@
+import AudioCore from "../../module/AudioCore"
+import Helper from "../../module/Helper"
 import make from "../../module/make"
 import PRIORITY from "../../plugin/graph/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
+const context = AudioCore.context
 
 /*
   o: {
@@ -15,10 +18,13 @@ const generate = (step, range, secondsPerBeat) => {
 
     return PrevElement => {
 
-        if (!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return PrevElement
+        if (
+            PrevElement.terminal.length === 0 ||
+            PrevElement.terminal[ PrevElement.terminal.length - 1 ].length === 0
+        ) return PrevElement
 
         let newNodes = []
-        for (let i = 0, max = PrevElement.terminal.length, delayTime; i < max; i++) {
+        for (let i = 0, max = PrevElement.terminal[ PrevElement.terminal.length - 1 ].length, delayTime; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
             if (!delayPool.get(delayTime)) {
                 delayPool.set(delayTime, make("delay", { delayTime }))
@@ -26,21 +32,22 @@ const generate = (step, range, secondsPerBeat) => {
             newNodes.push(delayPool.get(delayTime))
         }
 
-        let terminal = []
-        PrevElement.terminal.forEach((pn, i) => {
-            pn.connect(newNodes[i].terminal)
-            terminal.push(newNodes[i].terminal)
-        })
-        newNodes = newNodes.slice(0, PrevElement.terminal.length)
+        let g = context.createGain()
+        g.gain.setValueAtTime(1, 0)
+        g.gain.setValueCurveAtTime(
+            Helper.getWaveShapeArray(0),
+            PrevElement._startTime + PrevElement._length - 0.02, 0.02
+        )
+        newNodes.forEach(n=>{ n.connect(g) })
 
-        return {
-            priority: MY_PRIORITY,
-            terminal: terminal,
-            initizalize: () => {
-                PrevElement.initizalize()
-                newNodes.forEach(n => n.initizalize())
-            }
-        }
+        PrevElement.terminal.push([g])
+        PrevElement.terminal[ PrevElement.terminal.length - 2 ].forEach((pn, i) => {
+            pn.connect( newNodes[ i <= newNodes.length - 1 ? i : newNodes.length - 1 ] )
+        })
+        newNodes = newNodes.slice(0, PrevElement.terminal[ PrevElement.terminal.length - 2 ].length)
+
+        PrevElement.priority = MY_PRIORITY
+        return PrevElement
 
     }
 

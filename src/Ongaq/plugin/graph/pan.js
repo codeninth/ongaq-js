@@ -12,24 +12,23 @@ const pannerPool = new Map()
 const functionPool = new Map()
 
 const generate = ( positionX )=>{
+
     return PrevElement => {
 
         if (PrevElement.terminal.length === 0) return PrevElement
         if (!pannerPool.get(positionX)) pannerPool.set(positionX, make("panner", { positionX }))
         const newNode = pannerPool.get(positionX)
         
-        PrevElement.terminal.push([ newNode.terminal ])
+        PrevElement.terminal.push([ newNode ])
 
         PrevElement.terminal[ PrevElement.terminal.length - 2 ].forEach(pn => {
-            pn.connect(newNode.terminal)
+            pn.connect(newNode)
         })
         PrevElement.priority = MY_PRIORITY
-        PrevElement._inits.push(() => {
-            newNode.initizalize()
-        })
         return PrevElement
 
     }
+
 }
 
 

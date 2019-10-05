@@ -11,7 +11,6 @@ const makeAudioBuffer = ({ buffer, volume })=>{
     let s = context.createBufferSource()
     s.length = buffer.length
     s.buffer = audioBuffer[0]
-    s.startTime = buffer.startTime || context.currentTime
 
     let g = context.createGain()
     g.gain.setValueAtTime( ( volume && volume >= 0 && volume < 1) ? volume : 1, 0 )
@@ -19,15 +18,10 @@ const makeAudioBuffer = ({ buffer, volume })=>{
         Helper.getWaveShapeArray(volume),
         buffer.startTime + buffer.length - 0.02, 0.02
     )
-
+    s.start(buffer.startTime)
     s.connect(g)
 
-    return {
-        terminal: g,
-        initizalize: ()=>{
-            s.start(s.startTime)
-        }
-    }
+    return g
 
 }
 
