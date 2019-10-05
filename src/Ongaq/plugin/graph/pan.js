@@ -13,31 +13,31 @@ const functionPool = new Map()
 
 const generate = ( positionX )=>{
 
-  return PrevElement => {
+    return PrevElement => {
 
-    if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
-    let newNode
-    if (pannerPool.get(positionX)) {
-      newNode = pannerPool.get(positionX)
-    } else {
-      pannerPool.set(positionX, make("panner", { positionX }))
-      newNode = pannerPool.get(positionX)
+        if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
+        let newNode
+        if (pannerPool.get(positionX)) {
+            newNode = pannerPool.get(positionX)
+        } else {
+            pannerPool.set(positionX, make("panner", { positionX }))
+            newNode = pannerPool.get(positionX)
+        }
+        const terminal = [newNode.terminal]
+
+        PrevElement.terminal.forEach(pn => {
+            pn.connect(newNode.terminal)
+        })
+        return {
+            priority: MY_PRIORITY,
+            terminal: terminal,
+            initizalize: () => {
+                PrevElement.initizalize()
+                newNode.initizalize()
+            }
+        }
+
     }
-    const terminal = [newNode.terminal]
-
-    PrevElement.terminal.forEach(pn => {
-      pn.connect(newNode.terminal)
-    })
-    return {
-      priority: MY_PRIORITY,
-      terminal: terminal,
-      initizalize: () => {
-        PrevElement.initizalize()
-        newNode.initizalize()
-      }
-    }
-
-  }
 
 }
 
@@ -60,8 +60,8 @@ const plugin = ( o = {}, graph = {} )=>{
     
     if(functionPool.get(positionX)) return functionPool.get(positionX)
     else {
-      functionPool.set( positionX, generate(positionX) )
-      return functionPool.get(positionX)
+        functionPool.set( positionX, generate(positionX) )
+        return functionPool.get(positionX)
     }
 
 }

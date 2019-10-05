@@ -82,13 +82,13 @@ class Part {
             else return 0
         })
         this._generator = graph => {
-          return this.filters.reduce((prevGraph, nextFilter) => {
-            if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-              return prevGraph[nextFilter.type](nextFilter.params)
-            } else {
-              return prevGraph
-            }
-          }, graph)
+            return this.filters.reduce((prevGraph, nextFilter) => {
+                if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
+                    return prevGraph[nextFilter.type](nextFilter.params)
+                } else {
+                    return prevGraph
+                }
+            }, graph)
         }
         this._generator = this._generator.bind(this)
     }

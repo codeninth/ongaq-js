@@ -15,29 +15,29 @@ const plugin = (o = {},graph = {})=>{
 
     return PrevElement=>{
 
-      if (!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return PrevElement
+        if (!Array.isArray(PrevElement.terminal) && PrevElement.terminal.length === 0) return PrevElement
 
-      let newNodes = []
-      for(let i = 0, max = PrevElement.terminal.length, delayTime; i<max; i++){
-        delayTime = graph._secondsPerBeat * (i <= range ? i : range) * step
-        newNodes.push( make("delay",{ delayTime }) )
-      }
-
-      let terminal = []
-      PrevElement.terminal.forEach((pn,i)=>{
-        pn.connect( newNodes[i].terminal )
-        terminal.push( newNodes[i].terminal )
-      })
-      newNodes = newNodes.slice( 0, PrevElement.terminal.length )
-
-      return {
-        priority: MY_PRIORITY,
-        terminal: terminal,
-        initizalize: ()=>{
-          PrevElement.initizalize()
-          newNodes.forEach(n=>n.initizalize())
+        let newNodes = []
+        for(let i = 0, max = PrevElement.terminal.length, delayTime; i<max; i++){
+            delayTime = graph._secondsPerBeat * (i <= range ? i : range) * step
+            newNodes.push( make("delay",{ delayTime }) )
         }
-      }
+
+        let terminal = []
+        PrevElement.terminal.forEach((pn,i)=>{
+            pn.connect( newNodes[i].terminal )
+            terminal.push( newNodes[i].terminal )
+        })
+        newNodes = newNodes.slice( 0, PrevElement.terminal.length )
+
+        return {
+            priority: MY_PRIORITY,
+            terminal: terminal,
+            initizalize: ()=>{
+                PrevElement.initizalize()
+                newNodes.forEach(n=>n.initizalize())
+            }
+        }
 
     }
 

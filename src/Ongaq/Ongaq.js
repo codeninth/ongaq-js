@@ -202,7 +202,7 @@ class Ongaq {
     _connect(elem) {
         if (!elem || !this.isPlaying) return false
         elem.terminal.forEach(t=>{
-          t.connect( this.commonGain )
+            t.connect( this.commonGain )
         })
         elem.initizalize()
     }

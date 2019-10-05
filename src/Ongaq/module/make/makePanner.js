@@ -2,8 +2,8 @@ import AudioCore from "../AudioCore"
 const context = AudioCore.context
 
 const v = {
-  w: window.innerWidth,
-  h: window.innerHeight,
+    w: window.innerWidth,
+    h: window.innerHeight,
 }
 const l = context.listener
 
@@ -49,8 +49,8 @@ const makePanner = ({ positionX })=>{
     }
 
     return {
-      terminal: p,
-      initizalize: ()=>{}
+        terminal: p,
+        initizalize: ()=>{}
     }
 
 }

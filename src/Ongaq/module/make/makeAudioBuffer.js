@@ -23,10 +23,10 @@ const makeAudioBuffer = ({ buffer, volume })=>{
     s.connect(g)
 
     return {
-      terminal: g,
-      initizalize: ()=>{
-          s.start(s.startTime)
-      }
+        terminal: g,
+        initizalize: ()=>{
+            s.start(s.startTime)
+        }
     }
 
 }

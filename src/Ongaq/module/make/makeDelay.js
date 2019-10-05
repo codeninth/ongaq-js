@@ -4,8 +4,8 @@ const makeDelay = ({ delayTime })=>{
     d.delayTime.value = delayTime
 
     return {
-      terminal: d,
-      initizalize: ()=>{}
+        terminal: d,
+        initizalize: ()=>{}
     }
 
 }

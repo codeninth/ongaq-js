@@ -25,15 +25,15 @@ class Graph {
     phrase(o = {}) { return this._develop("phrase", o) }
 
     reduce() {
-      if (this.layer.length === 0) return null
-      this.layer.sort((a, b) => {
-        if (a.priority > b.priority) return 1
-        else if (a.priority < b.priority) return -1
-        else 0
-      })
-      return this.layer.reduce((element, currentFunction) => {
-        return currentFunction(element)
-      }, plugin.empty()())
+        if (this.layer.length === 0) return null
+        this.layer.sort((a, b) => {
+            if (a.priority > b.priority) return 1
+            else if (a.priority < b.priority) return -1
+            else 0
+        })
+        return this.layer.reduce((element, currentFunction) => {
+            return currentFunction(element)
+        }, plugin.empty()())
     }
 
     _pass(active) {
