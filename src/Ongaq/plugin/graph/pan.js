@@ -15,26 +15,20 @@ const generate = ( positionX )=>{
 
     return PrevElement => {
 
-        if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
-        let newNode
-        if (!pannerPool.get(positionX)) {
-            pannerPool.set(positionX, make("panner", { positionX }))
-        }
-        newNode = pannerPool.get(positionX)
+        if (PrevElement.terminal.length === 0) return PrevElement
+        if (!pannerPool.get(positionX)) pannerPool.set(positionX, make("panner", { positionX }))
+        const newNode = pannerPool.get(positionX)
         
-        const terminal = [newNode.terminal]
+        PrevElement.terminal.push([ newNode.terminal ])
 
-        PrevElement.terminal.forEach(pn => {
+        PrevElement.terminal[ PrevElement.terminal.length - 2 ].forEach(pn => {
             pn.connect(newNode.terminal)
         })
-        return {
-            priority: MY_PRIORITY,
-            terminal: terminal,
-            initizalize: () => {
-                PrevElement.initizalize()
-                newNode.initizalize()
-            }
-        }
+        PrevElement.priority = MY_PRIORITY
+        PrevElement._inits.push(() => {
+            newNode.initizalize()
+        })
+        return PrevElement
 
     }
 

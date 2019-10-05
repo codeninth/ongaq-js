@@ -82,19 +82,15 @@ const plugin = ( o = {}, graph = {} )=>{
                 volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null
             })
         })
-        const terminal = PrevElement.terminal || []
-        terminal.push(...newNodes.map(n=>n.terminal))
+        
+        PrevElement.terminal[0] = PrevElement.terminal[0] || []
+        PrevElement.terminal[0].push(...newNodes.map(n => n.terminal))
+        PrevElement.priority = MY_PRIORITY
+        PrevElement._inits.push(()=>{
+            newNodes.forEach(n => n.initizalize() )
+        })
 
-        return {
-            priority: MY_PRIORITY,
-            terminal: terminal,
-            initizalize: ()=>{
-                PrevElement.initizalize()
-                newNodes.forEach(n=>{
-                    n.initizalize()
-                })
-            }
-        }
+        return PrevElement
 
     }
 

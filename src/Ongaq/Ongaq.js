@@ -2,6 +2,7 @@ import AudioCore from "./module/AudioCore"
 import BufferYard from "./module/BufferYard"
 import Helper from "./module/Helper"
 import DEFAULTS from "./module/defaults"
+import ElementPool from "./module/pool.element"
 import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
@@ -201,10 +202,13 @@ class Ongaq {
     */
     _connect(elem) {
         if (!elem || !this.isPlaying) return false
-        elem.terminal.forEach(t=>{
-            t.connect( this.commonGain )
-        })
-        elem.initizalize()
+        if(elem.terminal.length > 0){
+            elem.terminal[elem.terminal.length - 1].forEach(t => {
+                t.connect(this.commonGain)
+            })
+        }
+        elem.initialize()
+        ElementPool.retrieve( elem )
     }
 
     /*
