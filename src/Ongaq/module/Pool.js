@@ -42,11 +42,9 @@ class Pool {
         } else {
             obj = this.pool.pop()
             if (obj) {
-                console.log(metrics.recycled)
                 metrics.recycled++
                 this.metrics.recycled++
             } else {
-                console.log("++")
                 obj = this.make(option)
             }
         }

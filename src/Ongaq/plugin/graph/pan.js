@@ -12,7 +12,6 @@ const pannerPool = new Map()
 const functionPool = new Map()
 
 const generate = ( positionX )=>{
-
     return PrevElement => {
 
         if (PrevElement.terminal.length === 0) return PrevElement
@@ -31,7 +30,6 @@ const generate = ( positionX )=>{
         return PrevElement
 
     }
-
 }
 
 
