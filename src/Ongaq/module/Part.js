@@ -84,7 +84,11 @@ class Part {
         this._generator = graph => {
             return this.filters.reduce((prevGraph, nextFilter) => {
                 if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-                    return prevGraph[nextFilter.type](nextFilter.params)
+                    if (nextFilter.type !== "note" && !graph._hasNote){
+                        return prevGraph
+                    } else {
+                        return prevGraph[nextFilter.type](nextFilter.params)
+                    }
                 } else {
                     return prevGraph
                 }

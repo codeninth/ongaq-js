@@ -14,7 +14,6 @@ const functionPool = new Map()
 const generate = ( positionX )=>{
 
     return PrevElement => {
-
         if (PrevElement.terminal.length === 0) return PrevElement
         if (!pannerPool.get(positionX)) pannerPool.set(positionX, make("panner", { positionX }))
         const newNode = pannerPool.get(positionX)

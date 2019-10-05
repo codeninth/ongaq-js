@@ -45,8 +45,10 @@ const plugin = ( o = {}, graph = {} )=>{
         }
 
     })(o.key)
-    if(!key || key.length === 0) return false
-
+    if(!key || key.length === 0){
+        graph._hasNote = false
+        return false
+    }
     /*
       calculate relative length of note
   */
@@ -61,8 +63,12 @@ const plugin = ( o = {}, graph = {} )=>{
             return false
         }
     })()
-    if(!length) return false
-
+    if(!length){
+        graph._hasNote = false
+        return false
+    }
+    graph._hasNote = true
+    
     /*
     必ず自身と同じ構造のオブジェクトを返す関数を返す
     =====================================================================
