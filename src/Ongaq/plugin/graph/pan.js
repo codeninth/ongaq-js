@@ -17,12 +17,11 @@ const generate = ( positionX )=>{
 
         if (!Array.isArray(PrevElement.terminal) || PrevElement.terminal.length === 0) return PrevElement
         let newNode
-        if (pannerPool.get(positionX)) {
-            newNode = pannerPool.get(positionX)
-        } else {
+        if (!pannerPool.get(positionX)) {
             pannerPool.set(positionX, make("panner", { positionX }))
-            newNode = pannerPool.get(positionX)
         }
+        newNode = pannerPool.get(positionX)
+        
         const terminal = [newNode.terminal]
 
         PrevElement.terminal.forEach(pn => {

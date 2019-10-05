@@ -1,3 +1,6 @@
+import AudioCore from "../AudioCore"
+const context = AudioCore.context
+
 const makeDelay = ({ delayTime })=>{
 
     let d = context.createDelay()
