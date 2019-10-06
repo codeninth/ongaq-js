@@ -26,7 +26,7 @@ if(l.positionX){
     l.setPosition(v.w / 2,v.h / 2,200)
 }
 
-const makePanner = ({ positionX })=>{
+const makePanner = ({ x })=>{
 
     const p = context.createPanner()
     const _o = [1, 0, 0]
@@ -38,8 +38,8 @@ const makePanner = ({ positionX })=>{
         p.setOrientation(..._o)
     }
 
-    const x = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( positionX )
-    const _p = [v.w / 2 + x, v.h / 2, 200]
+    const xValue = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( x )
+    const _p = [v.w / 2 + xValue, v.h / 2, 200]
     if(p.positionX){
         p.positionX.setValueAtTime(_p[0], context.currentTime)
         p.positionY.setValueAtTime(_p[1], context.currentTime)

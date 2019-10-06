@@ -74,7 +74,7 @@ const plugin = ( o = {}, graph = {} )=>{
     =====================================================================
   */
 
-    return PrevElement=>{
+    return E=>{
         let newNodes = key.map(k=>{
             return make("audiobuffer",{
                 buffer: {
@@ -87,12 +87,13 @@ const plugin = ( o = {}, graph = {} )=>{
             })
         })
         
-        PrevElement.terminal[0] = PrevElement.terminal[0] || []
-        PrevElement.terminal[0].push(...newNodes)
-        PrevElement.priority = MY_PRIORITY
-        PrevElement._length = length * graph._secondsPerBeat
-        PrevElement._startTime = graph.beatTime
-        return PrevElement
+        E.terminal[0] = E.terminal[0] || []
+        E.terminal[0].push(...newNodes)
+        E.priority = MY_PRIORITY
+        E.footprints = E.footprints || {}
+        E.footprints._noteLength = length * graph._secondsPerBeat
+        E.footprints._graphBeatTime = graph.beatTime
+        return E
 
     }
 

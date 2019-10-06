@@ -11,20 +11,20 @@ const MY_PRIORITY = PRIORITY.pan
 const pannerPool = new Map()
 const functionPool = new Map()
 
-const generate = ( positionX )=>{
+const generate = ( x )=>{
 
-    return PrevElement => {
-        if (PrevElement.terminal.length === 0) return PrevElement
-        if (!pannerPool.get(positionX)) pannerPool.set(positionX, make("panner", { positionX }))
-        const newNode = pannerPool.get(positionX)
+    return E => {
+        if (E.terminal.length === 0) return E
+        if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }))
+        const newNode = pannerPool.get(x)
         
-        PrevElement.terminal.push([ newNode ])
+        E.terminal.push([ newNode ])
 
-        PrevElement.terminal[ PrevElement.terminal.length - 2 ].forEach(pn => {
+        E.terminal[ E.terminal.length - 2 ].forEach(pn => {
             pn.connect(newNode)
         })
-        PrevElement.priority = MY_PRIORITY
-        return PrevElement
+        E.priority = MY_PRIORITY
+        return E
 
     }
 
@@ -33,9 +33,9 @@ const generate = ( positionX )=>{
 
 const plugin = ( o = {}, graph = {} )=>{
 
-    const positionX = ((x)=>{
+    const x = ((x)=>{
         switch(typeof x){
-        // positionX の値は 仕様上角度を30で割った値を使う
+        // x の値は 仕様上角度を30で割った値を使う
         case "string":
         case "number":
             return Helper.toInt(x,{ max: 90, min: -90 }) / 30
@@ -45,12 +45,12 @@ const plugin = ( o = {}, graph = {} )=>{
             return 0
         }
     })(o.x)
-    if(positionX === 0) return false
+    if(x === 0) return false
     
-    if(functionPool.get(positionX)) return functionPool.get(positionX)
+    if(functionPool.get(x)) return functionPool.get(x)
     else {
-        functionPool.set( positionX, generate(positionX) )
-        return functionPool.get(positionX)
+        functionPool.set( x, generate(x) )
+        return functionPool.get(x)
     }
 
 }

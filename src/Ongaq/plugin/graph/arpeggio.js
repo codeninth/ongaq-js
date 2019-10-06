@@ -16,15 +16,15 @@ const functionPool = new Map()
 
 const generate = (step, range, secondsPerBeat) => {
 
-    return PrevElement => {
+    return E => {
 
         if (
-            PrevElement.terminal.length === 0 ||
-            PrevElement.terminal[ PrevElement.terminal.length - 1 ].length === 0
-        ) return PrevElement
+            E.terminal.length === 0 ||
+            E.terminal[ E.terminal.length - 1 ].length === 0
+        ) return E
 
         let newNodes = []
-        for (let i = 0, max = PrevElement.terminal[ PrevElement.terminal.length - 1 ].length, delayTime; i < max; i++) {
+        for (let i = 0, max = E.terminal[ E.terminal.length - 1 ].length, delayTime; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
             if (!delayPool.get(delayTime)) {
                 delayPool.set(delayTime, make("delay", { delayTime }))
@@ -36,18 +36,18 @@ const generate = (step, range, secondsPerBeat) => {
         g.gain.setValueAtTime(1, 0)
         g.gain.setValueCurveAtTime(
             Helper.getWaveShapeArray(0),
-            PrevElement._startTime + PrevElement._length - 0.02, 0.02
+            E.footprints._graphBeatTime + E.footprints._noteLength - 0.02, 0.02
         )
         newNodes.forEach(n=>{ n.connect(g) })
 
-        PrevElement.terminal.push([g])
-        PrevElement.terminal[ PrevElement.terminal.length - 2 ].forEach((pn, i) => {
+        E.terminal.push([g])
+        E.terminal[ E.terminal.length - 2 ].forEach((pn, i) => {
             pn.connect( newNodes[ i <= newNodes.length - 1 ? i : newNodes.length - 1 ] )
         })
-        newNodes = newNodes.slice(0, PrevElement.terminal[ PrevElement.terminal.length - 2 ].length)
+        newNodes = newNodes.slice(0, E.terminal[ E.terminal.length - 2 ].length)
 
-        PrevElement.priority = MY_PRIORITY
-        return PrevElement
+        E.priority = MY_PRIORITY
+        return E
 
     }
 
