@@ -1,5 +1,6 @@
 import Helper from "../../module/Helper"
 import make from "../../module/make"
+import inspect from "../../module/inspect"
 import PRIORITY from "../../plugin/graph/PRIORITY"
 const MY_PRIORITY = PRIORITY.pan
 
@@ -25,26 +26,22 @@ const generate = ( x )=>{
         })
         E.priority = MY_PRIORITY
         return E
-
     }
 
 }
 
-
 const plugin = ( o = {}, graph = {} )=>{
 
-    const x = ((x)=>{
-        switch(typeof x){
+    const x = inspect(o.x,{
         // x の値は 仕様上角度を30で割った値を使う
-        case "string":
-        case "number":
-            return Helper.toInt(x,{ max: 90, min: -90 }) / 30
-        case "function":
-            return Helper.toInt( x(graph.beatIndex), { max: 90, min: -90 } ) / 30
-        default:
-            return 0
-        }
-    })(o.x)
+        string: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,
+        number: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,
+        _arguments: [ graph.beatIndex ],
+        _next: v=>{
+            return Helper.toInt(v, { max: 90, min: -90 }) / 30
+        },
+        default: 0
+    })
     if(x === 0) return false
     
     if(functionPool.get(x)) return functionPool.get(x)

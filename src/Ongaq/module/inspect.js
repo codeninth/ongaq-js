@@ -12,6 +12,7 @@ const inspect = ( object, policy = {}, redo = true )=>{
             return policy.boolean( object )
         case "function":
             result = object( ...policy._arguments )
+            if(typeof policy._next === "function") result = policy._next(result)
             return redo ? inspect( result, policy, false ) : result
         default:
             if(policy.default){
