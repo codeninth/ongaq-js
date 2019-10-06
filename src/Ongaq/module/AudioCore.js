@@ -11,6 +11,7 @@ const AudioCore = {
     context,
     originTime,
     powerMode,
+    SUPPRESSION: 0.1,
     toAudioBuffer: ({ src, length })=>{
 
         if(!src || !length) return false

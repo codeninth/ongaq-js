@@ -130,7 +130,7 @@ class Ongaq {
     set volume(v) {
         if (typeof v !== "number" || v < 0 || v > 100) return false
         if (v > 0) this._previousVolume = this._volume
-        this._volume = v / 100 / 2
+        this._volume = v / 100 * AudioCore.SUPPRESSION
         this.commonGain && this.commonGain.gain.setValueAtTime(
             this._volume,
             context.currentTime + 0.01

@@ -13,7 +13,7 @@ const makeAudioBuffer = ({ buffer, volume })=>{
     s.buffer = audioBuffer[0]
 
     let g = context.createGain()
-    g.gain.setValueAtTime( ( volume && volume >= 0 && volume < 1) ? volume : 1, 0 )
+    g.gain.setValueAtTime( AudioCore.SUPPRESSION * (( volume && volume >= 0 && volume < 1) ? volume : 1), 0 )
     g.gain.setValueCurveAtTime(
         Helper.getWaveShapeArray(volume),
         buffer.startTime + buffer.length - 0.02, 0.02
