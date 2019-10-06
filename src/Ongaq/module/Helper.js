@@ -1,4 +1,5 @@
 import AudioCore from "../module/AudioCore"
+import defaults from "../module/defaults"
 let wave = new Float32Array(6)
 
 const Helper =  {
@@ -44,7 +45,7 @@ const Helper =  {
         ゆるやかに0に向かうカーブを生成するための配列を返す
     */
     getWaveShapeArray: v=>{
-        let volume = v && (v >= 0 && v <= 1) ? v : 1
+        let volume = v && (v >= 0 && v <= 1) ? v : defaults.NOTE_VOLUME
         wave[0] = 1 * volume * AudioCore.SUPPRESSION
         wave[1] = 0.8 * volume * AudioCore.SUPPRESSION
         wave[2] = 0.5 * volume * AudioCore.SUPPRESSION

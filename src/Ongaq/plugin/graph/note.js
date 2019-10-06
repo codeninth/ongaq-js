@@ -24,7 +24,6 @@ const plugin = ( o = {}, graph = {} )=>{
         object: v=> v.key,
         array: v=>v
     })
-   
     if(!key || key.length === 0){
         graph._hasNote = false
         return false
