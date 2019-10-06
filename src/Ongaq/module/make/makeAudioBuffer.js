@@ -16,7 +16,8 @@ const makeAudioBuffer = ({ buffer, volume })=>{
     g.gain.setValueAtTime( AudioCore.SUPPRESSION * (( volume && volume >= 0 && volume < 1) ? volume : 1), 0 )
     g.gain.setValueCurveAtTime(
         Helper.getWaveShapeArray(volume),
-        buffer.startTime + buffer.length - 0.02, 0.02
+        buffer.startTime + buffer.length - ( 0.04 < buffer.length ? 0.04 : buffer.length * 0.6),
+        0.04 < buffer.length ? 0.04 : buffer.length * 0.6
     )
     s.start(buffer.startTime)
     s.connect(g)
