@@ -22,7 +22,7 @@ class Graph {
     arpeggio(o = {}) { return this._develop("arpeggio", o) }
     note(o = {}) { return this._develop("note", o) }
     pan(o = {}) { return this._develop("pan", o) }
-    phrase(o = {}) { return this._develop("phrase", o) }
+    // phrase(o = {}) { return this._develop("phrase", o) }
 
     reduce() {
         if (this.layer.length === 0) return null
