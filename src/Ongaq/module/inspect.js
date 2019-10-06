@@ -14,7 +14,12 @@ const inspect = ( object, policy = {}, redo = true )=>{
             result = object( ...policy._arguments )
             return redo ? inspect( result, policy, false ) : result
         default:
-            return object
+            if(policy.default){
+                if(typeof policy.default === "function") return policy.default( policy._arguments )
+                else return policy.default
+            } else {
+                return object
+            }
     }
 }
 

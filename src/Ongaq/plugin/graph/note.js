@@ -32,17 +32,11 @@ const plugin = ( o = {}, graph = {} )=>{
     /*
       calculate relative length of note
     */
-    let length = (()=>{
-        if(!o.length) return DEFAULT_NOTE_LENGTH
-        switch(typeof o.length){
-        case "number":
-            return o.length
-        case "function":
-            return o.length( graph.beatIndex, graph.measure )
-        default:
-            return false
-        }
-    })()
+    const length = inspect(o.length,{
+        _arguments: [ graph.beatIndex, graph.measure ],
+        number: v=>v,
+        default: DEFAULT_NOTE_LENGTH
+    })
     if(!length){
         graph._hasNote = false
         return false
