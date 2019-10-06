@@ -1,7 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
 import * as plugin from "../plugin/graph/index"
-import soundTreePool from "./pool.soundtree"
 import graphPool from "./pool.graph"
 import BufferYard from "./BufferYard"
 import DEFAULTS from "./defaults"
