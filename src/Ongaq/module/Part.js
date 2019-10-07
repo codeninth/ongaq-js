@@ -50,7 +50,7 @@ class Part {
             @attachment
             - conceptual value: user would be able to handle any value to part with this
         */
-        this.attachment = {}
+        this._attachment = {}
 
         this.active = false
         this.mute = !!props.mute
@@ -83,7 +83,7 @@ class Part {
         this._generator = graph => {
             return this.filters.reduce((currentGraph, nextFilter) => {
                 if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-                    if (nextFilter.type !== "note" && !graph._hasNote){
+                    if (nextFilter.type !== "note" && !graph._hasNote) {
                         return currentGraph
                     } else {
                         return currentGraph[nextFilter.type](nextFilter.params)
