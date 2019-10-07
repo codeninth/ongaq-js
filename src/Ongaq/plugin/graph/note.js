@@ -11,7 +11,6 @@ const DEFAULT_NOTE_LENGTH = 4
   }
 */
 const plugin = ( o = {}, graph = {} )=>{
-
     /*
     key should be:
       - string like "C1"
@@ -19,7 +18,7 @@ const plugin = ( o = {}, graph = {} )=>{
       - Chord object
   */
     const key = inspect(o.key,{
-        _arguments: [graph.beatIndex, graph.measure],
+        _arguments: [ graph.beatIndex, graph.measure, graph.attachment ],
         string: v=>[v],
         object: v=> v.key,
         array: v=>v
@@ -32,7 +31,7 @@ const plugin = ( o = {}, graph = {} )=>{
       calculate relative length of note
     */
     const length = inspect(o.length,{
-        _arguments: [ graph.beatIndex, graph.measure ],
+        _arguments: [ graph.beatIndex, graph.measure, graph.attachment ],
         number: v=>v,
         default: DEFAULT_NOTE_LENGTH
     })
@@ -52,7 +51,7 @@ const plugin = ( o = {}, graph = {} )=>{
             return make("audiobuffer",{
                 buffer: {
                     sound: graph.sound,
-                    length: length * graph._secondsPerBeat,
+                    length: length * graph.secondsPerBeat,
                     key: k,
                     startTime: graph.beatTime
                 },
@@ -64,7 +63,7 @@ const plugin = ( o = {}, graph = {} )=>{
         E.terminal[0].push(...newNodes)
         E.priority = MY_PRIORITY
         E.footprints = E.footprints || {}
-        E.footprints._noteLength = length * graph._secondsPerBeat
+        E.footprints._noteLength = length * graph.secondsPerBeat
         E.footprints._graphBeatTime = graph.beatTime
         return E
 

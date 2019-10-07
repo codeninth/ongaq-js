@@ -93,13 +93,10 @@ class Ongaq {
   */
     find(...tags) {
 
-        let result = void 0
+        let result = []
         if (tags.length === 0) return result
         this.parts.forEach(p => {
-            if (tags.every(tag => p.tags.includes(tag))) {
-                result = result || []
-                result.push(p)
-            }
+            if ( tags.every(tag => p.tags.includes(tag)) ) result.push(p)
         })
         return result
 

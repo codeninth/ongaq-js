@@ -14,8 +14,9 @@ class Graph {
         this.measure = option.measure
         this.beatIndex = option.beatIndex
         this.beatTime = option.beatTime
-        this._secondsPerBeat = option._secondsPerBeat
+        this.secondsPerBeat = option.secondsPerBeat
         this.age = option.age
+        this.attachment = option.attachment || {}
         this.layer = []
     }
 
@@ -38,7 +39,7 @@ class Graph {
 
     _pass(active) {
         switch (typeof active) {
-        case "function": return active(this.beatIndex, this.measure)
+        case "function": return active(this.beatIndex, this.measure, this.attachment)
         case "object": return Array.isArray(active) && active.includes(this.beatIndex)
         case "number": return active === this.beatIndex
         default: return true

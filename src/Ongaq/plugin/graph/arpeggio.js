@@ -1,6 +1,7 @@
 import AudioCore from "../../module/AudioCore"
 import Helper from "../../module/Helper"
 import make from "../../module/make"
+import inspect from "../../module/inspect"
 import PRIORITY from "../../plugin/graph/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
 const context = AudioCore.context
@@ -55,12 +56,22 @@ const generate = (step, range, secondsPerBeat) => {
 
 const plugin = (o = {}, graph = {}) => {
 
-    const step = typeof o.step === "number" && o.step < 16 ? o.step : 1
-    const range = typeof o.step === "number" && (o.range > 0 && o.range < 9) ? o.range : 3
-    const cacheKey = `${step}_${range}_${graph._secondsPerBeat}`
+    const step = inspect(o.step, {
+        number: v => v < 16 ? v : 1,
+        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
+        default: 0
+    }) 
+    if (!step) return false
+    const range = inspect(o.range, {
+        number: v => (v > 0 && v < 9) ? v : 3,
+        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
+        default: 3
+    }) 
+
+    const cacheKey = `${step}_${range}_${graph.secondsPerBeat}`
     if (functionPool.get(cacheKey)) return functionPool.get(cacheKey)
     else {
-        functionPool.set(cacheKey, generate(step, range, graph._secondsPerBeat))
+        functionPool.set(cacheKey, generate(step, range, graph.secondsPerBeat))
         return functionPool.get(cacheKey)
     }
 

@@ -36,13 +36,13 @@ const plugin = ( o = {}, graph = {} )=>{
         // x の値は 仕様上角度を30で割った値を使う
         string: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,
         number: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,
-        _arguments: [ graph.beatIndex ],
+        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
         _next: v=>{
             return Helper.toInt(v, { max: 90, min: -90 }) / 30
         },
         default: 0
     })
-    if(x === 0) return false
+    if(!x) return false
     
     if(functionPool.get(x)) return functionPool.get(x)
     else {

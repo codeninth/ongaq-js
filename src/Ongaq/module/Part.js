@@ -225,7 +225,7 @@ class Part {
                 measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
                 beatIndex: this._currentBeatIndex % this._beatsInMeasure,
                 beatTime: this._nextBeatTime,
-                _secondsPerBeat: this._secondsPerBeat,
+                secondsPerBeat: this._secondsPerBeat,
                 age: this._age,
                 attachment: this._attachment
             })
