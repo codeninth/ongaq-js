@@ -57,7 +57,7 @@ class Part {
 
         this._putTimerRight()
 
-        this._observe = this._observe.bind(this)
+        this.collect = this.collect.bind(this)
     }
 
     add(newFilter){
@@ -96,19 +96,74 @@ class Part {
         this._generator = this._generator.bind(this)
     }
 
-    /*
-        @attach
-    */
     attach(data = {}) {
         this._attachment = Object.assign(this._attachment, data)
     }
 
-    /*
-        @detach
-    */
+    collect(){
+
+        let collected
+
+        /*
+            keep _nextBeatTime being always behind secondToPrefetch
+        */
+        let secondToPrefetch = context.currentTime + DEFAULTS.PREFETCH_SECOND
+        while (
+            this._nextBeatTime - secondToPrefetch > 0 &&
+            this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
+        ){
+            secondToPrefetch += DEFAULTS.PREFETCH_SECOND
+        }
+        /*
+            collect soundtrees for notepoints which come in certain range
+            */
+        while (this.active && this._nextBeatTime < secondToPrefetch){
+            if(this._consumedBeats >= this._beatQuota) break
+
+            let element = !this.mute && this._capture()
+            if(element){
+                collected = collected || []
+                collected = collected.concat(element)
+            }
+
+            this._nextBeatTime += this._secondsPerBeat
+
+            if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
+                this._currentBeatIndex = 0
+                this._age++
+            } else {
+                this._currentBeatIndex++
+            }
+
+            if(++this._consumedBeats >= this._beatQuota){
+                this.active = false
+                break
+            }
+        }
+        return collected
+
+    }
+
     detach(field) {
         if (typeof field === "string") delete this._attachment[field]
         else this._attachment = {}
+    }
+
+    loadSound(){
+        this._isLoading = true
+        return new Promise((resolve,reject)=>{
+            BufferYard.import(this.sound)
+                .then(() => {
+                    this._isLoading = false
+                    this.active = true
+                    resolve()
+                })
+                .catch(err => {
+                    this._isLoading = false
+                    this._loadingFailed = true
+                    reject(err)
+                })
+        })
     }
 
     /*
@@ -134,23 +189,6 @@ class Part {
     }
     get bpm() { return this._bpm }
 
-    _loadSound(){
-        this._isLoading = true
-        return new Promise((resolve,reject)=>{
-            BufferYard.import(this.sound)
-                .then(() => {
-                    this._isLoading = false
-                    this.active = true
-                    resolve()
-                })
-                .catch(err => {
-                    this._isLoading = false
-                    this._loadingFailed = true
-                    reject(err)
-                })
-        })
-    }
-
     _reset(){
         this._age = 0
         this._currentBeatIndex = 0
@@ -165,50 +203,6 @@ class Part {
     _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
         this.active = true
-    }
-
-    _observe(){
-
-        let observed
-
-        /*
-            keep _nextBeatTime being always behind secondToPrefetch
-        */
-        let secondToPrefetch = context.currentTime + DEFAULTS.PREFETCH_SECOND
-        while (
-            this._nextBeatTime - secondToPrefetch > 0 &&
-            this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
-        ){
-            secondToPrefetch += DEFAULTS.PREFETCH_SECOND
-        }
-        /*
-            collect soundtrees for notepoints which come in certain range
-            */
-        while (this.active && this._nextBeatTime < secondToPrefetch){
-            if(this._consumedBeats >= this._beatQuota) break
-
-            let element = !this.mute && this._capture()
-            if(element){
-                observed = observed || []
-                observed = observed.concat(element)
-            }
-
-            this._nextBeatTime += this._secondsPerBeat
-
-            if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
-                this._currentBeatIndex = 0
-                this._age++
-            } else {
-                this._currentBeatIndex++
-            }
-
-            if(++this._consumedBeats >= this._beatQuota){
-                this.active = false
-                break
-            }
-        }
-        return observed
-
     }
 
     /*

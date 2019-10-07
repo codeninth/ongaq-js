@@ -23,14 +23,14 @@ class Ongaq {
 
         return new Promise((resolve,reject)=>{
 
-            if (typeof part._loadSound !== "function") return reject("not a Part object")
+            if (typeof part.loadSound !== "function") return reject("not a Part object")
 
             part.bpm = part.bpm || this.bpm
             part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
             part.measure = part.measure || DEFAULTS.MEASURE
             this.parts.set(part.id, part)
 
-            part._loadSound().then(()=>{
+            part.loadSound().then(()=>{
                 let isAllPartsLoaded = true
                 /*
                 when all parts got loaded own sound,
@@ -48,7 +48,7 @@ class Ongaq {
 
     /*
       @start
-      - 一定の間隔で _observe を実行していく
+      - 一定の間隔で collect を実行していく
       */
     start() {
         if (this.isPlaying || this.parts.size === 0) return false
@@ -219,7 +219,7 @@ class Ongaq {
         let collected
         let elements
         this.parts.forEach(p => {
-            elements = p._observe()
+            elements = p.collect()
             if (elements && elements.length > 0){
                 collected = collected || []
                 collected = collected.concat(elements)

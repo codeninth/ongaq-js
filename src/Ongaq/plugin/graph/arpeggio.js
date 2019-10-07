@@ -57,11 +57,11 @@ const plugin = (o = {}, graph = {}) => {
 
     const step = typeof o.step === "number" && o.step < 16 ? o.step : 1
     const range = typeof o.step === "number" && (o.range > 0 && o.range < 9) ? o.range : 3
-
-    if (functionPool.get(`${step}_${range}_${graph._secondsPerBeat}`)) return functionPool.get(`${step}_${range}_${graph._secondsPerBeat}`)
+    const cacheKey = `${step}_${range}_${graph._secondsPerBeat}`
+    if (functionPool.get(cacheKey)) return functionPool.get(cacheKey)
     else {
-        functionPool.set(`${step}_${range}_${graph._secondsPerBeat}`, generate(step, range, graph._secondsPerBeat))
-        return functionPool.get(`${step}_${range}_${graph._secondsPerBeat}`)
+        functionPool.set(cacheKey, generate(step, range, graph._secondsPerBeat))
+        return functionPool.get(cacheKey)
     }
 
 }
