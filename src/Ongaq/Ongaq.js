@@ -21,7 +21,7 @@ class Ongaq {
     */
     add(part){
 
-        return new Promise((resolve,reject)=>{
+        return new Promise( async (resolve,reject)=>{
 
             if (typeof part.loadSound !== "function") return reject("not a Part object")
 
@@ -30,18 +30,21 @@ class Ongaq {
             part.measure = part.measure || DEFAULTS.MEASURE
             this.parts.set(part.id, part)
 
-            part.loadSound().then(()=>{
+            try {
+                await part.loadSound()
                 let isAllPartsLoaded = true
                 /*
-                when all parts got loaded own sound,
-                fire this.onReady
-              */
-                this.parts.forEach(p=>{
+                    when all parts got loaded own sound,
+                    fire this.onReady
+                */
+                this.parts.forEach(p => {
                     if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
                 })
                 if (isAllPartsLoaded) this.onReady && this.onReady()
-                return resolve()
-            }).catch(reject)
+                resolve()
+            } catch(e){
+                reject(e)
+            }
 
         })
     }
@@ -185,6 +188,7 @@ class Ongaq {
         this.commonGain = context.createGain()
         this.commonGain.connect(this.commonComp)
         this.commonGain.gain.setValueAtTime(this._previousVolume || this.volume, 0)
+        return false
     }
 
     /*
@@ -209,6 +213,7 @@ class Ongaq {
         }
         elem.initialize()
         ElementPool.retrieve( elem )
+        return false
     }
 
     /*
@@ -229,6 +234,7 @@ class Ongaq {
         collected.forEach(elem => { this._connect(elem) })
         // TODO
         // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
+        return false
     }
 
 }

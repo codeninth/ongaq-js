@@ -94,6 +94,7 @@ class Part {
             }, graph)
         }
         this._generator = this._generator.bind(this)
+        return false
     }
 
     attach(data = {}) {
@@ -149,20 +150,19 @@ class Part {
         else this._attachment = {}
     }
 
-    loadSound(){
+    async loadSound(){
         this._isLoading = true
-        return new Promise((resolve,reject)=>{
-            BufferYard.import(this.sound)
-                .then(() => {
-                    this._isLoading = false
-                    this.active = true
-                    resolve()
-                })
-                .catch(err => {
-                    this._isLoading = false
-                    this._loadingFailed = true
-                    reject(err)
-                })
+        return new Promise( async (resolve,reject)=>{
+            try {
+                await BufferYard.import(this.sound)
+                this._isLoading = false
+                this.active = true
+                resolve()
+            } catch(e) {
+                this._isLoading = false
+                this._loadingFailed = true
+                reject(e)
+            }
         })
     }
 

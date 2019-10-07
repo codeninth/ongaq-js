@@ -32,7 +32,7 @@ class BufferYard {
       - load soundjsons with SoundFile API
       - restore mp3: string -> typedArray -> .mp3
     */
-    import(sound) {
+    async import(sound) {
 
         return new Promise((resolve, reject) => {
             // this sound is already loaded
@@ -56,27 +56,25 @@ class BufferYard {
                     let thisSoundBuffers = new Map()
                     let decodedBufferLength = 0
 
-                    notes.forEach(key => {
+                    notes.forEach(async key => {
 
                         let thisNote = data.note[key]
-
-                        AudioCore
-                            .toAudioBuffer({
+                        try {
+                            let audioBuffer = await AudioCore.toAudioBuffer({
                                 src: thisNote.src,
                                 length: thisNote.length
                             })
-                            .then(audioBuffer => {
-                                thisSoundBuffers.set(key, audioBuffer)
-                                if (++decodedBufferLength === notes.length) {
-                                    notes = null
-                                    buffers.set(sound, thisSoundBuffers)
-                                    resolve()
-                                }
-                            })
-                            .catch(() => {
-                                if (buffers.has(sound)) buffers.delete(sound)
-                                reject()
-                            })
+                            thisSoundBuffers.set(key, audioBuffer)
+                            if (++decodedBufferLength === notes.length) {
+                                notes = null
+                                buffers.set(sound, thisSoundBuffers)
+                                resolve()
+                            }
+                        } catch(e){
+                            if (buffers.has(sound)) buffers.delete(sound)
+                            reject()
+                        }
+                        
                     })
 
 
