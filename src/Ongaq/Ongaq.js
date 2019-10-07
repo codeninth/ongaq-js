@@ -96,7 +96,7 @@ class Ongaq {
         let result = void 0
         if (tags.length === 0) return result
         this.parts.forEach(p => {
-            if (tags.every(tag => p.tags.include(tag))) {
+            if (tags.every(tag => p.tags.includes(tag))) {
                 result = result || []
                 result.push(p)
             }

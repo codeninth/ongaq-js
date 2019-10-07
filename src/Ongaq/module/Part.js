@@ -178,6 +178,13 @@ class Part {
         })
     }
 
+    removeTag(...tags){
+        this.tags = Array.isArray(this.tags) ? this.tags : []
+        this.tags = this.tags.filter(tag=>{
+            return !tags.includes(tag)
+        })
+    }
+
     set mute(v) {
         if (typeof v === "boolean") this._mute = v
     }
