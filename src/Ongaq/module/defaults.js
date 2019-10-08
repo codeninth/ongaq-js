@@ -4,7 +4,7 @@ const VALUES = {
     BPM: 120,
     MIN_BPM: 60,
     MAX_BPM: 180,
-    MEASURE: 1,
+    MEASURE: 4,
     VOLUME: 0.5,
     NOTE_VOLUME: 0.5,
     NOTES_IN_MEASURE: 16,
