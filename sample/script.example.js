@@ -31,18 +31,17 @@ const ongaq = new Ongaq({
     volume: 40,
     onReady: ()=>{
         const button = document.getElementById("button")
-        button.className = "start"
+        button.className = "button start"
         button.onclick = () => {
             if (ongaq.params.isPlaying) {
                 ongaq.pause()
-                button.className = "start"
+                button.className = "button start"
             } else {
                 ongaq.start()
-                button.className = "pause"
+                button.className = "button pause"
             }
         }
     }
 })
 ongaq.add(my_drums)
 ongaq.add(my_guitar)
-

@@ -14,30 +14,42 @@ class Graph {
         this.measure = option.measure
         this.beatIndex = option.beatIndex
         this.beatTime = option.beatTime
-        this._secondsPerBeat = option._secondsPerBeat
+        this.secondsPerBeat = option.secondsPerBeat
         this.age = option.age
+        this.attachment = option.attachment || {}
         this.layer = []
     }
 
-    note(o = {}) { return this.develop("note", o) }
-    pan(o = {}) { return this.develop("pan", o) }
-    arpeggio(o = {}) { return this.develop("arpeggio", o) }
-    empty(o = {}) { return this.develop("empty", o) }
-    phrase(o = {}) { return this.develop("phrase", o) }
+    arpeggio(o = {}) { return this._develop("arpeggio", o) }
+    note(o = {}) { return this._develop("note", o) }
+    pan(o = {}) { return this._develop("pan", o) }
+    // phrase(o = {}) { return this._develop("phrase", o) }
 
-    pass(active) {
+    reduce() {
+        if (this.layer.length === 0) return null
+        this.layer.sort((a, b) => {
+            if (a.priority > b.priority) return 1
+            else if (a.priority < b.priority) return -1
+            else 0
+        })
+        return this.layer.reduce((element, currentFunction) => {
+            return currentFunction(element)
+        }, plugin.empty()())
+    }
+
+    _pass(active) {
         switch (typeof active) {
-        case "function": return active(this.beatIndex, this.measure)
+        case "function": return active(this.beatIndex, this.measure, this.attachment)
         case "object": return Array.isArray(active) && active.includes(this.beatIndex)
         case "number": return active === this.beatIndex
         default: return true
         }
     }
 
-    develop(method, o) {
-        if (!this.pass(o.active)) return this
-        let newLayer = plugin[method](o, this)
-        if (newLayer) this.layer.push(newLayer)
+    _develop(method, o) {
+        if (!this._pass(o.active)) return this
+        const elementFunction = plugin[method](o, this)
+        if(elementFunction) this.layer.push( elementFunction )
         return this
     }
 

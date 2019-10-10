@@ -11,6 +11,7 @@ const AudioCore = {
     context,
     originTime,
     powerMode,
+    SUPPRESSION: 0.08, // To avoid noise, suppress volume with this value
     toAudioBuffer: ({ src, length })=>{
 
         if(!src || !length) return false

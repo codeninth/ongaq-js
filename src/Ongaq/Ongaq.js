@@ -2,6 +2,7 @@ import AudioCore from "./module/AudioCore"
 import BufferYard from "./module/BufferYard"
 import Helper from "./module/Helper"
 import DEFAULTS from "./module/defaults"
+import ElementPool from "./module/pool.element"
 import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
@@ -20,34 +21,37 @@ class Ongaq {
     */
     add(part){
 
-        return new Promise((resolve,reject)=>{
+        return new Promise( async (resolve,reject)=>{
 
-            if (typeof part._loadSound !== "function") return reject("not a Part object")
+            if (typeof part.loadSound !== "function") return reject("not a Part object")
 
             part.bpm = part.bpm || this.bpm
             part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
             part.measure = part.measure || DEFAULTS.MEASURE
             this.parts.set(part.id, part)
-          
-            part._loadSound().then(()=>{
+
+            try {
+                await part.loadSound()
                 let isAllPartsLoaded = true
                 /*
-                when all parts got loaded own sound,
-                fire this.onReady
-              */
-                this.parts.forEach(p=>{
+                    when all parts got loaded own sound,
+                    fire this.onReady
+                */
+                this.parts.forEach(p => {
                     if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
                 })
                 if (isAllPartsLoaded) this.onReady && this.onReady()
-                return resolve()
-            }).catch(reject)
+                resolve()
+            } catch(e){
+                reject(e)
+            }
 
         })
     }
 
     /*
       @start
-      - 一定の間隔で _observe を実行していく
+      - 一定の間隔で collect を実行していく
       */
     start() {
         if (this.isPlaying || this.parts.size === 0) return false
@@ -89,13 +93,10 @@ class Ongaq {
   */
     find(...tags) {
 
-        let result = void 0
+        let result = []
         if (tags.length === 0) return result
         this.parts.forEach(p => {
-            if (tags.every(tag => p.tags.include(tag))) {
-                result = result || []
-                result.push(p)
-            }
+            if ( tags.every(tag => p.tags.includes(tag)) ) result.push(p)
         })
         return result
 
@@ -129,7 +130,7 @@ class Ongaq {
     set volume(v) {
         if (typeof v !== "number" || v < 0 || v > 100) return false
         if (v > 0) this._previousVolume = this._volume
-        this._volume = v / 100
+        this._volume = v / 100 * AudioCore.SUPPRESSION
         this.commonGain && this.commonGain.gain.setValueAtTime(
             this._volume,
             context.currentTime + 0.01
@@ -154,7 +155,7 @@ class Ongaq {
     /*
       @_init
     */
-    
+
     _init({ api_key, volume, bpm, onReady }){
         this.parts = new Map()
         this.isPlaying = false
@@ -163,9 +164,9 @@ class Ongaq {
         this._nextZeroTime = 0
         this.bpm = bpm || DEFAULTS.BPM
         if (AudioCore.powerMode === "low") {
-            window.addEventListener("blur", () => { this.pauseScheduling() }) 
+            window.addEventListener("blur", () => { this.pauseScheduling() })
         }
-        this.onReady = typeof onReady === "function" && onReady 
+        this.onReady = typeof onReady === "function" && onReady
         this._routine = this._routine.bind(this)
         BufferYard.set({ api_key })
     }
@@ -184,6 +185,7 @@ class Ongaq {
         this.commonGain = context.createGain()
         this.commonGain.connect(this.commonComp)
         this.commonGain.gain.setValueAtTime(this._previousVolume || this.volume, 0)
+        return false
     }
 
     /*
@@ -199,10 +201,15 @@ class Ongaq {
     /*
       @_connect
     */
-    _connect(node) {
-        if (!node || !this.isPlaying) return false
-        node.connect(this.commonGain).start()
-        node = null
+    _connect(elem) {
+        if (!elem || !this.isPlaying) return false
+        if(elem.terminal.length > 0){
+            elem.terminal[elem.terminal.length - 1].forEach(t => {
+                t.connect(this.commonGain)
+            })
+        }
+        elem.initialize()
+        ElementPool.retrieve( elem )
         return false
     }
 
@@ -212,20 +219,19 @@ class Ongaq {
       */
     _routine() {
         let collected
-        let nodes
+        let elements
         this.parts.forEach(p => {
-            nodes = p._observe()
-            if (nodes && nodes.length > 0){
+            elements = p.collect()
+            if (elements && elements.length > 0){
                 collected = collected || []
-                collected = collected.concat(nodes)
+                collected = collected.concat(elements)
             }
         })
         if(!collected || collected.length === 0) return false
-        collected.forEach(i => {
-            if (i.layer && i.layer.length > 0) this._connect(i)
-        })
+        collected.forEach(elem => { this._connect(elem) })
         // TODO
         // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
+        return false
     }
 
 }

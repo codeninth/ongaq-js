@@ -1,11 +1,19 @@
-//========================================
-/*
+import pool from "../../module/pool.element"
+import PRIORITY from "../../plugin/graph/PRIORITY"
+const MY_PRIORITY = PRIORITY.empty
+const Element = ()=>{
 
-*/
-const plugin = (()=>{
+    return ()=>{
+        const elem = pool.allocate()
+        elem.priority = MY_PRIORITY
+        elem.terminal = []
+        elem._inits = []
+        elem.initialize = ()=>{
+            elem._inits.forEach(i=>i())
+        }
+        return elem
+    }
 
-    return ()=>false
+}
 
-}).call(undefined,window || {})
-
-export default plugin
+export default Element

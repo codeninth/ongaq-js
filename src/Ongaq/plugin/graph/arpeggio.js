@@ -1,35 +1,79 @@
-//========================================
+import AudioCore from "../../module/AudioCore"
+import Helper from "../../module/Helper"
+import make from "../../module/make"
+import inspect from "../../module/inspect"
+import PRIORITY from "../../plugin/graph/PRIORITY"
+const MY_PRIORITY = PRIORITY.arpeggio
+const context = AudioCore.context
+
 /*
   o: {
     step: 0.5 // relative length
     filter: n=>n%4
   }
 */
-const plugin = (o = {},graph = {})=>{
+const delayPool = new Map()
+const functionPool = new Map()
 
-    let newLayer = []
+const generate = (step, range, secondsPerBeat) => {
 
-    let targetLayer = (()=>{
-        if(graph.layer.length === 0) return false
-        for(let i = graph.layer.length - 1,l = 0; i>=l; i--){
-            if(graph.layer[i][0].invoker === "audioBufferLine") return graph.layer[i]
-        }
-        return false
-    })()
-    if(!targetLayer) return false
-    let step = typeof o.step === "number" && o.step < 16 ? o.step : 1
+    return E => {
 
-    targetLayer.forEach((target,i)=>{
-        newLayer.push({
-            invoker: "delayLine",
-            data: {
-                delayTime: (graph._secondsPerBeat * (i <= 3 ? i : 3) * step),
-                targetIndex: i
+        if (
+            E.terminal.length === 0 ||
+            E.terminal[ E.terminal.length - 1 ].length === 0
+        ) return E
+
+        let newNodes = []
+        for (let i = 0, max = E.terminal[ E.terminal.length - 1 ].length, delayTime; i < max; i++) {
+            delayTime = secondsPerBeat * (i <= range ? i : range) * step
+            if (!delayPool.get(delayTime)) {
+                delayPool.set(delayTime, make("delay", { delayTime }))
             }
-        })
-    })
+            newNodes.push(delayPool.get(delayTime))
+        }
 
-    return newLayer
+        let g = context.createGain()
+        g.gain.setValueAtTime(1, 0)
+        g.gain.setValueCurveAtTime(
+            Helper.getWaveShapeArray(0),
+            E.footprints._graphBeatTime + E.footprints._noteLength - 0.02, 0.02
+        )
+        newNodes.forEach(n=>{ n.connect(g) })
+
+        E.terminal.push([g])
+        E.terminal[ E.terminal.length - 2 ].forEach((pn, i) => {
+            pn.connect( newNodes[ i <= newNodes.length - 1 ? i : newNodes.length - 1 ] )
+        })
+        newNodes = newNodes.slice(0, E.terminal[ E.terminal.length - 2 ].length)
+
+        E.priority = MY_PRIORITY
+        return E
+
+    }
+
+}
+
+const plugin = (o = {}, graph = {}) => {
+
+    const step = inspect(o.step, {
+        number: v => v < 16 ? v : 1,
+        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
+        default: 0
+    }) 
+    if (!step) return false
+    const range = inspect(o.range, {
+        number: v => (v > 0 && v < 9) ? v : 3,
+        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
+        default: 3
+    }) 
+
+    const cacheKey = `${step}_${range}_${graph.secondsPerBeat}`
+    if (functionPool.get(cacheKey)) return functionPool.get(cacheKey)
+    else {
+        functionPool.set(cacheKey, generate(step, range, graph.secondsPerBeat))
+        return functionPool.get(cacheKey)
+    }
 
 }
 

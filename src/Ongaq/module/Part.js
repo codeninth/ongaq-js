@@ -1,7 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
 import * as plugin from "../plugin/graph/index"
-import soundTreePool from "./pool.soundtree"
 import graphPool from "./pool.graph"
 import BufferYard from "./BufferYard"
 import DEFAULTS from "./defaults"
@@ -51,18 +50,18 @@ class Part {
             @attachment
             - conceptual value: user would be able to handle any value to part with this
         */
-        this.attachment = {}
+        this._attachment = {}
 
         this.active = false
         this.mute = !!props.mute
 
         this._putTimerRight()
 
-        this._observe = this._observe.bind(this)
+        this.collect = this.collect.bind(this)
     }
 
     add(newFilter){
-        if(!newFilter) return false
+        if(!newFilter || !newFilter.priority || newFilter.priority === -1) return false
         /*
             generate a function which receives & returns Graph object.
             like this
@@ -76,92 +75,35 @@ class Part {
             */
         this.filters = this.filters || []
         this.filters.push(newFilter)
+        this.filters.sort((a,b)=>{
+            if(a.priority > b.priority) return 1
+            else if(a.priority < b.priority) return -1
+            else return 0
+        })
         this._generator = graph => {
-            return this.filters.reduce((prevGraph, nextFilter) => {
+            return this.filters.reduce((currentGraph, nextFilter) => {
                 if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-                    return prevGraph[nextFilter.type](nextFilter.params)
+                    if (nextFilter.type !== "note" && !graph._hasNote) {
+                        return currentGraph
+                    } else {
+                        return currentGraph[nextFilter.type](nextFilter.params)
+                    }
                 } else {
-                    return prevGraph
+                    return currentGraph
                 }
             }, graph)
         }
         this._generator = this._generator.bind(this)
+        return false
     }
 
-    /*
-        @attach
-    */
     attach(data = {}) {
         this._attachment = Object.assign(this._attachment, data)
     }
 
-    /*
-        @detach
-    */
-    detach(field) {
-        if (typeof field === "string") delete this._attachment[field]
-        else this._attachment = {}
-    }
+    collect(){
 
-    /*
-        @tag
-        tags: A,B,C...
-        タグ A,B,C... を追加
-        */
-    tag(...tags) {
-        this.tags = Array.isArray(this.tags) ? this.tags : []
-        tags.forEach(tag => {
-            if (!this.tags.includes(tag)) this.tags.push(tag)
-        })
-    }
-
-    set mute(v) {
-        if (typeof v === "boolean") this._mute = v
-    }
-    get mute() { return this._mute }
-
-    set bpm(v) {
-        let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
-        if (bpm) this._bpm = bpm
-    }
-    get bpm() { return this._bpm }
-
-    _loadSound(){
-        this._isLoading = true
-        return new Promise((resolve,reject)=>{
-            BufferYard.import(this.sound)
-                .then(() => {
-                    this._isLoading = false
-                    this.active = true
-                    resolve()
-                })
-                .catch(err => {
-                    this._isLoading = false
-                    this._loadingFailed = true
-                    reject(err)
-                })
-        })
-    }
-
-    _reset(){
-        this._age = 0
-        this._currentBeatIndex = 0
-        this._consumedBeats = 0
-        this._beatQuota = 0
-    }
-
-    _putTimerRight(_nextZeroTime){
-        this._nextBeatTime = _nextZeroTime || context.currentTime
-    }
-
-    _setQuota(totalCap){
-        this._beatQuota = totalCap * this._beatsInMeasure
-        this.active = true
-    }
-
-    _observe(){
-
-        let observed
+        let collected
 
         /*
             keep _nextBeatTime being always behind secondToPrefetch
@@ -179,10 +121,10 @@ class Part {
         while (this.active && this._nextBeatTime < secondToPrefetch){
             if(this._consumedBeats >= this._beatQuota) break
 
-            let thisMomentObserved = !this.mute && this._capture()
-            if(thisMomentObserved && thisMomentObserved.layer.length > 0){
-                observed = observed || []
-                observed = observed.concat(thisMomentObserved)
+            let element = !this.mute && this._capture()
+            if(element){
+                collected = collected || []
+                collected = collected.concat(element)
             }
 
             this._nextBeatTime += this._secondsPerBeat
@@ -199,8 +141,75 @@ class Part {
                 break
             }
         }
-        return observed
+        return collected
 
+    }
+
+    detach(field) {
+        if (typeof field === "string") delete this._attachment[field]
+        else this._attachment = {}
+    }
+
+    async loadSound(){
+        this._isLoading = true
+        return new Promise( async (resolve,reject)=>{
+            try {
+                await BufferYard.import(this.sound)
+                this._isLoading = false
+                this.active = true
+                resolve()
+            } catch(e) {
+                this._isLoading = false
+                this._loadingFailed = true
+                reject(e)
+            }
+        })
+    }
+
+    /*
+        @tag
+        tags: A,B,C...
+        タグ A,B,C... を追加
+        */
+    tag(...tags) {
+        this.tags = Array.isArray(this.tags) ? this.tags : []
+        tags.forEach(tag => {
+            if (!this.tags.includes(tag)) this.tags.push(tag)
+        })
+    }
+
+    removeTag(...tags){
+        this.tags = Array.isArray(this.tags) ? this.tags : []
+        this.tags = this.tags.filter(tag=>{
+            return !tags.includes(tag)
+        })
+    }
+
+    set mute(v) {
+        if (typeof v === "boolean") this._mute = v
+    }
+    get mute() { return this._mute }
+
+    set bpm(v) {
+        let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
+        if (bpm) this._bpm = bpm
+    }
+    get bpm() { return this._bpm }
+
+    _reset(){
+        this._age = 0
+        this._currentBeatIndex = 0
+        this._consumedBeats = 0
+        this._beatQuota = 0
+    }
+
+    _putTimerRight(_nextZeroTime){
+        this._nextBeatTime = _nextZeroTime || context.currentTime
+    }
+
+    _setQuota(totalCap){
+        this._beatQuota = totalCap * this._beatsInMeasure
+        this.active = true
     }
 
     /*
@@ -216,16 +225,12 @@ class Part {
                 measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
                 beatIndex: this._currentBeatIndex % this._beatsInMeasure,
                 beatTime: this._nextBeatTime,
-                _secondsPerBeat: this._secondsPerBeat,
+                secondsPerBeat: this._secondsPerBeat,
                 age: this._age,
                 attachment: this._attachment
             })
         )
-
-        this._currentSoundTree = soundTreePool.allocate( this._currentGraph )
-
-        if (this._currentSoundTree.layer.length > 0) return this._currentSoundTree
-        else return false
+        return this._currentGraph.reduce()
 
     }
 
