@@ -51,7 +51,7 @@ const plugin = ( o = {}, beat = {} )=>{
       =====================================================================
     */
 
-    return E=>{
+    return MappedFunction=>{
         let newNodes = key.map(k=>{
             return make("audiobuffer",{
                 buffer: {
@@ -64,13 +64,13 @@ const plugin = ( o = {}, beat = {} )=>{
             })
         })
         
-        E.terminal[0] = E.terminal[0] || []
-        E.terminal[0].push(...newNodes)
-        E.priority = MY_PRIORITY
-        E.footprints = E.footprints || {}
-        E.footprints._noteLength = length * beat.secondsPerBeat
-        E.footprints._beatTime = beat.beatTime
-        return E
+        MappedFunction.terminal[0] = MappedFunction.terminal[0] || []
+        MappedFunction.terminal[0].push(...newNodes)
+        MappedFunction.priority = MY_PRIORITY
+        MappedFunction.footprints = MappedFunction.footprints || {}
+        MappedFunction.footprints._noteLength = length * beat.secondsPerBeat
+        MappedFunction.footprints._beatTime = beat.beatTime
+        return MappedFunction
 
     }
 

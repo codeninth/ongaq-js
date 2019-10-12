@@ -10,18 +10,18 @@ const functionPool = new Map()
 
 const generate = ( x )=>{
 
-    return E => {
-        if (E.terminal.length === 0) return E
+    return MappedFunction => {
+        if (MappedFunction.terminal.length === 0) return MappedFunction
         if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }))
         const newNode = pannerPool.get(x)
         
-        E.terminal.push([ newNode ])
+        MappedFunction.terminal.push([ newNode ])
 
-        E.terminal[ E.terminal.length - 2 ].forEach(pn => {
+        MappedFunction.terminal[ MappedFunction.terminal.length - 2 ].forEach(pn => {
             pn.connect(newNode)
         })
-        E.priority = MY_PRIORITY
-        return E
+        MappedFunction.priority = MY_PRIORITY
+        return MappedFunction
     }
 
 }

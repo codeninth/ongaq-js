@@ -12,15 +12,15 @@ const functionPool = new Map()
 
 const generate = (step, range, secondsPerBeat) => {
 
-    return E => {
+    return MappedFunction => {
 
         if (
-            E.terminal.length === 0 ||
-            E.terminal[ E.terminal.length - 1 ].length === 0
-        ) return E
+            MappedFunction.terminal.length === 0 ||
+            MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length === 0
+        ) return MappedFunction
 
         let newNodes = []
-        for (let i = 0, max = E.terminal[ E.terminal.length - 1 ].length, delayTime; i < max; i++) {
+        for (let i = 0, max = MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length, delayTime; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
             if (!delayPool.get(delayTime)) {
                 delayPool.set(delayTime, make("delay", { delayTime }))
@@ -32,18 +32,18 @@ const generate = (step, range, secondsPerBeat) => {
         g.gain.setValueAtTime(1, 0)
         g.gain.setValueCurveAtTime(
             Helper.getWaveShapeArray(0),
-            E.footprints._beatTime + E.footprints._noteLength - 0.02, 0.02
+            MappedFunction.footprints._beatTime + MappedFunction.footprints._noteLength - 0.02, 0.02
         )
         newNodes.forEach(n=>{ n.connect(g) })
 
-        E.terminal.push([g])
-        E.terminal[ E.terminal.length - 2 ].forEach((pn, i) => {
+        MappedFunction.terminal.push([g])
+        MappedFunction.terminal[ MappedFunction.terminal.length - 2 ].forEach((pn, i) => {
             pn.connect( newNodes[ i <= newNodes.length - 1 ? i : newNodes.length - 1 ] )
         })
-        newNodes = newNodes.slice(0, E.terminal[ E.terminal.length - 2 ].length)
+        newNodes = newNodes.slice(0, MappedFunction.terminal[ MappedFunction.terminal.length - 2 ].length)
 
-        E.priority = MY_PRIORITY
-        return E
+        MappedFunction.priority = MY_PRIORITY
+        return MappedFunction
 
     }
 
