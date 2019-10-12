@@ -1,6 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
-import * as plugin from "../plugin/graph/index"
+import * as filterMapper from "../plugin/graph/index"
 import graphPool from "./pool.graph"
 import BufferYard from "./BufferYard"
 import DEFAULTS from "./defaults"
@@ -81,17 +81,22 @@ class Part {
             else return 0
         })
         this._generator = graph => {
-            return this.filters.reduce((currentGraph, nextFilter) => {
-                if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-                    if (nextFilter.type !== "note" && !graph._hasNote) {
-                        return currentGraph
-                    } else {
-                        return currentGraph[nextFilter.type](nextFilter.params)
-                    }
-                } else {
-                    return currentGraph
+            let hasNote = false
+            let mapped = []
+            this.filters.forEach((_filter)=>{
+                if(
+                    !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
+                    ( _filter.type !== "note" && !hasNote )
+                ){ return false }
+                const mappedFunction = filterMapper[_filter.type](_filter.params, graph )
+                if (mappedFunction){
+                    if (_filter.type === "note") hasNote = true
+                    mapped.push( mappedFunction )
                 }
-            }, graph)
+            })
+            return mapped.reduce((accumulatedResult, currentFunction) => {
+                return currentFunction(accumulatedResult)
+            }, filterMapper.empty()())
         }
         this._generator = this._generator.bind(this)
         return false
@@ -217,12 +222,11 @@ class Part {
         - get soundTrees for referring notepoint
     */
     _capture(){
-
         if(!this._generator) return false
-        this._currentGraph = this._generator(
+        return this._generator(
             graphPool.allocate({
                 sound: this.sound,
-                measure: Math.floor( this._currentBeatIndex / this.measure * this._beatsInMeasure ),
+                measure: Math.floor(this._currentBeatIndex / this._beatsInMeasure ),
                 beatIndex: this._currentBeatIndex % this._beatsInMeasure,
                 beatTime: this._nextBeatTime,
                 secondsPerBeat: this._secondsPerBeat,
@@ -230,8 +234,6 @@ class Part {
                 attachment: this._attachment
             })
         )
-        return this._currentGraph.reduce()
-
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }

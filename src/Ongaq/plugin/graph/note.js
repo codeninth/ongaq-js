@@ -1,6 +1,7 @@
 import make from "../../module/make"
 import PRIORITY from "../../plugin/graph/PRIORITY"
 import inspect from "../../module/inspect"
+import inspectIsActive from "../../module/inspectIsActive"
 const MY_PRIORITY = PRIORITY.note
 const DEFAULT_NOTE_LENGTH = 4
 
@@ -11,12 +12,15 @@ const DEFAULT_NOTE_LENGTH = 4
   }
 */
 const plugin = ( o = {}, graph = {} )=>{
+
+    if(!inspectIsActive(o.active,graph)) return false
+
     /*
-    key should be:
-      - string like "C1"
-      - array like ["C1","G1"]
-      - Chord object
-  */
+      key should be:
+        - string like "C1"
+        - array like ["C1","G1"]
+        - Chord object
+    */
     const key = inspect(o.key,{
         _arguments: [ graph.beatIndex, graph.measure, graph.attachment ],
         string: v=>[v],
@@ -27,6 +31,7 @@ const plugin = ( o = {}, graph = {} )=>{
         graph._hasNote = false
         return false
     }
+
     /*
       calculate relative length of note
     */
@@ -42,9 +47,9 @@ const plugin = ( o = {}, graph = {} )=>{
     graph._hasNote = true
     
     /*
-    必ず自身と同じ構造のオブジェクトを返す関数を返す
-    =====================================================================
-  */
+      必ず自身と同じ構造のオブジェクトを返す関数を返す
+      =====================================================================
+    */
 
     return E=>{
         let newNodes = key.map(k=>{

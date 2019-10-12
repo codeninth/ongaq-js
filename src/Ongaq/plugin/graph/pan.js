@@ -1,14 +1,10 @@
 import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
+import inspectIsActive from "../../module/inspectIsActive"
 import PRIORITY from "../../plugin/graph/PRIORITY"
 const MY_PRIORITY = PRIORITY.pan
 
-/*
-  o: {
-    x: 90
-  }
-*/
 const pannerPool = new Map()
 const functionPool = new Map()
 
@@ -30,8 +26,14 @@ const generate = ( x )=>{
 
 }
 
+/*
+  o: {
+    x: 90
+  }
+*/
 const plugin = ( o = {}, graph = {} )=>{
 
+    if (!inspectIsActive(o.active, graph)) return false
     const x = inspect(o.x,{
         // x の値は 仕様上角度を30で割った値を使う
         string: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,

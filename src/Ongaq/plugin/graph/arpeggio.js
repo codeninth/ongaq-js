@@ -2,16 +2,11 @@ import AudioCore from "../../module/AudioCore"
 import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
+import inspectIsActive from "../../module/inspectIsActive"
 import PRIORITY from "../../plugin/graph/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
 const context = AudioCore.context
 
-/*
-  o: {
-    step: 0.5 // relative length
-    filter: n=>n%4
-  }
-*/
 const delayPool = new Map()
 const functionPool = new Map()
 
@@ -54,7 +49,14 @@ const generate = (step, range, secondsPerBeat) => {
 
 }
 
+/*
+  o: {
+    step: 0.5 // relative beat length
+  }
+*/
 const plugin = (o = {}, graph = {}) => {
+
+    if (!inspectIsActive(o.active, graph)) return false
 
     const step = inspect(o.step, {
         number: v => v < 16 ? v : 1,
