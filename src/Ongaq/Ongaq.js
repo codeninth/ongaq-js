@@ -43,6 +43,7 @@ class Ongaq {
                 if (isAllPartsLoaded) this.onReady && this.onReady()
                 resolve()
             } catch(e){
+                this.onError && this.onError(e)
                 reject(e)
             }
 
@@ -156,7 +157,7 @@ class Ongaq {
       @_init
     */
 
-    _init({ api_key, volume, bpm, onReady }){
+    _init({ api_key, volume, bpm, onReady, onError }){
         this.parts = new Map()
         this.isPlaying = false
         this.volume = volume || DEFAULTS.VOLUME
@@ -167,6 +168,7 @@ class Ongaq {
             window.addEventListener("blur", () => { this.pauseScheduling() })
         }
         this.onReady = typeof onReady === "function" && onReady
+        this.onError = typeof onError === "function" && onError
         this._routine = this._routine.bind(this)
         BufferYard.set({ api_key })
     }
