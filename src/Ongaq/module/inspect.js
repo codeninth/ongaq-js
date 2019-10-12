@@ -9,7 +9,7 @@ const inspect = ( object, policy = {}, redo = true )=>{
     case "number":
         return policy.number( object )
     case "boolean":
-        return policy.boolean( object )
+        return object
     case "function":
         result = object( ...policy._arguments )
         if(typeof policy._next === "function") result = policy._next(result)

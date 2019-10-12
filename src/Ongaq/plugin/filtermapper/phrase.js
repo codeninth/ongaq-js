@@ -14,7 +14,7 @@ import Helper from "../../module/Helper"
   layer of path:
   [ name_of_key, length, volume ]
 */
-const plugin = (o = {},graph = {})=>{
+const mapper = (o = {},beat = {})=>{
 
     if(!Array.isArray(o.path) || o.path.length === 0) return false
 
@@ -28,10 +28,10 @@ const plugin = (o = {},graph = {})=>{
         if(pair[1] > 0) distance += pair[1]
 
         /*
-            get key,length as same as "note" plugin
+            get key,length as same as "note" mapper
         */
-        _key = Helper.toKeyList(pair[0], graph.beatIndex, graph.measure )
-        _length = Helper.toLength(pair[1], graph.beatIndex, graph.measure )
+        _key = Helper.toKeyList(pair[0], beat.beatIndex, beat.measure )
+        _length = Helper.toLength(pair[1], beat.beatIndex, beat.measure )
         if(!_key || !_length) return false
 
         _key.forEach(k=>{
@@ -39,10 +39,10 @@ const plugin = (o = {},graph = {})=>{
                 invoker: "audioBufferLine",
                 data: {
                     buffer: {
-                        sound: graph.sound,
-                        length: pair[1] * graph._secondsPerBeat,
+                        sound: beat.sound,
+                        length: pair[1] * beat._secondsPerBeat,
                         key: k,
-                        startTime: graph.beatTime + distance * graph._secondsPerBeat
+                        startTime: beat.beatTime + distance * beat._secondsPerBeat
                     },
                     volume: pair[2] >= 0 && pair[2] <= 1 ? pair[2] : ( o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null)
                 }
@@ -55,4 +55,4 @@ const plugin = (o = {},graph = {})=>{
 
 }
 
-export default plugin
+export default mapper

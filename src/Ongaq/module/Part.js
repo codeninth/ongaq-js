@@ -1,7 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
-import * as plugin from "../plugin/graph/index"
-import graphPool from "./pool.graph"
+import * as filterMapper from "../plugin/filtermapper/index"
 import BufferYard from "./BufferYard"
 import DEFAULTS from "./defaults"
 
@@ -62,17 +61,7 @@ class Part {
 
     add(newFilter){
         if(!newFilter || !newFilter.priority || newFilter.priority === -1) return false
-        /*
-            generate a function which receives & returns Graph object.
-            like this
-            ===================
-
-            graph => {
-                return graph
-                    .note({ ... })
-                    .arrpegio({ ... })
-                }
-            */
+   
         this.filters = this.filters || []
         this.filters.push(newFilter)
         this.filters.sort((a,b)=>{
@@ -80,18 +69,34 @@ class Part {
             else if(a.priority < b.priority) return -1
             else return 0
         })
-        this._generator = graph => {
-            return this.filters.reduce((currentGraph, nextFilter) => {
-                if (Object.hasOwnProperty.call(plugin, nextFilter.type)) {
-                    if (nextFilter.type !== "note" && !graph._hasNote) {
-                        return currentGraph
-                    } else {
-                        return currentGraph[nextFilter.type](nextFilter.params)
-                    }
-                } else {
-                    return currentGraph
+        
+        this._generator = () => {
+            
+            this._targetBeat = this._targetBeat || {}
+            this._targetBeat.sound = this.sound
+            this._targetBeat.measure = Math.floor(this._currentBeatIndex / this._beatsInMeasure)
+            this._targetBeat.beatIndex = this._currentBeatIndex % this._beatsInMeasure
+            this._targetBeat.beatTime = this._nextBeatTime
+            this._targetBeat.secondsPerBeat = this._secondsPerBeat
+            this._targetBeat.age = this._age
+            this._targetBeat.attachment = this._attachment
+
+            let hasNote = false
+            let mapped = []
+            this.filters.forEach((_filter)=>{
+                if(
+                    !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
+                    ( _filter.type !== "note" && !hasNote )
+                ){ return false }
+                const mappedFunction = filterMapper[_filter.type](_filter.params, this._targetBeat )
+                if (mappedFunction){
+                    if (_filter.type === "note") hasNote = true
+                    mapped.push( mappedFunction )
                 }
-            }, graph)
+            })
+            return mapped.reduce((accumulatedResult, currentFunction) => {
+                return currentFunction(accumulatedResult)
+            }, filterMapper.empty()())
         }
         this._generator = this._generator.bind(this)
         return false
@@ -121,7 +126,7 @@ class Part {
         while (this.active && this._nextBeatTime < secondToPrefetch){
             if(this._consumedBeats >= this._beatQuota) break
 
-            let element = !this.mute && this._capture()
+            let element = !this.mute && this._generator()
             if(element){
                 collected = collected || []
                 collected = collected.concat(element)
@@ -210,28 +215,6 @@ class Part {
     _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
         this.active = true
-    }
-
-    /*
-        @capture
-        - get soundTrees for referring notepoint
-    */
-    _capture(){
-
-        if(!this._generator) return false
-        this._currentGraph = this._generator(
-            graphPool.allocate({
-                sound: this.sound,
-                measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
-                beatIndex: this._currentBeatIndex % this._beatsInMeasure,
-                beatTime: this._nextBeatTime,
-                secondsPerBeat: this._secondsPerBeat,
-                age: this._age,
-                attachment: this._attachment
-            })
-        )
-        return this._currentGraph.reduce()
-
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }
