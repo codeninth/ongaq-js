@@ -222,7 +222,7 @@ class Part {
         this._currentGraph = this._generator(
             graphPool.allocate({
                 sound: this.sound,
-                measure: Math.floor( this._currentBeatIndex / this._beatsInMeasure ),
+                measure: Math.floor( this._currentBeatIndex / this.measure * this._beatsInMeasure ),
                 beatIndex: this._currentBeatIndex % this._beatsInMeasure,
                 beatTime: this._nextBeatTime,
                 secondsPerBeat: this._secondsPerBeat,
