@@ -54,7 +54,7 @@ const generate = (step, range, secondsPerBeat) => {
     step: 0.5 // relative beat length
   }
 */
-const plugin = (o = {}, _targetBeat = {}) => {
+const mapper = (o = {}, _targetBeat = {}) => {
 
     if (!isActive(o.active, _targetBeat)) return false
 
@@ -79,4 +79,4 @@ const plugin = (o = {}, _targetBeat = {}) => {
 
 }
 
-export default plugin
+export default mapper

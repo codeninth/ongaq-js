@@ -31,7 +31,7 @@ const generate = ( x )=>{
     x: 90
   }
 */
-const plugin = ( o = {}, _targetBeat = {} )=>{
+const mapper = ( o = {}, _targetBeat = {} )=>{
 
     if (!isActive(o.active, _targetBeat)) return false
     const x = inspect(o.x,{
@@ -54,4 +54,4 @@ const plugin = ( o = {}, _targetBeat = {} )=>{
 
 }
 
-export default plugin
+export default mapper

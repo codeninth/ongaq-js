@@ -14,7 +14,7 @@ import Helper from "../../module/Helper"
   layer of path:
   [ name_of_key, length, volume ]
 */
-const plugin = (o = {},beat = {})=>{
+const mapper = (o = {},beat = {})=>{
 
     if(!Array.isArray(o.path) || o.path.length === 0) return false
 
@@ -28,7 +28,7 @@ const plugin = (o = {},beat = {})=>{
         if(pair[1] > 0) distance += pair[1]
 
         /*
-            get key,length as same as "note" plugin
+            get key,length as same as "note" mapper
         */
         _key = Helper.toKeyList(pair[0], beat.beatIndex, beat.measure )
         _length = Helper.toLength(pair[1], beat.beatIndex, beat.measure )
@@ -55,4 +55,4 @@ const plugin = (o = {},beat = {})=>{
 
 }
 
-export default plugin
+export default mapper

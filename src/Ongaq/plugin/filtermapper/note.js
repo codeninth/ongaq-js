@@ -11,7 +11,7 @@ const DEFAULT_NOTE_LENGTH = 4
     active: n=>n%4
   }
 */
-const plugin = ( o = {}, _targetBeat = {} )=>{
+const mapper = ( o = {}, _targetBeat = {} )=>{
 
     if(!isActive(o.active,_targetBeat)) return false
 
@@ -77,4 +77,4 @@ const plugin = ( o = {}, _targetBeat = {} )=>{
 
 }
 
-export default plugin
+export default mapper
