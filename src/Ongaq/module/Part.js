@@ -1,6 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
-import * as filterMapper from "../plugin/filterMapper/index"
+import * as filterMapper from "../plugin/filtermapper/index"
 import BufferYard from "./BufferYard"
 import DEFAULTS from "./defaults"
 
@@ -61,17 +61,7 @@ class Part {
 
     add(newFilter){
         if(!newFilter || !newFilter.priority || newFilter.priority === -1) return false
-        /*
-            generate a function which receives & returns Graph object.
-            like this
-            ===================
-
-            graph => {
-                return graph
-                    .note({ ... })
-                    .arrpegio({ ... })
-                }
-            */
+   
         this.filters = this.filters || []
         this.filters.push(newFilter)
         this.filters.sort((a,b)=>{
@@ -79,6 +69,7 @@ class Part {
             else if(a.priority < b.priority) return -1
             else return 0
         })
+        
         this._generator = () => {
             
             this._current = this._current || {}

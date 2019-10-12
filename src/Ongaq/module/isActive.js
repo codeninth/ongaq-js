@@ -1,10 +1,10 @@
 import inspect from "./inspect"
 
-const isActive = (active,graph) => {
+const isActive = (active,beat) => {
     return inspect(active, {
-        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
-        object: v => Array.isArray(v) && v.includes(graph.beatIndex),
-        number: v => v === graph.beatIndex,
+        _arguments: [beat.beatIndex, beat.measure, beat.attachment],
+        object: v => Array.isArray(v) && v.includes(beat.beatIndex),
+        number: v => v === beat.beatIndex,
         default: true
     })
 }

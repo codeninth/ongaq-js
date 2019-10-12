@@ -57,7 +57,6 @@ const Helper =  {
 
     /*
     @toKeyList
-        Graphプラグインでの使用を想定。
         raw: string or array or KeyList or function
 
         型がさまざまな可能性のある引数から
@@ -74,7 +73,6 @@ const Helper =  {
 
     /*
     @toLength
-        Graphプラグインでの使用を想定。
         raw: string or array or KeyList or function
 
         型がさまざまな可能性のある引数から

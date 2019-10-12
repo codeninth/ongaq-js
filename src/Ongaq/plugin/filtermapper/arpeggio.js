@@ -32,7 +32,7 @@ const generate = (step, range, secondsPerBeat) => {
         g.gain.setValueAtTime(1, 0)
         g.gain.setValueCurveAtTime(
             Helper.getWaveShapeArray(0),
-            E.footprints._graphBeatTime + E.footprints._noteLength - 0.02, 0.02
+            E.footprints._beatTime + E.footprints._noteLength - 0.02, 0.02
         )
         newNodes.forEach(n=>{ n.connect(g) })
 
@@ -54,26 +54,26 @@ const generate = (step, range, secondsPerBeat) => {
     step: 0.5 // relative beat length
   }
 */
-const plugin = (o = {}, graph = {}) => {
+const plugin = (o = {}, beat = {}) => {
 
-    if (!isActive(o.active, graph)) return false
+    if (!isActive(o.active, beat)) return false
 
     const step = inspect(o.step, {
         number: v => v < 16 ? v : 1,
-        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
+        _arguments: [beat.beatIndex, beat.measure, beat.attachment],
         default: 0
     }) 
     if (!step) return false
     const range = inspect(o.range, {
         number: v => (v > 0 && v < 9) ? v : 3,
-        _arguments: [graph.beatIndex, graph.measure, graph.attachment],
+        _arguments: [beat.beatIndex, beat.measure, beat.attachment],
         default: 3
     }) 
 
-    const cacheKey = `${step}_${range}_${graph.secondsPerBeat}`
+    const cacheKey = `${step}_${range}_${beat.secondsPerBeat}`
     if (functionPool.get(cacheKey)) return functionPool.get(cacheKey)
     else {
-        functionPool.set(cacheKey, generate(step, range, graph.secondsPerBeat))
+        functionPool.set(cacheKey, generate(step, range, beat.secondsPerBeat))
         return functionPool.get(cacheKey)
     }
 
