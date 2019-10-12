@@ -72,14 +72,14 @@ class Part {
         
         this._generator = () => {
             
-            this._current = this._current || {}
-            this._current.sound = this.sound
-            this._current.measure = Math.floor(this._currentBeatIndex / this._beatsInMeasure)
-            this._current.beatIndex = this._currentBeatIndex % this._beatsInMeasure
-            this._current.beatTime = this._nextBeatTime
-            this._current.secondsPerBeat = this._secondsPerBeat
-            this._current.age = this._age
-            this._current.attachment = this._attachment
+            this._targetBeat = this._targetBeat || {}
+            this._targetBeat.sound = this.sound
+            this._targetBeat.measure = Math.floor(this._currentBeatIndex / this._beatsInMeasure)
+            this._targetBeat.beatIndex = this._currentBeatIndex % this._beatsInMeasure
+            this._targetBeat.beatTime = this._nextBeatTime
+            this._targetBeat.secondsPerBeat = this._secondsPerBeat
+            this._targetBeat.age = this._age
+            this._targetBeat.attachment = this._attachment
 
             let hasNote = false
             let mapped = []
@@ -88,7 +88,7 @@ class Part {
                     !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
                     ( _filter.type !== "note" && !hasNote )
                 ){ return false }
-                const mappedFunction = filterMapper[_filter.type](_filter.params, this._current )
+                const mappedFunction = filterMapper[_filter.type](_filter.params, this._targetBeat )
                 if (mappedFunction){
                     if (_filter.type === "note") hasNote = true
                     mapped.push( mappedFunction )
