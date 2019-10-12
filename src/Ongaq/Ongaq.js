@@ -43,7 +43,10 @@ class Ongaq {
                 if (isAllPartsLoaded) this.onReady && this.onReady()
                 resolve()
             } catch(e){
-                this.onError && this.onError(e)
+                if (!this.isError){
+                    this.onError && this.onError(e)
+                    this.isError = true
+                }
                 reject(e)
             }
 
@@ -169,6 +172,7 @@ class Ongaq {
         }
         this.onReady = typeof onReady === "function" && onReady
         this.onError = typeof onError === "function" && onError
+        this.isError = false
         this._routine = this._routine.bind(this)
         BufferYard.set({ api_key })
     }
