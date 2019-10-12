@@ -1,7 +1,6 @@
 import AudioCore from "./AudioCore"
 import Helper from "./Helper"
-import * as filterMapper from "../plugin/graph/index"
-import graphPool from "./pool.graph"
+import * as filterMapper from "../plugin/filterMapper/index"
 import BufferYard from "./BufferYard"
 import DEFAULTS from "./defaults"
 
@@ -80,7 +79,17 @@ class Part {
             else if(a.priority < b.priority) return -1
             else return 0
         })
-        this._generator = graph => {
+        this._generator = () => {
+            
+            this._current = this._current || {}
+            this._current.sound = this.sound
+            this._current.measure = Math.floor(this._currentBeatIndex / this._beatsInMeasure)
+            this._current.beatIndex = this._currentBeatIndex % this._beatsInMeasure
+            this._current.beatTime = this._nextBeatTime
+            this._current.secondsPerBeat = this._secondsPerBeat
+            this._current.age = this._age
+            this._current.attachment = this._attachment
+
             let hasNote = false
             let mapped = []
             this.filters.forEach((_filter)=>{
@@ -88,7 +97,7 @@ class Part {
                     !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
                     ( _filter.type !== "note" && !hasNote )
                 ){ return false }
-                const mappedFunction = filterMapper[_filter.type](_filter.params, graph )
+                const mappedFunction = filterMapper[_filter.type](_filter.params, this._current )
                 if (mappedFunction){
                     if (_filter.type === "note") hasNote = true
                     mapped.push( mappedFunction )
@@ -126,7 +135,7 @@ class Part {
         while (this.active && this._nextBeatTime < secondToPrefetch){
             if(this._consumedBeats >= this._beatQuota) break
 
-            let element = !this.mute && this._capture()
+            let element = !this.mute && this._generator()
             if(element){
                 collected = collected || []
                 collected = collected.concat(element)
@@ -215,25 +224,6 @@ class Part {
     _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
         this.active = true
-    }
-
-    /*
-        @capture
-        - get soundTrees for referring notepoint
-    */
-    _capture(){
-        if(!this._generator) return false
-        return this._generator(
-            graphPool.allocate({
-                sound: this.sound,
-                measure: Math.floor(this._currentBeatIndex / this._beatsInMeasure ),
-                beatIndex: this._currentBeatIndex % this._beatsInMeasure,
-                beatTime: this._nextBeatTime,
-                secondsPerBeat: this._secondsPerBeat,
-                age: this._age,
-                attachment: this._attachment
-            })
-        )
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }

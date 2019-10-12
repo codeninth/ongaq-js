@@ -1,7 +1,7 @@
 import make from "../../module/make"
-import PRIORITY from "../../plugin/graph/PRIORITY"
+import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 import inspect from "../../module/inspect"
-import inspectIsActive from "../../module/inspectIsActive"
+import isActive from "../../module/isActive"
 const MY_PRIORITY = PRIORITY.note
 const DEFAULT_NOTE_LENGTH = 4
 
@@ -13,7 +13,7 @@ const DEFAULT_NOTE_LENGTH = 4
 */
 const plugin = ( o = {}, graph = {} )=>{
 
-    if(!inspectIsActive(o.active,graph)) return false
+    if(!isActive(o.active,graph)) return false
 
     /*
       key should be:

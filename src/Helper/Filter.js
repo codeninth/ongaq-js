@@ -1,4 +1,4 @@
-import PRIORITY from "../Ongaq/plugin/graph/PRIORITY"
+import PRIORITY from "../Ongaq/plugin/filtermapper/PRIORITY"
 
 class Filter {
 

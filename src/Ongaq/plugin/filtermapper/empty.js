@@ -1,5 +1,5 @@
 import pool from "../../module/pool.element"
-import PRIORITY from "../../plugin/graph/PRIORITY"
+import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 const MY_PRIORITY = PRIORITY.empty
 const Element = ()=>{
 

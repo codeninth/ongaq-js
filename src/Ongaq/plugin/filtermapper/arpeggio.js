@@ -2,8 +2,8 @@ import AudioCore from "../../module/AudioCore"
 import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
-import inspectIsActive from "../../module/inspectIsActive"
-import PRIORITY from "../../plugin/graph/PRIORITY"
+import isActive from "../../module/isActive"
+import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
 const context = AudioCore.context
 
@@ -56,7 +56,7 @@ const generate = (step, range, secondsPerBeat) => {
 */
 const plugin = (o = {}, graph = {}) => {
 
-    if (!inspectIsActive(o.active, graph)) return false
+    if (!isActive(o.active, graph)) return false
 
     const step = inspect(o.step, {
         number: v => v < 16 ? v : 1,
