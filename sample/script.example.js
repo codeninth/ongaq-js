@@ -26,7 +26,7 @@ my_guitar.add(new Filter({
 }))
 
 const ongaq = new Ongaq({
-    api_key: "master_api_key_00",
+    api_key: "YOUR_API_KEY",
     bpm: 130,
     volume: 40,
     onReady: ()=>{
