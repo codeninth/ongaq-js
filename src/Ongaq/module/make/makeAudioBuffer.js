@@ -6,35 +6,43 @@ import isDrumNoteName from "../isDrumNoteName"
 import gainPool from "../pool.gain"
 const context = AudioCore.context
 
-let period = context.currentTime + 5
-let nextKey = "left"
-let otherKey = "right"
-let gainGarage = {
-    left: [],
-    right: []
+const RETRIEVE_INTERVAL = 4
+
+let periods = [ 2, 3, 4, 5 ].map(n => n * RETRIEVE_INTERVAL + context.currentTime)
+const gainGarage = new Map()
+const bufferSourceGarage = new Map()
+
+const addPeriod = ()=>{
+    const nextPeriod = periods[periods.length - 1] + RETRIEVE_INTERVAL
+    periods = periods.slice(1)
+    periods.push(nextPeriod)
+    gainGarage.set(nextPeriod, [])
+    bufferSourceGarage.set(nextPeriod, [])
+    console.log(nextPeriod)
+    return nextPeriod
 }
-let bufferSourceGarage = {
-    left: [],
-    right: []
+const retrieve = currentTime =>{
+    if(periods[0] < currentTime) return false
+    for(let i = 0, l = periods.length; i<l; i++){
+        if(periods[i] > currentTime) continue
+        gainGarage.get(periods[i]).forEach(usedGain => {
+            usedGain.disconnect()
+            gainPool.retrieve(usedGain)
+        })
+        bufferSourceGarage.get(periods[i]).forEach(usedSource => {
+            usedSource.disconnect()
+        })
+        console.log("addPeriod @retrieve")
+        addPeriod()
+        gainGarage.delete(periods[i])
+        bufferSourceGarage.delete(periods[i])
+    }
+    return false
 }
 
 const makeAudioBuffer = ({ buffer, volume })=>{
 
-    if(period < context.currentTime){
-        gainGarage[ nextKey ].forEach(usedGain=>{
-            usedGain.disconnect()
-            gainPool.retrieve( usedGain )
-        })
-        bufferSourceGarage[ nextKey ].forEach(usedSource=>{
-            usedSource.disconnect()
-            // usedSource = null
-        })
-        gainGarage[ nextKey ] = []
-        bufferSourceGarage[ nextKey ] = []
-        period = context.currentTime + 5
-        nextKey = nextKey === "left" ? "right" : "left"
-        otherKey = otherKey === "left" ? "right" : "left"
-    }
+    retrieve(context.currentTime)
 
     let audioBuffer = BufferYard.ship(buffer)
     if(!audioBuffer) return false
@@ -54,12 +62,18 @@ const makeAudioBuffer = ({ buffer, volume })=>{
     s.start(buffer.startTime)
     s.connect(g)
     
-    if(buffer.startTime + buffer.length + 0.1 < period){
-        gainGarage[ nextKey ].push(g)
-        bufferSourceGarage[ nextKey ].push(s)
-    } else {
-        gainGarage[ otherKey ].push(g)
-        bufferSourceGarage[ otherKey ].push(s)
+    for(let i = 0, l = periods.length; i<l; i++){
+        if (buffer.startTime + buffer.length + 0.1 < periods[i]){
+            gainGarage.get( periods[i] ).push(g)
+            bufferSourceGarage.get( periods[i] ).push(s)
+            break
+        }
+        if(i === l-1){
+            console.log("addPeriod @make")
+            const nextPeriod = addPeriod()
+            gainGarage.get( nextPeriod ).push(g)
+            bufferSourceGarage.get( nextPeriod ).push(s)
+        }
     }
     return g
 
