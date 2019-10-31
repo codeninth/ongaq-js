@@ -8,9 +8,13 @@ const context = AudioCore.context
 
 const RETRIEVE_INTERVAL = 4
 
-let periods = [ 2, 3, 4, 5 ].map(n => n * RETRIEVE_INTERVAL + context.currentTime)
 const gainGarage = new Map()
 const bufferSourceGarage = new Map()
+let periods = [2, 3, 4, 5].map(n => n * RETRIEVE_INTERVAL + context.currentTime)
+periods.forEach(p=>{
+    gainGarage.set(p,[])
+    bufferSourceGarage.set(p,[])
+})
 
 const addPeriod = ()=>{
     const nextPeriod = periods[periods.length - 1] + RETRIEVE_INTERVAL
@@ -18,11 +22,11 @@ const addPeriod = ()=>{
     periods.push(nextPeriod)
     gainGarage.set(nextPeriod, [])
     bufferSourceGarage.set(nextPeriod, [])
-    console.log(nextPeriod)
     return nextPeriod
 }
+
 const retrieve = currentTime =>{
-    if(periods[0] < currentTime) return false
+    if(periods[0] > currentTime) return false
     for(let i = 0, l = periods.length; i<l; i++){
         if(periods[i] > currentTime) continue
         gainGarage.get(periods[i]).forEach(usedGain => {
@@ -32,10 +36,9 @@ const retrieve = currentTime =>{
         bufferSourceGarage.get(periods[i]).forEach(usedSource => {
             usedSource.disconnect()
         })
-        console.log("addPeriod @retrieve")
-        addPeriod()
         gainGarage.delete(periods[i])
         bufferSourceGarage.delete(periods[i])
+        addPeriod()
     }
     return false
 }
@@ -69,7 +72,6 @@ const makeAudioBuffer = ({ buffer, volume })=>{
             break
         }
         if(i === l-1){
-            console.log("addPeriod @make")
             const nextPeriod = addPeriod()
             gainGarage.get( nextPeriod ).push(g)
             bufferSourceGarage.get( nextPeriod ).push(s)
