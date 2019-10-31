@@ -15,9 +15,8 @@ periods.forEach(p=>{
     gainGarage.set(p,[])
     bufferSourceGarage.set(p,[])
 })
-
-const addPeriod = ()=>{
-    const nextPeriod = periods[periods.length - 1] + RETRIEVE_INTERVAL
+const addPeriod = minimum =>{
+    const nextPeriod = minimum + RETRIEVE_INTERVAL
     periods = periods.slice(1)
     periods.push(nextPeriod)
     gainGarage.set(nextPeriod, [])
@@ -29,16 +28,16 @@ const retrieve = currentTime =>{
     if(periods[0] > currentTime) return false
     for(let i = 0, l = periods.length; i<l; i++){
         if(periods[i] > currentTime) continue
-        gainGarage.get(periods[i]).forEach(usedGain => {
+        gainGarage.get(periods[i]) && gainGarage.get(periods[i]).forEach(usedGain => {
             usedGain.disconnect()
             gainPool.retrieve(usedGain)
         })
-        bufferSourceGarage.get(periods[i]).forEach(usedSource => {
+        bufferSourceGarage.get(periods[i]) && bufferSourceGarage.get(periods[i]).forEach(usedSource => {
             usedSource.disconnect()
         })
         gainGarage.delete(periods[i])
         bufferSourceGarage.delete(periods[i])
-        addPeriod()
+        addPeriod( periods[l - 1] )
     }
     return false
 }
@@ -72,7 +71,7 @@ const makeAudioBuffer = ({ buffer, volume })=>{
             break
         }
         if(i === l-1){
-            const nextPeriod = addPeriod()
+            const nextPeriod = addPeriod(buffer.startTime + buffer.length + 0.1)
             gainGarage.get( nextPeriod ).push(g)
             bufferSourceGarage.get( nextPeriod ).push(s)
         }
