@@ -4,7 +4,7 @@ const inspect = ( object, policy = {}, redo = true )=>{
     case "string":
         return policy.string( object )
     case "object":
-        if (Array.isArray(object)) return policy.array( object )
+        if (Array.isArray(object) && policy.array) return policy.array( object )
         else return policy.object(object)
     case "number":
         return policy.number( object )
