@@ -133,7 +133,6 @@ class Ongaq {
 
     set volume(v) {
         if (typeof v !== "number" || v < 0 || v > 100) return false
-        if (v > 0) this._previousVolume = this._volume
         this._volume = v / 100 * AudioCore.SUPPRESSION
         this.commonGain && this.commonGain.gain.setValueAtTime(
             this._volume,
@@ -142,7 +141,7 @@ class Ongaq {
     }
 
     get volume() {
-        return this._volume * 100
+        return this._volume * 100 / AudioCore.SUPPRESSION
     }
 
     set bpm(v) {
@@ -164,7 +163,7 @@ class Ongaq {
         this.parts = new Map()
         this.isPlaying = false
         this.volume = volume || DEFAULTS.VOLUME
-        this._previousVolume = this.volume
+
         this._nextZeroTime = 0
         this.bpm = bpm || DEFAULTS.BPM
         if (AudioCore.powerMode === "low") {
@@ -190,7 +189,7 @@ class Ongaq {
         }
         this.commonGain = context.createGain()
         this.commonGain.connect(this.commonComp)
-        this.commonGain.gain.setValueAtTime(this._previousVolume || this.volume, 0)
+        this.commonGain.gain.setValueAtTime(this._volume, 0)
         return false
     }
 
