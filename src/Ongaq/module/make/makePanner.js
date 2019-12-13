@@ -5,6 +5,7 @@ const v = {
     w: window.innerWidth,
     h: window.innerHeight,
 }
+
 const l = context.listener
 
 if(l.forwardX) {
@@ -21,14 +22,18 @@ if(l.forwardX) {
 if(l.positionX){
     l.positionX.value = v.w / 2
     l.positionY.value = v.h / 2
-    l.positionZ.value = 200
+    l.positionZ.value = 300
 } else {
-    l.setPosition(v.w / 2,v.h / 2,200)
+    l.setPosition(v.w / 2,v.h / 2, 300)
 }
 
 const makePanner = ({ x })=>{
 
     const p = context.createPanner()
+    p.refDistance = 1000
+    p.maxDistance = 10000
+    p.coneOuterGain = 1
+
     const _o = [1, 0, 0]
     if(p.orientationX) {
         p.orientationX.setValueAtTime(_o[0], context.currentTime)
@@ -39,7 +44,9 @@ const makePanner = ({ x })=>{
     }
 
     const xValue = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( x )
-    const _p = [v.w / 2 + xValue, v.h / 2, 200]
+    // mastering in case of width: 1000px -> multiply ratio (1000/v.w)  
+    const _p = [v.w / 2 + (1000 / v.w) * v.w / 90 * xValue / 52, v.h / 2, 299 ]
+
     if(p.positionX){
         p.positionX.setValueAtTime(_p[0], context.currentTime)
         p.positionY.setValueAtTime(_p[1], context.currentTime)

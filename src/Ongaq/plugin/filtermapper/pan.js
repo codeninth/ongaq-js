@@ -36,11 +36,11 @@ const mapper = ( o = {}, _targetBeat = {} )=>{
     if (!isActive(o.active, _targetBeat)) return false
     const x = inspect(o.x,{
         // x の値は 仕様上角度を30で割った値を使う
-        string: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,
-        number: v => Helper.toInt(v, { max: 90, min: -90 }) / 30,
+        string: v => Helper.toInt(v, { max: 90, min: -90 }),
+        number: v => Helper.toInt(v, { max: 90, min: -90 }),
         _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
         _next: v=>{
-            return Helper.toInt(v, { max: 90, min: -90 }) / 30
+            return Helper.toInt(v, { max: 90, min: -90 })
         },
         default: 0
     })
