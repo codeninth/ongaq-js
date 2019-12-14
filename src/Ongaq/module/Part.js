@@ -138,8 +138,11 @@ class Part {
 
             if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
                 this._currentBeatIndex = 0
-                typeof this.willAge === "function" && this.willAge( this._age + 1, this._nextBeatTime ) 
                 this._age++
+                typeof this.willAge === "function" && this.willAge({
+                    nextAge: this._age,
+                    meanTime: this._nextBeatTime
+                }) 
             } else {
                 this._currentBeatIndex++
             }
@@ -158,6 +161,15 @@ class Part {
         else this._attachment = {}
     }
 
+    in(meanTime){
+        if(typeof meanTime !== "number" || meanTime <= context.currentTime ){
+            throw new Error("assign a number for the first argument for Part.in( )")
+        }
+        this._meanTime = meanTime
+        this._nextBeatTime = meanTime
+        this.active = true
+    }
+
     async loadSound(){
         this._isLoading = true
         return new Promise( async (resolve,reject)=>{
@@ -172,6 +184,12 @@ class Part {
                 reject(e)
             }
         })
+    }
+
+    out(){
+        this._meanTime = 0
+        this._nextBeatTime = 0
+        this.active = false
     }
 
     /*
@@ -193,6 +211,10 @@ class Part {
         })
     }
 
+    resetAge(){
+        this._age = 0
+    }
+
     set mute(v) {
         if (typeof v === "boolean") this._mute = v
     }
@@ -211,8 +233,8 @@ class Part {
         this._beatQuota = 0
     }
 
-    _putTimerRight(_nextZeroTime){
-        this._nextBeatTime = _nextZeroTime || context.currentTime
+    _putTimerRight(_meanTime){
+        this._nextBeatTime = _meanTime || context.currentTime
     }
 
     _setQuota(totalCap){
