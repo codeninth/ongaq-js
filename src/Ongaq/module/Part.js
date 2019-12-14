@@ -51,6 +51,8 @@ class Part {
         */
         this._attachment = {}
 
+        this.default = {}
+        this.default.active = props.active !== false
         this.active = false
         this.mute = !!props.mute
 
@@ -136,6 +138,7 @@ class Part {
 
             if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
                 this._currentBeatIndex = 0
+                typeof this.willAge === "function" && this.willAge( this._age + 1, this._nextBeatTime ) 
                 this._age++
             } else {
                 this._currentBeatIndex++
@@ -161,7 +164,7 @@ class Part {
             try {
                 await BufferYard.import(this.sound)
                 this._isLoading = false
-                this.active = true
+                this.active = this.default.active
                 resolve()
             } catch(e) {
                 this._isLoading = false
@@ -214,7 +217,7 @@ class Part {
 
     _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
-        this.active = true
+        this.active = this.default.active
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }
