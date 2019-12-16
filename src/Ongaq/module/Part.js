@@ -17,10 +17,10 @@ class Part {
         this.bpm = props.bpm
         this.measure = props.measure
         /*
-            maxAge:
-            if the age would be over maxAge, this Part stops (repeat: false) or its age returns to 0 (repeat: true)
+            maxLap:
+            if the lap would be over maxLap, this Part stops (repeat: false) or its lap returns to 0 (repeat: true)
         */
-        this.maxAge = (typeof props.maxAge === "number" && props.maxAge >= 1 ) ? props.maxAge : Infinity
+        this.maxLap = (typeof props.maxLap === "number" && props.maxLap >= 1 ) ? props.maxLap : Infinity
         this.repeat = props.repeat !== false
 
         this._isLoading = false
@@ -35,10 +35,10 @@ class Part {
         this._nextBeatTime = 0
 
         /*
-            @age
+            @lap
             - get added 1 when all beats are observed
         */
-        this._age = 1
+        this._lap = 1
 
         /*
             @_beatQuota
@@ -87,7 +87,7 @@ class Part {
             this._targetBeat.beatIndex = this._currentBeatIndex % this._beatsInMeasure
             this._targetBeat.beatTime = this._nextBeatTime
             this._targetBeat.secondsPerBeat = this._secondsPerBeat
-            this._targetBeat.age = this._age
+            this._targetBeat.lap = this._lap
             this._targetBeat.attachment = this._attachment
 
             let hasNote = false
@@ -146,12 +146,12 @@ class Part {
             if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
 
                 this._currentBeatIndex = 0
-                this._age++
+                this._lap++
                 typeof this.willAge === "function" && this.willAge({
-                    nextAge: this._age,
+                    nextAge: this._lap,
                     meanTime: this._nextBeatTime
                 })
-                if(this._age > this.maxAge){
+                if(this._lap > this.maxLap){
                     if (this.repeat) this.resetAge()
                     else this.out()
                 }
@@ -227,7 +227,7 @@ class Part {
     }
 
     resetAge(){
-        this._age = 1
+        this._lap = 1
     }
 
     set mute(v) {
@@ -242,7 +242,7 @@ class Part {
     get bpm() { return this._bpm }
 
     _reset(){
-        this._age = 1
+        this._lap = 1
         this._currentBeatIndex = 0
         this._consumedBeats = 0
         this._beatQuota = 0
