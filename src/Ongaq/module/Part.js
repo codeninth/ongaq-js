@@ -152,8 +152,8 @@ class Part {
                     meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
-                    if (this.repeat) this.resetAge()
-                    else this.out()
+                    if (this.repeat) this.resetAge() 
+                    this.out()
                 }
 
             } else {
@@ -181,6 +181,7 @@ class Part {
         if(this.active) return false
         this._meanTime = meanTime
         this._nextBeatTime = meanTime
+        this.default.active = true // once in() called, this Part should be paused / restarted as usual
         this.active = true
     }
 
@@ -210,7 +211,7 @@ class Part {
     /*
         @tag
         tags: A,B,C...
-        タグ A,B,C... を追加
+        add tag A, tag B, tag C...
         */
     tag(...tags) {
         this.tags = Array.isArray(this.tags) ? this.tags : []
@@ -249,12 +250,12 @@ class Part {
     }
 
     _putTimerRight(_meanTime){
+        if (!this.active) return false
         this._nextBeatTime = _meanTime || context.currentTime
     }
 
     _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
-        this.active = this.default.active
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }
