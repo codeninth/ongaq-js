@@ -16,6 +16,13 @@ class Part {
         this.tags = Array.isArray(props.tags) ? props.tags : []
         this.bpm = props.bpm
         this.measure = props.measure
+        /*
+            maxLap:
+            if the lap would be over maxLap, this Part stops (repeat: false) or its lap returns to 0 (repeat: true)
+        */
+        this.maxLap = (typeof props.maxLap === "number" && props.maxLap >= 1 ) ? props.maxLap : Infinity
+        this.repeat = props.repeat !== false
+
         this._isLoading = false
         this._beatsInMeasure = props._beatsInMeasure
         this._currentBeatIndex = 0
@@ -28,10 +35,10 @@ class Part {
         this._nextBeatTime = 0
 
         /*
-            @age
+            @lap
             - get added 1 when all beats are observed
         */
-        this._age = 0
+        this._lap = 1
 
         /*
             @_beatQuota
@@ -51,6 +58,8 @@ class Part {
         */
         this._attachment = {}
 
+        this.default = {}
+        this.default.active = props.active !== false
         this.active = false
         this.mute = !!props.mute
 
@@ -78,7 +87,7 @@ class Part {
             this._targetBeat.beatIndex = this._currentBeatIndex % this._beatsInMeasure
             this._targetBeat.beatTime = this._nextBeatTime
             this._targetBeat.secondsPerBeat = this._secondsPerBeat
-            this._targetBeat.age = this._age
+            this._targetBeat.lap = this._lap
             this._targetBeat.attachment = this._attachment
 
             let hasNote = false
@@ -135,8 +144,18 @@ class Part {
             this._nextBeatTime += this._secondsPerBeat
 
             if(this._currentBeatIndex + 1 >= this.measure * this._beatsInMeasure){
+
                 this._currentBeatIndex = 0
-                this._age++
+                this._lap++
+                typeof this.willAge === "function" && this.willAge({
+                    nextAge: this._lap,
+                    meanTime: this._nextBeatTime
+                })
+                if(this._lap > this.maxLap){
+                    if (this.repeat) this.resetAge() 
+                    this.out()
+                }
+
             } else {
                 this._currentBeatIndex++
             }
@@ -155,13 +174,24 @@ class Part {
         else this._attachment = {}
     }
 
+    in(meanTime){
+        if(typeof meanTime !== "number" || meanTime <= context.currentTime ){
+            throw new Error("assign a number for the first argument for Part.in( )")
+        }
+        if(this.active) return false
+        this._meanTime = meanTime
+        this._nextBeatTime = meanTime
+        this.default.active = true // once in() called, this Part should be paused / restarted as usual
+        this.active = true
+    }
+
     async loadSound(){
         this._isLoading = true
         return new Promise( async (resolve,reject)=>{
             try {
                 await BufferYard.import(this.sound)
                 this._isLoading = false
-                this.active = true
+                this.active = this.default.active
                 resolve()
             } catch(e) {
                 this._isLoading = false
@@ -171,10 +201,17 @@ class Part {
         })
     }
 
+    out(){
+        if(!this.active) return false
+        this._meanTime = 0
+        this._nextBeatTime = 0
+        this.active = false
+    }
+
     /*
         @tag
         tags: A,B,C...
-        タグ A,B,C... を追加
+        add tag A, tag B, tag C...
         */
     tag(...tags) {
         this.tags = Array.isArray(this.tags) ? this.tags : []
@@ -190,6 +227,10 @@ class Part {
         })
     }
 
+    resetAge(){
+        this._lap = 1
+    }
+
     set mute(v) {
         if (typeof v === "boolean") this._mute = v
     }
@@ -202,19 +243,19 @@ class Part {
     get bpm() { return this._bpm }
 
     _reset(){
-        this._age = 0
+        this._lap = 1
         this._currentBeatIndex = 0
         this._consumedBeats = 0
         this._beatQuota = 0
     }
 
-    _putTimerRight(_nextZeroTime){
-        this._nextBeatTime = _nextZeroTime || context.currentTime
+    _putTimerRight(_meanTime){
+        if (!this.active) return false
+        this._nextBeatTime = _meanTime || context.currentTime
     }
 
     _setQuota(totalCap){
         this._beatQuota = totalCap * this._beatsInMeasure
-        this.active = true
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }
