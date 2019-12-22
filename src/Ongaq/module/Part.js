@@ -16,7 +16,7 @@ class Part {
         this.bpm = props.bpm
         this.measure = props.measure
 
-        this.willGoToNextLap = props && typeof props.willGoToNextLap === "function" && props.willGoToNextLap
+        this.willMakeLap = props && typeof props.willMakeLap === "function" && props.willMakeLap
         /*
             maxLap:
             if the lap would be over maxLap, this Part stops (repeat: false) or its lap returns to 0 (repeat: true)
@@ -148,7 +148,7 @@ class Part {
 
                 this._currentBeatIndex = 0
                 this._lap++
-                typeof this.willGoToNextLap === "function" && this.willGoToNextLap({
+                typeof this.willMakeLap === "function" && this.willMakeLap({
                     nextLap: this._lap,
                     meanTime: this._nextBeatTime
                 })
