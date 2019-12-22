@@ -9,18 +9,19 @@ const context = AudioCore.context
 
 class Part {
 
-    constructor(props,handler = {}){
+    constructor(props = {}){
         this.sound = props.sound
-        this.handler = handler
         this.id = props.id || Helper.getUUID()
         this.tags = Array.isArray(props.tags) ? props.tags : []
         this.bpm = props.bpm
         this.measure = props.measure
+
+        this.willGoToNextLap = props && typeof props.willGoToNextLap === "function" && props.willGoToNextLap
         /*
             maxLap:
             if the lap would be over maxLap, this Part stops (repeat: false) or its lap returns to 0 (repeat: true)
         */
-        this.maxLap = (typeof props.maxLap === "number" && props.maxLap >= 1 ) ? props.maxLap : Infinity
+        this.maxLap = (typeof props.maxLap === "number" && props.maxLap >= 0 ) ? props.maxLap : Infinity
         this.repeat = props.repeat !== false
 
         this._isLoading = false
@@ -38,7 +39,7 @@ class Part {
             @lap
             - get added 1 when all beats are observed
         */
-        this._lap = 1
+        this._lap = 0
 
         /*
             @_beatQuota
@@ -147,12 +148,12 @@ class Part {
 
                 this._currentBeatIndex = 0
                 this._lap++
-                typeof this.willAge === "function" && this.willAge({
-                    nextAge: this._lap,
+                typeof this.willGoToNextLap === "function" && this.willGoToNextLap({
+                    nextLap: this._lap,
                     meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
-                    if (this.repeat) this.resetAge() 
+                    if (this.repeat) this.resetLap() 
                     this.out()
                 }
 
@@ -227,8 +228,8 @@ class Part {
         })
     }
 
-    resetAge(){
-        this._lap = 1
+    resetLap(){
+        this._lap = 0
     }
 
     set mute(v) {
@@ -243,7 +244,7 @@ class Part {
     get bpm() { return this._bpm }
 
     _reset(){
-        this._lap = 1
+        this._lap = 0
         this._currentBeatIndex = 0
         this._consumedBeats = 0
         this._beatQuota = 0
