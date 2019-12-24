@@ -71,7 +71,7 @@ class Part {
 
     add(newFilter){
         if(!newFilter || !newFilter.priority || newFilter.priority === -1) return false
-   
+
         this.filters = this.filters || []
         this.filters.push(newFilter)
         this.filters.sort((a,b)=>{
@@ -79,9 +79,9 @@ class Part {
             else if(a.priority < b.priority) return -1
             else return 0
         })
-        
+
         this._generator = () => {
-            
+
             this._targetBeat = this._targetBeat || {}
             this._targetBeat.sound = this.sound
             this._targetBeat.measure = Math.floor(this._currentBeatIndex / this._beatsInMeasure)
@@ -131,6 +131,13 @@ class Part {
             secondToPrefetch += DEFAULTS.PREFETCH_SECOND
         }
         /*
+          if this._endTime is scheduled and secondToPrefetch will be overlap, this Part must stop
+        */
+        if(this._endTime && this._endTime > secondToPrefetch){
+          this._shutdown()
+        }
+
+        /*
             collect soundtrees for notepoints which come in certain range
             */
         while (this.active && this._nextBeatTime < secondToPrefetch){
@@ -153,7 +160,7 @@ class Part {
                     meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
-                    if (this.repeat) this.resetLap() 
+                    if (this.repeat) this.resetLap()
                     this.out()
                 }
 
@@ -202,11 +209,12 @@ class Part {
         })
     }
 
-    out(){
+    out(endTime){
         if(!this.active) return false
-        this._meanTime = 0
-        this._nextBeatTime = 0
-        this.active = false
+        if(endTime && endTime > context.currentTime) this._endTime = endTime
+        else {
+          this._shutdown()
+        }
     }
 
     /*
@@ -243,16 +251,24 @@ class Part {
     }
     get bpm() { return this._bpm }
 
-    _reset(){
-        this._lap = 0
-        this._currentBeatIndex = 0
-        this._consumedBeats = 0
-        this._beatQuota = 0
+    _shutdown(){
+      if(!this.active) return false
+      this._meanTime = 0
+      this._endTime = 0
+      this._nextBeatTime = 0
+      this.active = false
     }
 
     _putTimerRight(_meanTime){
         if (!this.active) return false
         this._nextBeatTime = _meanTime || context.currentTime
+    }
+
+    _reset(){
+        this._lap = 0
+        this._currentBeatIndex = 0
+        this._consumedBeats = 0
+        this._beatQuota = 0
     }
 
     _setQuota(totalCap){
