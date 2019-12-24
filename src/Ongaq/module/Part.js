@@ -191,6 +191,7 @@ class Part {
         this._nextBeatTime = meanTime
         this.default.active = true // once in() called, this Part should be paused / restarted as usual
         this.active = true
+        return false
     }
 
     async loadSound(){
@@ -215,6 +216,7 @@ class Part {
         else {
           this._shutdown()
         }
+        return false
     }
 
     /*
