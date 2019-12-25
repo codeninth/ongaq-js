@@ -40,19 +40,7 @@ class Part {
             - get added 1 when all beats are observed
         */
         this._lap = 0
-
-        /*
-            @_beatQuota
-            - how many beats to observe before changing to not active
-        */
-        this._beatQuota = 0
-
-        /*
-            @_consumedBeats
-            - observed beats
-        */
-        this._consumedBeats = 0
-
+     
         /*
             @attachment
             - conceptual value: user would be able to handle any value to part with this
@@ -141,7 +129,6 @@ class Part {
             collect soundtrees for notepoints which come in certain range
             */
         while (this.active && this._nextBeatTime < secondToPrefetch){
-            if(this._consumedBeats >= this._beatQuota) break
 
             let element = !this.mute && this._generator()
             if(element){
@@ -168,10 +155,6 @@ class Part {
                 this._currentBeatIndex++
             }
 
-            if(++this._consumedBeats >= this._beatQuota){
-                this.active = false
-                break
-            }
         }
         return collected
 
@@ -273,12 +256,6 @@ class Part {
     _reset(){
         this._lap = 0
         this._currentBeatIndex = 0
-        this._consumedBeats = 0
-        this._beatQuota = 0
-    }
-
-    _setQuota(totalCap){
-        this._beatQuota = totalCap * this._beatsInMeasure
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }

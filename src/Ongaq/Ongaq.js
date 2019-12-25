@@ -64,15 +64,6 @@ class Ongaq {
         this._prepareCommonGain()
         this.parts.forEach(p => { p._putTimerRight(context.currentTime) })
 
-        let list = []
-        let limitAge = null // TODO
-        /*
-        set _beatQuota of every part following to the longest part
-      */
-        this.parts.forEach(p => list.push(p.measure))
-        let cap = limitAge ? Math.max(...list) * limitAge : Infinity
-        this.parts.forEach(p => { p._setQuota(cap) })
-
         this._scheduler = window.setInterval(this._routine, AudioCore.powerMode === "middle" ? 50 : 200)
         return false
     }
