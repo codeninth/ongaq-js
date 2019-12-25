@@ -133,7 +133,7 @@ class Part {
         /*
           if this._endTime is scheduled and secondToPrefetch will be overlap, this Part must stop
         */
-        if(this._endTime && this._endTime > secondToPrefetch){
+        if(this._endTime && this._endTime < secondToPrefetch){
           this._shutdown()
         }
 
@@ -161,7 +161,7 @@ class Part {
                 })
                 if(this._lap > this.maxLap){
                     if (this.repeat) this.resetLap()
-                    this.out()
+                    else this.out()
                 }
 
             } else {
@@ -210,11 +210,15 @@ class Part {
         })
     }
 
-    out(endTime){
+    out(endTime,overwrite = false){
         if(!this.active) return false
-        if(endTime && endTime > context.currentTime) this._endTime = endTime
-        else {
-          this._shutdown()
+        if(this._endTime){
+            // this._endTime is already set.
+            if(overwrite && endTime && endTime > context.currentTime) this._endTime = endTime
+        } else {
+            // if suitable _endTime is not assigned, shutdown immediately.
+            if(endTime && endTime > context.currentTime) this._endTime = endTime
+            else this._shutdown()
         }
         return false
     }
