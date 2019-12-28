@@ -6,7 +6,6 @@ import DEFAULTS from "./defaults"
 
 const context = AudioCore.context
 
-
 class Part {
 
     constructor(props = {}){
@@ -122,7 +121,7 @@ class Part {
           if this._endTime is scheduled and secondToPrefetch will be overlap, this Part must stop
         */
         if(this._endTime && this._endTime < secondToPrefetch){
-          this._shutdown()
+            this._shutdown()
         }
 
         /*
