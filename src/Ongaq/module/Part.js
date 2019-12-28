@@ -6,21 +6,21 @@ import DEFAULTS from "./defaults"
 
 const context = AudioCore.context
 
-
 class Part {
 
-    constructor(props,handler = {}){
+    constructor(props = {}){
         this.sound = props.sound
-        this.handler = handler
         this.id = props.id || Helper.getUUID()
         this.tags = Array.isArray(props.tags) ? props.tags : []
         this.bpm = props.bpm
         this.measure = props.measure
+
+        this.willMakeLap = props && typeof props.willMakeLap === "function" && props.willMakeLap
         /*
             maxLap:
             if the lap would be over maxLap, this Part stops (repeat: false) or its lap returns to 0 (repeat: true)
         */
-        this.maxLap = (typeof props.maxLap === "number" && props.maxLap >= 1 ) ? props.maxLap : Infinity
+        this.maxLap = (typeof props.maxLap === "number" && props.maxLap >= 0 ) ? props.maxLap : Infinity
         this.repeat = props.repeat !== false
 
         this._isLoading = false
@@ -38,20 +38,8 @@ class Part {
             @lap
             - get added 1 when all beats are observed
         */
-        this._lap = 1
-
-        /*
-            @_beatQuota
-            - how many beats to observe before changing to not active
-        */
-        this._beatQuota = 0
-
-        /*
-            @_consumedBeats
-            - observed beats
-        */
-        this._consumedBeats = 0
-
+        this._lap = 0
+     
         /*
             @attachment
             - conceptual value: user would be able to handle any value to part with this
@@ -70,7 +58,7 @@ class Part {
 
     add(newFilter){
         if(!newFilter || !newFilter.priority || newFilter.priority === -1) return false
-   
+
         this.filters = this.filters || []
         this.filters.push(newFilter)
         this.filters.sort((a,b)=>{
@@ -78,9 +66,9 @@ class Part {
             else if(a.priority < b.priority) return -1
             else return 0
         })
-        
+
         this._generator = () => {
-            
+
             this._targetBeat = this._targetBeat || {}
             this._targetBeat.sound = this.sound
             this._targetBeat.measure = Math.floor(this._currentBeatIndex / this._beatsInMeasure)
@@ -130,10 +118,16 @@ class Part {
             secondToPrefetch += DEFAULTS.PREFETCH_SECOND
         }
         /*
+          if this._endTime is scheduled and secondToPrefetch will be overlap, this Part must stop
+        */
+        if(this._endTime && this._endTime < secondToPrefetch){
+            this._shutdown()
+        }
+
+        /*
             collect soundtrees for notepoints which come in certain range
             */
         while (this.active && this._nextBeatTime < secondToPrefetch){
-            if(this._consumedBeats >= this._beatQuota) break
 
             let element = !this.mute && this._generator()
             if(element){
@@ -147,23 +141,19 @@ class Part {
 
                 this._currentBeatIndex = 0
                 this._lap++
-                typeof this.willAge === "function" && this.willAge({
-                    nextAge: this._lap,
+                typeof this.willMakeLap === "function" && this.willMakeLap({
+                    nextLap: this._lap,
                     meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
-                    if (this.repeat) this.resetAge() 
-                    this.out()
+                    if (this.repeat) this.resetLap()
+                    else this.out()
                 }
 
             } else {
                 this._currentBeatIndex++
             }
 
-            if(++this._consumedBeats >= this._beatQuota){
-                this.active = false
-                break
-            }
         }
         return collected
 
@@ -183,6 +173,7 @@ class Part {
         this._nextBeatTime = meanTime
         this.default.active = true // once in() called, this Part should be paused / restarted as usual
         this.active = true
+        return false
     }
 
     async loadSound(){
@@ -201,11 +192,17 @@ class Part {
         })
     }
 
-    out(){
+    out(endTime,overwrite = false){
         if(!this.active) return false
-        this._meanTime = 0
-        this._nextBeatTime = 0
-        this.active = false
+        if(this._endTime){
+            // this._endTime is already set.
+            if(overwrite && endTime && endTime > context.currentTime) this._endTime = endTime
+        } else {
+            // if suitable _endTime is not assigned, shutdown immediately.
+            if(endTime && endTime > context.currentTime) this._endTime = endTime
+            else this._shutdown()
+        }
+        return false
     }
 
     /*
@@ -227,8 +224,8 @@ class Part {
         })
     }
 
-    resetAge(){
-        this._lap = 1
+    resetLap(){
+        this._lap = 0
     }
 
     set mute(v) {
@@ -242,11 +239,12 @@ class Part {
     }
     get bpm() { return this._bpm }
 
-    _reset(){
-        this._lap = 1
-        this._currentBeatIndex = 0
-        this._consumedBeats = 0
-        this._beatQuota = 0
+    _shutdown(){
+      if(!this.active) return false
+      this._meanTime = 0
+      this._endTime = 0
+      this._nextBeatTime = 0
+      this.active = false
     }
 
     _putTimerRight(_meanTime){
@@ -254,8 +252,9 @@ class Part {
         this._nextBeatTime = _meanTime || context.currentTime
     }
 
-    _setQuota(totalCap){
-        this._beatQuota = totalCap * this._beatsInMeasure
+    _reset(){
+        this._lap = 0
+        this._currentBeatIndex = 0
     }
 
     get _secondsPerBeat(){ return 60 / this._bpm / 8 }

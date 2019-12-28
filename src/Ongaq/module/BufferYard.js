@@ -2,6 +2,7 @@ import AudioCore from "./AudioCore"
 import ENDPOINT from "../../Constants/ENDPOINT"
 import toPianoNoteName from "./toPianoNoteName"
 import toDrumNoteName from "./toDrumNoteName"
+import Cacher from "./Cacher"
 import request from "superagent"
 import nocache from "superagent-no-cache"
 
@@ -15,17 +16,39 @@ class BufferYard {
 
     set({ api_key }) {
         this.api_key = api_key
-        request
-            .get(`${ENDPOINT}/soundnamemap/`)
-            .then(result => {
-                if (!result || result.body.statusCode !== 200) {
+        let cache = Cacher.get("soundNameMap")
+        if(!cache){
+            request
+                .get(`${ENDPOINT}/soundnamemap/`)
+                .then(result => {
+                    if (!result || result.body.statusCode !== 200) {
+                        throw new Error("Cannot download instrumental master data.")
+                    }
+                    this.soundNameMap = new Map(result.body.data)
+                    const stringified = result.body.data.map(d => `${d[0]}$${JSON.stringify(d[1])}`).join("|")
+                    Cacher.set("soundNameMap", stringified)
+                })
+                .catch(() => {
                     throw new Error("Cannot download instrumental master data.")
-                }
-                this.soundNameMap = new Map(result.body.data)
-            })
-            .catch(() => {
-                throw new Error("Cannot download instrumental master data.")
-            })
+                })
+        } else {
+            /*
+                use cached string like sound_1,10001|sound_b,10002
+            */
+           try {
+               cache = cache.split("|")
+               cache = cache.map(pair => {
+                   const array = pair.split("$")
+                   return [array[0], JSON.parse(array[1])]
+               })
+               this.soundNameMap = new Map(cache)
+           } catch(e) {
+               Cacher.purge("soundNameMap")
+               throw new Error("Cannot download instrumental master data.")
+           }
+           
+        }
+        
     }
 
     /*
