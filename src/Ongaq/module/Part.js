@@ -12,8 +12,8 @@ class Part {
         this.sound = props.sound
         this.id = props.id || Helper.getUUID()
         this.tags = Array.isArray(props.tags) ? props.tags : []
-        this.bpm = props.bpm
-        this.measure = props.measure
+        this.bpm = props.bpm // bpm is set through ongaq.add
+        this.measure = (typeof props.measure === "number" && props.measure >= 0) ? props.measure : DEFAULTS.MEASURE
 
         this.willMakeLap = props && typeof props.willMakeLap === "function" && props.willMakeLap
         /*
@@ -24,7 +24,7 @@ class Part {
         this.repeat = props.repeat !== false
 
         this._isLoading = false
-        this._beatsInMeasure = props._beatsInMeasure
+        this._beatsInMeasure = (typeof props.beatsInMeasure === "number" && props.beatsInMeasure >= 0) ? props.beatsInMeasure : DEFAULTS.BEATS_IN_MEASURE
         this._currentBeatIndex = 0
 
         /*
