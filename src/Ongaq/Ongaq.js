@@ -26,8 +26,6 @@ class Ongaq {
             if (typeof part.loadSound !== "function") return reject("not a Part object")
 
             part.bpm = part.bpm || this.bpm
-            part._beatsInMeasure = part._beatsInMeasure || DEFAULTS.NOTES_IN_MEASURE
-            part.measure = part.measure || DEFAULTS.MEASURE
             this.parts.set(part.id, part)
 
             try {
