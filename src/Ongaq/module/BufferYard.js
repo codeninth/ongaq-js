@@ -8,6 +8,39 @@ import nocache from "superagent-no-cache"
 
 let buffers = new Map()
 
+const offlineCtx = new OfflineAudioContext(2,44100*40,44100)
+window.source = offlineCtx.createBufferSource()
+
+const test = ()=>{
+  try {
+    const list = buffers.get("small_cube_drums")
+    const b1 = list.get("1$4"), b2 = list.get("1$1")
+    // window.myBuffer = b1
+    const s1 = offlineCtx.createBufferSource()
+    const s2 = offlineCtx.createBufferSource()
+    s1.buffer = b1
+    s2.buffer = b2
+    s1.connect(offlineCtx.destination)
+    s2.connect(offlineCtx.destination)
+    s1.start()
+    s2.start(1)
+    offlineCtx.startRendering().then(buffer=>{
+      const song = AudioCore.context.createBufferSource()
+      song.buffer = buffer
+      song.connect(AudioCore.context.destination)
+      console.log("connected")
+      window.addEventListener("click",()=>{
+        song.start()
+      })
+    }).catch(e=>{
+      console.log(e)
+    })
+  } catch(e){
+    console.log(e)
+  }
+
+}
+
 class BufferYard {
 
     constructor(){
@@ -46,9 +79,9 @@ class BufferYard {
                Cacher.purge("soundNameMap")
                throw new Error("Cannot download instrumental master data.")
            }
-           
+
         }
-        
+
     }
 
     /*
@@ -60,7 +93,7 @@ class BufferYard {
         return new Promise((resolve, reject) => {
             // this sound is already loaded
             if (buffers.get(sound)) return resolve()
-            
+
             request
                 .get(`${ENDPOINT}/sounds/`)
                 .query({
@@ -92,12 +125,14 @@ class BufferYard {
                                 notes = null
                                 buffers.set(sound, thisSoundBuffers)
                                 resolve()
+                                console.log(buffers)
+                                test()
                             }
                         } catch(e){
                             if (buffers.has(sound)) buffers.delete(sound)
                             reject()
                         }
-                        
+
                     })
 
 
@@ -119,7 +154,7 @@ class BufferYard {
         const soundID = this.soundNameMap.get(sound) && this.soundNameMap.get(sound).id
         if (soundID < 20000) key = toPianoNoteName(key)
         else if (soundID < 30000) key = toDrumNoteName(key)
-        
+
         if (Array.isArray(key)) {
             return key.map(k => buffers.get(sound).get(k)).filter(b => b)
         } else if (typeof key === "string") {
