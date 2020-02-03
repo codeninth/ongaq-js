@@ -159,14 +159,6 @@ class Part {
 
     }
 
-    countBeats( maxLap ) {
-        const _maxLap = (typeof maxLap === "number" && maxLap > 0) ? maxLap : this.maxLap
-        console.log(_maxLap)
-        console.log(_maxLap,this.measure,this._beatsInMeasure)
-        if(_maxLap === Infinity) return Infinity
-        return _maxLap * this.measure * this._beatsInMeasure
-    }
-
     detach(field) {
         if (typeof field === "string") delete this._attachment[field]
         else this._attachment = {}

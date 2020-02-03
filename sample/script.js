@@ -1,7 +1,7 @@
 const my_drums = new Part({
     sound: "small_cube_drums",
     measure: 4,
-    maxLap: 2,
+    maxLap: 3,
     repeat: false
 })
 my_drums.add(
@@ -29,7 +29,7 @@ const ongaq = new Ongaq({
                 ongaq.pause()
                 button.className = "button start"
             } else {
-                ongaq.record()
+                ongaq.record({ maxLap: 1})
                 button.className = "button pause"
             }
         }
