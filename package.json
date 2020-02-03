@@ -23,6 +23,7 @@
     "hard-source-webpack-plugin": "^0.13.1",
     "karma": "^4.0.1",
     "karma-jasmine": "^2.0.1",
+    "lamejs": "^1.2.0",
     "superagent": "^3.8.2",
     "superagent-no-cache": "^0.1.1",
     "webpack": "^4.20.2",

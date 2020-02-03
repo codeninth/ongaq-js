@@ -42,18 +42,18 @@ const retrieve = currentTime =>{
     return false
 }
 
-const makeAudioBuffer = ({ buffer, volume })=>{
+const makeAudioBuffer = ({ buffer, volume }, offlineContext)=>{
 
-    retrieve(context.currentTime)
+    if (!offlineContext) retrieve(context.currentTime)
 
     let audioBuffer = BufferYard.ship(buffer)
     if(!audioBuffer) return false
 
-    let s = context.createBufferSource()
+    let s = (offlineContext || context).createBufferSource()
     s.length = buffer.length
     s.buffer = audioBuffer[0]
 
-    let g = gainPool.allocate()
+    let g = gainPool.allocate(offlineContext)
     g.gain.setValueAtTime( AudioCore.SUPPRESSION * (( volume && volume >= 0 && volume < 1) ? volume : defaults.NOTE_VOLUME ), 0 )
     // Set end of sound unless the instrument is drums
     !isDrumNoteName(buffer.key) && g.gain.setValueCurveAtTime(
@@ -64,6 +64,9 @@ const makeAudioBuffer = ({ buffer, volume })=>{
     s.start(buffer.startTime)
     s.connect(g)
     
+    if (offlineContext) return g
+
+    // when normal audioContext, cache node to disconnect after used
     for(let i = 0, l = periods.length; i<l; i++){
         if (buffer.startTime + buffer.length + 0.1 < periods[i]){
             gainGarage.get( periods[i] ).push(g)

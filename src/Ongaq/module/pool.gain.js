@@ -3,8 +3,8 @@ const context = AudioCore.context
 import Pool from "./Pool"
 
 const pool = new Pool({
-    makeMethod: ()=>{
-        return context.createGain()
+    makeMethod: (offlineContext)=>{
+        return (offlineContext || context).createGain()
     },
     active: true,
     isClass: false,

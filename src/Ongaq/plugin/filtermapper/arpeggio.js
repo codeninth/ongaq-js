@@ -10,7 +10,7 @@ const context = AudioCore.context
 const delayPool = new Map()
 const functionPool = new Map()
 
-const generate = (step, range, secondsPerBeat) => {
+const generate = (step, range, secondsPerBeat, offlineContext) => {
 
     return MappedFunction => {
 
@@ -22,13 +22,16 @@ const generate = (step, range, secondsPerBeat) => {
         let newNodes = []
         for (let i = 0, max = MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length, delayTime; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
-            if (!delayPool.get(delayTime)) {
-                delayPool.set(delayTime, make("delay", { delayTime }))
+            if (!offlineContext){
+                if (!delayPool.get(delayTime)) delayPool.set(delayTime, make("delay", { delayTime }))
+                newNodes.push(delayPool.get(delayTime))
+            } else {
+                if (!delayPool.get(`offline_${delayTime}`)) delayPool.set(`offline_${delayTime}`, make("delay", { delayTime }, offlineContext))
+                newNodes.push(delayPool.get(`offline_${delayTime}`))
             }
-            newNodes.push(delayPool.get(delayTime))
         }
 
-        let g = context.createGain()
+        let g = (offlineContext || context).createGain()
         g.gain.setValueAtTime(1, 0)
         g.gain.setValueCurveAtTime(
             Helper.getWaveShapeArray(0),
@@ -54,7 +57,7 @@ const generate = (step, range, secondsPerBeat) => {
     step: 0.5 // relative beat length
   }
 */
-const mapper = (o = {}, _targetBeat = {}) => {
+const mapper = (o = {}, _targetBeat = {}, offlineContext ) => {
 
     if (!isActive(o.active, _targetBeat)) return false
 
@@ -70,10 +73,10 @@ const mapper = (o = {}, _targetBeat = {}) => {
         default: 3
     }) 
 
-    const cacheKey = `${step}_${range}_${_targetBeat.secondsPerBeat}`
+    const cacheKey = offlineContext ? `${step}_${range}_${_targetBeat.secondsPerBeat}` : `offline_${step}_${range}_${_targetBeat.secondsPerBeat}`
     if (functionPool.get(cacheKey)) return functionPool.get(cacheKey)
     else {
-        functionPool.set(cacheKey, generate(step, range, _targetBeat.secondsPerBeat))
+        functionPool.set(cacheKey, generate(step, range, _targetBeat.secondsPerBeat, offlineContext))
         return functionPool.get(cacheKey)
     }
 

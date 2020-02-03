@@ -8,11 +8,11 @@ const MY_PRIORITY = PRIORITY.pan
 const pannerPool = new Map()
 const functionPool = new Map()
 
-const generate = ( x )=>{
+const generate = ( x, offlineContext )=>{
 
     return MappedFunction => {
         if (MappedFunction.terminal.length === 0) return MappedFunction
-        if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }))
+        if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }, offlineContext))
         const newNode = pannerPool.get(x)
         
         MappedFunction.terminal.push([ newNode ])
@@ -31,7 +31,7 @@ const generate = ( x )=>{
     x: 90
   }
 */
-const mapper = ( o = {}, _targetBeat = {} )=>{
+const mapper = (o = {}, _targetBeat = {}, offlineContext )=>{
 
     if (!isActive(o.active, _targetBeat)) return false
     const x = inspect(o.x,{
@@ -45,6 +45,11 @@ const mapper = ( o = {}, _targetBeat = {} )=>{
     })
     if(!x) return false
     
+    if(offlineContext){
+        if(functionPool.get(`offline_${x}`)) functionPool.set(`offline_${x}`,generate(x,offlineContext))
+        return functionPool.get(`offline_${x}`)
+    }
+
     if(functionPool.get(x)) return functionPool.get(x)
     else {
         functionPool.set( x, generate(x) )

@@ -67,7 +67,7 @@ class Part {
             else return 0
         })
 
-        this._generator = () => {
+        this._generator = ( offlineContext ) => {
 
             this._targetBeat = this._targetBeat || {}
             this._targetBeat.sound = this.sound
@@ -85,7 +85,7 @@ class Part {
                     !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
                     ( _filter.type !== "note" && !hasNote )
                 ){ return false }
-                const mappedFunction = filterMapper[_filter.type](_filter.params, this._targetBeat )
+                const mappedFunction = filterMapper[_filter.type](_filter.params, this._targetBeat, offlineContext )
                 if (mappedFunction){
                     if (_filter.type === "note") hasNote = true
                     mapped.push( mappedFunction )
@@ -103,14 +103,14 @@ class Part {
         this._attachment = Object.assign(this._attachment, data)
     }
 
-    collect(){
+    collect( offlineContext ){
 
         let collected
 
         /*
             keep _nextBeatTime being always behind secondToPrefetch
         */
-        let secondToPrefetch = context.currentTime + DEFAULTS.PREFETCH_SECOND
+        let secondToPrefetch = (offlineContext || context).currentTime + DEFAULTS.PREFETCH_SECOND + (offlineContext ? 20 : 0)
         while (
             this._nextBeatTime - secondToPrefetch > 0 &&
             this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
@@ -129,7 +129,7 @@ class Part {
             */
         while (this.active && this._nextBeatTime < secondToPrefetch){
 
-            let element = !this.mute && this._generator()
+            let element = !this.mute && this._generator( offlineContext )
             if(element){
                 collected = collected || []
                 collected = collected.concat(element)

@@ -11,7 +11,7 @@ const DEFAULT_NOTE_LENGTH = 4
     active: n=>n%4
   }
 */
-const mapper = ( o = {}, _targetBeat = {} )=>{
+const mapper = (o = {}, _targetBeat = {}, offlineContext )=>{
 
     if(!isActive(o.active,_targetBeat)) return false
 
@@ -61,7 +61,7 @@ const mapper = ( o = {}, _targetBeat = {} )=>{
                     startTime: _targetBeat.beatTime
                 },
                 volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null
-            })
+            }, offlineContext)
         })
         
         MappedFunction.terminal[0] = MappedFunction.terminal[0] || []

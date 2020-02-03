@@ -7,6 +7,7 @@ import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
 import VERSION from "../Constants/VERSION"
+import toWav from "audiobuffer-to-wav"
 
 const context = AudioCore.context
 
@@ -64,6 +65,52 @@ class Ongaq {
 
         this._scheduler = window.setInterval(this._routine, AudioCore.powerMode === "middle" ? 50 : 200)
         return false
+    }
+
+    record(){
+        if (!window.OfflineAudioContext) throw "offlineAudioContext is not supported"
+        if (this.isPlaying || this.parts.size === 0) return false
+
+        const offlineContext = new OfflineAudioContext(2, 44100 * 20 /* rate * seconds */, 44100)
+        
+        // =======
+        const commonComp = offlineContext.createDynamicsCompressor()
+        commonComp.connect(offlineContext.destination)
+        
+        const commonGain = offlineContext.createGain()
+        commonGain.connect(commonComp)
+        commonGain.gain.setValueAtTime(this._volume, 0)
+
+        this._routine({
+            offlineConnect: elem => {
+                if (elem.terminal.length > 0) {
+                    elem.terminal[elem.terminal.length - 1].forEach(t => {
+                        t.connect(commonGain)
+                    })
+                }
+                elem.initialize()
+                ElementPool.retrieve(elem)
+            },
+            offlineContext: offlineContext
+        })
+
+        offlineContext.startRendering().then(buffer => {
+            const wav = toWav(buffer)
+            const blob = new Blob([wav], { type: "audio/wav" })
+            const dateString = ((d) => `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}-${d.getHours()}-${d.getMinutes()}`)(new Date())
+            if (window.navigator.msSaveBlob) {
+                window.navigator.msSaveBlob(blob, `recorded-${dateString}.wav`);
+            } else {
+                const a = document.createElement("a")
+                a.download = `recorded-${dateString}.wav`
+                a.href = window.URL.createObjectURL(blob)
+                a.dataset.downloadurl = ["audio/wav", a.download, a.href]
+                a.click()
+            }
+        }).catch(e => {
+            console.log(e)
+        })
+
     }
 
     /*
@@ -211,18 +258,18 @@ class Ongaq {
       @_routine
       - 各partに対してobserveを行う
       */
-    _routine() {
+    _routine({ offlineConnect, offlineContext }) {
         let collected
         let elements
         this.parts.forEach(p => {
-            elements = p.collect()
+            elements = p.collect( offlineContext )
             if (elements && elements.length > 0){
                 collected = collected || []
                 collected = collected.concat(elements)
             }
         })
         if(!collected || collected.length === 0) return false
-        collected.forEach(elem => { this._connect(elem) })
+        collected.forEach( offlineConnect || (elem =>{ this._connect(elem) }) )
         // TODO
         // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
         return false

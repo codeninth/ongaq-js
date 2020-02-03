@@ -17,7 +17,7 @@ my_drums.add(
 const ongaq = new Ongaq({
     api_key: "master_api_key_00",
     bpm: 130,
-    volume: 40,
+    volume: 80,
     onReady: ()=>{
         const button = document.getElementById("button")
         button.className = "button start"
@@ -26,7 +26,7 @@ const ongaq = new Ongaq({
                 ongaq.pause()
                 button.className = "button start"
             } else {
-                ongaq.start()
+                ongaq.record()
                 button.className = "button pause"
             }
         }

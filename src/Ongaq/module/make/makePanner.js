@@ -6,39 +6,44 @@ const v = {
     h: window.innerHeight,
 }
 
-const l = context.listener
+const _setListener = ctx => {
+    const l = ctx.listener
 
-if(l.forwardX) {
-    l.forwardX.setValueAtTime(0, context.currentTime)
-    l.forwardY.setValueAtTime(0, context.currentTime)
-    l.forwardZ.setValueAtTime(-1, context.currentTime)
-    l.upX.setValueAtTime(0, context.currentTime)
-    l.upY.setValueAtTime(1, context.currentTime)
-    l.upZ.setValueAtTime(0, context.currentTime)
-} else {
-    l.setOrientation(0,0,-1,0,1,0)
+    if (l.forwardX) {
+        l.forwardX.setValueAtTime(0, ctx.currentTime)
+        l.forwardY.setValueAtTime(0, ctx.currentTime)
+        l.forwardZ.setValueAtTime(-1, ctx.currentTime)
+        l.upX.setValueAtTime(0, ctx.currentTime)
+        l.upY.setValueAtTime(1, ctx.currentTime)
+        l.upZ.setValueAtTime(0, ctx.currentTime)
+    } else {
+        l.setOrientation(0, 0, -1, 0, 1, 0)
+    }
+
+    if (l.positionX) {
+        l.positionX.value = v.w / 2
+        l.positionY.value = v.h / 2
+        l.positionZ.value = 300
+    } else {
+        l.setPosition(v.w / 2, v.h / 2, 300)
+    }
+    l.__initByOngaq = true
 }
+_setListener( context )
 
-if(l.positionX){
-    l.positionX.value = v.w / 2
-    l.positionY.value = v.h / 2
-    l.positionZ.value = 300
-} else {
-    l.setPosition(v.w / 2,v.h / 2, 300)
-}
-
-const makePanner = ({ x })=>{
-
-    const p = context.createPanner()
+const makePanner = ({ x }, offlineContext)=>{
+    const ctx = offlineContext || context
+    if(offlineContext && !offlineContext.listener.__initByOngaq) _setListener( offlineContext )
+    const p = ctx.createPanner()
     p.refDistance = 1000
     p.maxDistance = 10000
     p.coneOuterGain = 1
 
     const _o = [1, 0, 0]
     if(p.orientationX) {
-        p.orientationX.setValueAtTime(_o[0], context.currentTime)
-        p.orientationY.setValueAtTime(_o[1], context.currentTime)
-        p.orientationZ.setValueAtTime(_o[2], context.currentTime)
+        p.orientationX.setValueAtTime(_o[0], ctx.currentTime)
+        p.orientationY.setValueAtTime(_o[1], ctx.currentTime)
+        p.orientationZ.setValueAtTime(_o[2], ctx.currentTime)
     } else {
         p.setOrientation(..._o)
     }
@@ -48,9 +53,9 @@ const makePanner = ({ x })=>{
     const _p = [v.w / 2 + (1000 / v.w) * v.w / 90 * xValue / 52, v.h / 2, 299 ]
 
     if(p.positionX){
-        p.positionX.setValueAtTime(_p[0], context.currentTime)
-        p.positionY.setValueAtTime(_p[1], context.currentTime)
-        p.positionZ.setValueAtTime(_p[2], context.currentTime)
+        p.positionX.setValueAtTime(_p[0], ctx.currentTime)
+        p.positionY.setValueAtTime(_p[1], ctx.currentTime)
+        p.positionZ.setValueAtTime(_p[2], ctx.currentTime)
     } else {
         p.setPosition(..._p)
     }

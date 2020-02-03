@@ -9,10 +9,9 @@ import toWav from "audiobuffer-to-wav"
 let buffers = new Map()
 
 const offlineCtx = new OfflineAudioContext(2, 44100*4 /* rate * seconds */, 44100)
-window.source = offlineCtx.createBufferSource()
 const test = ()=>{
   try {
-    if(!window.File) throw "File API is not supported."
+    if (!window.Blob) throw "File API is not supported."
     const list = buffers.get("small_cube_drums")
     const b1 = list.get("1$4"), b2 = list.get("1$1")
     const s1 = offlineCtx.createBufferSource()
@@ -132,8 +131,6 @@ class BufferYard {
                                 notes = null
                                 buffers.set(sound, thisSoundBuffers)
                                 resolve()
-                                console.log(buffers)
-                                test()
                             }
                         } catch(e){
                             if (buffers.has(sound)) buffers.delete(sound)
