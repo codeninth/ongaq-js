@@ -5,7 +5,7 @@ import toDrumNoteName from "./toDrumNoteName"
 import Cacher from "./Cacher"
 import request from "superagent"
 import nocache from "superagent-no-cache"
-
+import toWav from "audiobuffer-to-wav"
 let buffers = new Map()
 
 const offlineCtx = new OfflineAudioContext(2,44100*40,44100)
@@ -13,6 +13,7 @@ window.source = offlineCtx.createBufferSource()
 
 const test = ()=>{
   try {
+    if(!window.File) throw "File API is not supported."
     const list = buffers.get("small_cube_drums")
     const b1 = list.get("1$4"), b2 = list.get("1$1")
     // window.myBuffer = b1
@@ -25,13 +26,20 @@ const test = ()=>{
     s1.start()
     s2.start(1)
     offlineCtx.startRendering().then(buffer=>{
-      const song = AudioCore.context.createBufferSource()
-      song.buffer = buffer
-      song.connect(AudioCore.context.destination)
-      console.log("connected")
-      window.addEventListener("click",()=>{
-        song.start()
+      const wav = toWav(buffer)
+      const blob = new Blob([wav],{
+        type: "audio/wav"
       })
+      const url = window.URL.createObjectURL(blob)
+      if (window.navigator.msSaveBlob) {
+        window.navigator.msSaveBlob(blob, "recorded.wav");
+      } else {
+        const a = document.createElement("a");
+        a.download = "recorded.wav"
+        a.href = window.URL.createObjectURL(blob)
+        a.dataset.downloadurl = [ "audio/wav", a.download, a.href ]
+        a.click()
+      }
     }).catch(e=>{
       console.log(e)
     })
