@@ -159,6 +159,14 @@ class Part {
 
     }
 
+    countBeats( maxLap ) {
+        const _maxLap = (typeof maxLap === "number" && maxLap > 0) ? maxLap : this.maxLap
+        console.log(_maxLap)
+        console.log(_maxLap,this.measure,this._beatsInMeasure)
+        if(_maxLap === Infinity) return Infinity
+        return _maxLap * this.measure * this._beatsInMeasure
+    }
+
     detach(field) {
         if (typeof field === "string") delete this._attachment[field]
         else this._attachment = {}
@@ -228,16 +236,16 @@ class Part {
         this._lap = 0
     }
 
-    set mute(v) {
-        if (typeof v === "boolean") this._mute = v
-    }
-    get mute() { return this._mute }
-
     set bpm(v) {
         let bpm = Helper.toInt(v, { max: DEFAULTS.MAX_BPM, min: DEFAULTS.MIN_BPM })
         if (bpm) this._bpm = bpm
     }
     get bpm() { return this._bpm }
+
+    set mute(v) {
+        if (typeof v === "boolean") this._mute = v
+    }
+    get mute() { return this._mute }
 
     _shutdown(){
       if(!this.active) return false

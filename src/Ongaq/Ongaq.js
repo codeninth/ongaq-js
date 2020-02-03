@@ -68,10 +68,21 @@ class Ongaq {
     }
 
     record(){
-        if (!window.OfflineAudioContext) throw "offlineAudioContext is not supported"
+        if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
         if (this.isPlaying || this.parts.size === 0) return false
+        
+        // ====== calculate the seconds of beats beforehand
+        const results = (()=>{
+            const results = []
+            this.parts.forEach(p => {
+                console.log(p.countBeats())
+                console.log(p._secondsPerBeat)
+                results.push( p.countBeats() * p._secondsPerBeat )
+            })
+            return results
+        })()
 
-        const offlineContext = new OfflineAudioContext(2, 44100 * 20 /* rate * seconds */, 44100)
+        const offlineContext = new OfflineAudioContext(2, 44100 * Math.max(results) /* rate * seconds */, 44100)
         
         // =======
         const commonComp = offlineContext.createDynamicsCompressor()

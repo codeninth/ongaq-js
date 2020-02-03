@@ -1,5 +1,8 @@
 const my_drums = new Part({
-    sound: "small_cube_drums"
+    sound: "small_cube_drums",
+    measure: 4,
+    maxLap: 2,
+    repeat: false
 })
 my_drums.add(
     new Filter({
