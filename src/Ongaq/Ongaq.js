@@ -7,7 +7,6 @@ import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
 import VERSION from "../Constants/VERSION"
-import toWav from "audiobuffer-to-wav"
 
 const context = AudioCore.context
 
@@ -70,7 +69,7 @@ class Ongaq {
     record(o = {}){
         if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
         if (this.isPlaying || this.parts.size === 0) return false
-        
+
         // ====== calculate the seconds of beats beforehand
         const seconds = []
         this.parts.forEach(p => {
@@ -84,11 +83,11 @@ class Ongaq {
             else 40
         })()
         const offlineContext = new OfflineAudioContext(2, 44100 * wavSeconds, 44100)
-        
+
         // =======
         const commonComp = offlineContext.createDynamicsCompressor()
         commonComp.connect(offlineContext.destination)
-        
+
         const commonGain = offlineContext.createGain()
         commonGain.connect(commonComp)
         commonGain.gain.setValueAtTime(this._volume, 0)
@@ -106,23 +105,7 @@ class Ongaq {
             offlineContext: offlineContext
         })
 
-        offlineContext.startRendering().then(buffer => {
-            const wav = toWav(buffer)
-            const blob = new Blob([wav], { type: "audio/wav" })
-            const dateString = ((d) => `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}-${d.getHours()}-${d.getMinutes()}`)(new Date())
-            if (window.navigator.msSaveBlob) {
-                window.navigator.msSaveBlob(blob, `recorded-${dateString}.wav`);
-            } else {
-                const a = document.createElement("a")
-                a.download = `recorded-${dateString}.wav`
-                a.href = window.URL.createObjectURL(blob)
-                a.dataset.downloadurl = ["audio/wav", a.download, a.href]
-                a.click()
-            }
-        }).catch(e => {
-            console.log(e)
-        })
-
+        return offlineContext.startRendering()
     }
 
     /*

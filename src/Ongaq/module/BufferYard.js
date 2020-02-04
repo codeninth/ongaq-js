@@ -5,47 +5,7 @@ import toDrumNoteName from "./toDrumNoteName"
 import Cacher from "./Cacher"
 import request from "superagent"
 import nocache from "superagent-no-cache"
-import toWav from "audiobuffer-to-wav"
 let buffers = new Map()
-
-const offlineCtx = new OfflineAudioContext(2, 44100*4 /* rate * seconds */, 44100)
-const test = ()=>{
-  try {
-    if (!window.Blob) throw "File API is not supported."
-    const list = buffers.get("small_cube_drums")
-    const b1 = list.get("1$4"), b2 = list.get("1$1")
-    const s1 = offlineCtx.createBufferSource()
-    const s2 = offlineCtx.createBufferSource()
-    s1.buffer = b1
-    s2.buffer = b2
-    s1.connect(offlineCtx.destination)
-    s2.connect(offlineCtx.destination)
-    s1.start()
-    s2.start(2)
-    offlineCtx.startRendering().then(buffer=>{
-      const wav = toWav(buffer)
-      const blob = new Blob([wav],{
-        type: "audio/wav"
-      })
-      const url = window.URL.createObjectURL(blob)
-      const dateString = ((d)=>`${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}-${d.getHours()}-${d.getMinutes()}`)( new Date() )
-      if (window.navigator.msSaveBlob) {
-        window.navigator.msSaveBlob(blob, `recorded-${dateString}.wav`);
-      } else {
-        const a = document.createElement("a")
-        a.download = `recorded-${dateString}.wav`
-        a.href = window.URL.createObjectURL(blob)
-        a.dataset.downloadurl = [ "audio/wav", a.download, a.href ]
-        a.click()
-      }
-    }).catch(e=>{
-      console.log(e)
-    })
-  } catch(e){
-    console.log(e)
-  }
-
-}
 
 class BufferYard {
 
