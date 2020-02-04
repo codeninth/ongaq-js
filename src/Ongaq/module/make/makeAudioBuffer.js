@@ -62,8 +62,8 @@ const makeAudioBuffer = ({ buffer, volume }, offlineContext)=>{
         0.03 < buffer.length ? 0.03 : buffer.length * 0.6
     )
     s.start(buffer.startTime)
-    s.connect(g)
-    
+    s.connect(g) // TODO
+
     if (offlineContext) return g
 
     // when normal audioContext, cache node to disconnect after used
