@@ -80,7 +80,7 @@ class Ongaq {
             if(typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= 40) return o.seconds
             else if (Math.max(seconds) < 1) return 1
             else if (Math.max(seconds) < 40) return Math.max(seconds)
-            else 40
+            else return 40
         })()
         const offlineContext = new OfflineAudioContext(2, 44100 * wavSeconds, 44100)
 
@@ -253,9 +253,10 @@ class Ongaq {
       @_routine
       - 各partに対してobserveを行う
       */
-    _routine({ offlineConnect, offlineContext }) {
-        let collected
-        let elements
+    _routine(o = {}) {
+        const offlineConnect = o.offlineConnect
+        const offlineContext = o.offlineContext
+        let collected, elements
         this.parts.forEach(p => {
             elements = p.collect( offlineContext )
             if (elements && elements.length > 0){
@@ -265,8 +266,6 @@ class Ongaq {
         })
         if(!collected || collected.length === 0) return false
         collected.forEach( offlineConnect || (elem =>{ this._connect(elem) }) )
-        // TODO
-        // this._nextZeroTime = plan._nextZeroTime || this._nextZeroTime
         return false
     }
 
