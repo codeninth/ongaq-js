@@ -3,6 +3,7 @@ import BufferYard from "./module/BufferYard"
 import Helper from "./module/Helper"
 import DEFAULTS from "./module/defaults"
 import ElementPool from "./module/pool.element"
+import GainPool from "./module/pool.gain"
 import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
@@ -67,8 +68,12 @@ class Ongaq {
     }
 
     record(o = {}){
-        if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
+        if (this.isPlaying) throw "cannot start recording while playing sounds"
+        else if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
         if (this.isPlaying || this.parts.size === 0) return false
+
+        GainPool.flush()
+        ElementPool.flush()
 
         // ====== calculate the seconds of beats beforehand
         const seconds = []
@@ -104,7 +109,7 @@ class Ongaq {
                 elem.initialize()
                 ElementPool.retrieve(elem)
             },
-            offlineContext: offlineContext
+            offlineContext
         })
 
         return offlineContext.startRendering()
