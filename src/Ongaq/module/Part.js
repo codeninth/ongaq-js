@@ -39,7 +39,7 @@ class Part {
             - get added 1 when all beats are observed
         */
         this._lap = 0
-     
+
         /*
             @attachment
             - conceptual value: user would be able to handle any value to part with this
@@ -249,7 +249,7 @@ class Part {
 
     _putTimerRight(_meanTime){
         if (!this.active) return false
-        this._nextBeatTime = _meanTime || context.currentTime
+        this._nextBeatTime = ( typeof _meanTime === "number" && _meanTime >= 0 ) ? _meanTime : context.currentTime
     }
 
     _reset(){

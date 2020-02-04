@@ -73,6 +73,8 @@ class Ongaq {
         // ====== calculate the seconds of beats beforehand
         const seconds = []
         this.parts.forEach(p => {
+            p._reset()
+            p._putTimerRight(0)
             const _maxLap = (typeof o.maxLap === "number" && o.maxLap > 0) ? o.maxLap : p.maxLap
             seconds.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
         })
