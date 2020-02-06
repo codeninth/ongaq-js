@@ -62,7 +62,7 @@ const makeAudioBuffer = ({ buffer, volume }, offlineContext)=>{
         0.03 < buffer.length ? 0.03 : buffer.length * 0.6
     )
     s.start(buffer.startTime)
-    s.connect(g) // TODO
+    s.connect(g)
 
     if (offlineContext) return g
 
