@@ -4,13 +4,12 @@ import AudioCore from "../AudioCore"
 import defaults from "../defaults"
 import isDrumNoteName from "../isDrumNoteName"
 import gainPool from "../pool.gain"
-const context = AudioCore.context
 
 const RETRIEVE_INTERVAL = 4
 
 const gainGarage = new Map()
 const bufferSourceGarage = new Map()
-let periods = [2, 3, 4, 5].map(n => n * RETRIEVE_INTERVAL + context.currentTime)
+let periods = [2, 3, 4, 5].map(n => n * RETRIEVE_INTERVAL + AudioCore.context.currentTime)
 periods.forEach(p=>{
     gainGarage.set(p,[])
     bufferSourceGarage.set(p,[])
@@ -42,18 +41,18 @@ const retrieve = currentTime =>{
     return false
 }
 
-const makeAudioBuffer = ({ buffer, volume }, offlineContext)=>{
+const makeAudioBuffer = ({ buffer, volume }, ctx)=>{
 
-    if (!offlineContext) retrieve(context.currentTime)
+    if (ctx instanceof AudioContext) retrieve(ctx.currentTime)
 
     let audioBuffer = BufferYard.ship(buffer)
     if(!audioBuffer) return false
 
-    let s = (offlineContext || context).createBufferSource()
+    let s = ctx.createBufferSource()
     s.length = buffer.length
     s.buffer = audioBuffer[0]
 
-    let g = gainPool.allocate(offlineContext)
+    let g = gainPool.allocate(ctx)
     g.gain.setValueAtTime( AudioCore.SUPPRESSION * (( volume && volume >= 0 && volume < 1) ? volume : defaults.NOTE_VOLUME ), 0 )
     // Set end of sound unless the instrument is drums
     !isDrumNoteName(buffer.key) && g.gain.setValueCurveAtTime(
@@ -64,7 +63,7 @@ const makeAudioBuffer = ({ buffer, volume }, offlineContext)=>{
     s.start(buffer.startTime)
     s.connect(g)
 
-    if (offlineContext) return g
+    if (!ctx instanceof AudioContext) return g
 
     // when normal audioContext, cache node to disconnect after used
     for(let i = 0, l = periods.length; i<l; i++){

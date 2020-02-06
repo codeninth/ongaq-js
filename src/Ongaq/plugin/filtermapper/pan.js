@@ -8,13 +8,13 @@ const MY_PRIORITY = PRIORITY.pan
 const pannerPool = new Map()
 const functionPool = new Map()
 
-const generate = ( x, offlineContext )=>{
+const generate = ( x, context )=>{
 
     return MappedFunction => {
         if (MappedFunction.terminal.length === 0) return MappedFunction
-        if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }, offlineContext))
+        if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }, context))
         const newNode = pannerPool.get(x)
-        
+
         MappedFunction.terminal.push([ newNode ])
 
         MappedFunction.terminal[ MappedFunction.terminal.length - 2 ].forEach(pn => {
@@ -31,7 +31,7 @@ const generate = ( x, offlineContext )=>{
     x: 90
   }
 */
-const mapper = (o = {}, _targetBeat = {}, offlineContext )=>{
+const mapper = (o = {}, _targetBeat = {}, context )=>{
 
     if (!isActive(o.active, _targetBeat)) return false
     const x = inspect(o.x,{
@@ -44,15 +44,15 @@ const mapper = (o = {}, _targetBeat = {}, offlineContext )=>{
         default: 0
     })
     if(!x) return false
-    
-    if(offlineContext){
-        if(functionPool.get(`offline_${x}`)) functionPool.set(`offline_${x}`,generate(x,offlineContext))
+
+    if(!context instanceof AudioContext){
+        if(functionPool.get(`offline_${x}`)) functionPool.set(`offline_${x}`,generate(x,context))
         return functionPool.get(`offline_${x}`)
     }
 
     if(functionPool.get(x)) return functionPool.get(x)
     else {
-        functionPool.set( x, generate(x) )
+        functionPool.set( x, generate(x,context) )
         return functionPool.get(x)
     }
 

@@ -6,10 +6,9 @@ import ElementPool from "./module/pool.element"
 import GainPool from "./module/pool.gain"
 import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
+import WAV_MAX_SECONDS from "../Constants/WAV_MAX_SECONDS"
 import SCHEME from "../Constants/SCHEME"
 import VERSION from "../Constants/VERSION"
-
-const context = AudioCore.context
 
 class Ongaq {
 
@@ -61,9 +60,14 @@ class Ongaq {
         this.isPlaying = true
 
         this._prepareCommonGain()
-        this.parts.forEach(p => { p._putTimerRight(context.currentTime) })
+        this.parts.forEach(p => { p._putTimerRight( AudioCore.context.currentTime ) })
 
-        this._scheduler = window.setInterval(this._routine, AudioCore.powerMode === "middle" ? 50 : 200)
+        this._scheduler = window.setInterval(()=>{
+          this._routine(
+            AudioCore.context,
+            elem =>{ this._connect(elem) }
+          )
+        }, AudioCore.powerMode === "middle" ? 50 : 200)
         return false
     }
 
@@ -84,10 +88,10 @@ class Ongaq {
             seconds.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
         })
         const wavSeconds = (()=>{
-            if(typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= 40) return o.seconds
+            if(typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= WAV_MAX_SECONDS) return o.seconds
             else if (Math.max(seconds) < 1) return 1
-            else if (Math.max(seconds) < 40) return Math.max(seconds)
-            else return 40
+            else if (Math.max(seconds) < WAV_MAX_SECONDS) return Math.max(seconds)
+            else return WAV_MAX_SECONDS
         })()
         const offlineContext = new OfflineAudioContext(2, 44100 * wavSeconds, 44100)
 
@@ -99,18 +103,18 @@ class Ongaq {
         commonGain.connect(commonComp)
         commonGain.gain.setValueAtTime(this._volume, 0)
 
-        this._routine({
-            offlineConnect: elem => {
-                if (elem.terminal.length > 0) {
-                    elem.terminal[elem.terminal.length - 1].forEach(t => {
-                        t.connect(commonGain)
-                    })
-                }
-                elem.initialize()
-                ElementPool.retrieve(elem)
-            },
-            offlineContext
-        })
+        this._routine(
+          offlineContext,
+          elem => {
+              if (elem.terminal.length > 0) {
+                  elem.terminal[elem.terminal.length - 1].forEach(t => {
+                      t.connect(commonGain)
+                  })
+              }
+              elem.initialize()
+              ElementPool.retrieve(elem)
+          }
+        )
 
         return offlineContext.startRendering()
     }
@@ -154,7 +158,7 @@ class Ongaq {
             loading: loading,
             isPlaying: this.isPlaying,
             originTime: AudioCore.originTime,
-            currentTime: context.currentTime,
+            currentTime: AudioCore.context.currentTime,
             volume: this.volume
         }
     }
@@ -174,7 +178,7 @@ class Ongaq {
         this._volume = v / 100 * AudioCore.SUPPRESSION
         this.commonGain && this.commonGain.gain.setValueAtTime(
             this._volume,
-            context.currentTime + 0.01
+            AudioCore.context.currentTime + 0.01
         )
     }
 
@@ -222,10 +226,10 @@ class Ongaq {
     _prepareCommonGain() {
         if (this.commonGain) return false
         if (!this.commonComp) {
-            this.commonComp = context.createDynamicsCompressor()
-            this.commonComp.connect(context.destination)
+            this.commonComp = AudioCore.context.createDynamicsCompressor()
+            this.commonComp.connect(AudioCore.context.destination)
         }
-        this.commonGain = context.createGain()
+        this.commonGain = AudioCore.context.createGain()
         this.commonGain.connect(this.commonComp)
         this.commonGain.gain.setValueAtTime(this._volume, 0)
         return false
@@ -260,19 +264,17 @@ class Ongaq {
       @_routine
       - 各partに対してobserveを行う
       */
-    _routine(o = {}) {
-        const offlineConnect = o.offlineConnect
-        const offlineContext = o.offlineContext
+    _routine( ctx, connect ) {
         let collected, elements
         this.parts.forEach(p => {
-            elements = p.collect( offlineContext )
+            elements = p.collect( ctx )
             if (elements && elements.length > 0){
                 collected = collected || []
                 collected = collected.concat(elements)
             }
         })
         if(!collected || collected.length === 0) return false
-        collected.forEach( offlineConnect || (elem =>{ this._connect(elem) }) )
+        collected.forEach( connect )
         return false
     }
 

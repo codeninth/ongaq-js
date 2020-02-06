@@ -16,6 +16,32 @@ my_drums.add(
         active: n => n % 8 === 4
     })
 )
+my_drums.add(
+    new Filter({
+      type: "pan",
+      x: n => n % 16 === 4 ? -30 : 40
+    })
+)
+
+const my_piano = new Part({
+    sound: "my_piano",
+    measure: 4,
+    maxLap: 3,
+    repeat: false
+})
+my_piano.add(
+    new Filter({
+        key: new Chord("Cm9"),
+        active: 0,
+        length: 8
+    })
+)
+my_piano.add(
+    new Filter({
+        type: "arpeggio",
+        step: 1
+    })
+)
 
 const ongaq = new Ongaq({
     api_key: "master_api_key_00",
@@ -29,10 +55,12 @@ const ongaq = new Ongaq({
                 ongaq.pause()
                 button.className = "button start"
             } else {
-                ongaq.record({ maxLap: 1})
+                ongaq.start()
+                // ongaq.record({ maxLap: 1})
                 button.className = "button pause"
             }
         }
     }
 })
 ongaq.add(my_drums)
+ongaq.add(my_piano)
