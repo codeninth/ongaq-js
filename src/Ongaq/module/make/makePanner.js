@@ -27,7 +27,6 @@ const _setListener = ctx => {
     }
     l.__initByOngaq = true
 }
-_setListener( AudioCore.context )
 
 const makePanner = ({ x }, ctx)=>{
     if(!ctx.listener.__initByOngaq) _setListener( ctx )

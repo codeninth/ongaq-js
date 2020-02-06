@@ -6,7 +6,6 @@ import ElementPool from "./module/pool.element"
 import GainPool from "./module/pool.gain"
 import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
-import WAV_MAX_SECONDS from "../Constants/WAV_MAX_SECONDS"
 import SCHEME from "../Constants/SCHEME"
 import VERSION from "../Constants/VERSION"
 
@@ -88,10 +87,10 @@ class Ongaq {
             seconds.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
         })
         const wavSeconds = (()=>{
-            if(typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= WAV_MAX_SECONDS) return o.seconds
+            if(typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
             else if (Math.max(seconds) < 1) return 1
-            else if (Math.max(seconds) < WAV_MAX_SECONDS) return Math.max(seconds)
-            else return WAV_MAX_SECONDS
+            else if (Math.max(seconds) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(seconds)
+            else return DEFAULTS.WAV_MAX_SECONDS
         })()
         const offlineContext = new OfflineAudioContext(2, 44100 * wavSeconds, 44100)
 

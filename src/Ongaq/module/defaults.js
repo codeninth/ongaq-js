@@ -8,6 +8,7 @@ const VALUES = {
     VOLUME: 0.5,
     NOTE_VOLUME: 0.5,
     BEATS_IN_MEASURE: 16,
-    PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 2.0
+    PREFETCH_SECOND: AudioCore.powerMode === "middle" ? 0.3 : 2.0,
+    WAV_MAX_SECONDS: 30
 }
 export default VALUES
