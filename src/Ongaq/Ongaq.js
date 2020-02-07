@@ -58,7 +58,8 @@ class Ongaq {
         if (this.isPlaying || this.parts.size === 0) return false
         this.isPlaying = true
 
-        this._prepareCommonGain()
+        if (!this.commonGain) this.commonGain = this._getCommonGain(AudioCore.context)
+        
         this.parts.forEach(p => { p._putTimerRight( AudioCore.context.currentTime ) })
 
         this._scheduler = window.setInterval(()=>{
@@ -95,12 +96,7 @@ class Ongaq {
         const offlineContext = new OfflineAudioContext(2, 44100 * wavSeconds, 44100)
 
         // =======
-        const commonComp = offlineContext.createDynamicsCompressor()
-        commonComp.connect(offlineContext.destination)
-
-        const commonGain = offlineContext.createGain()
-        commonGain.connect(commonComp)
-        commonGain.gain.setValueAtTime(this._volume, 0)
+        const commonGain = this._getCommonGain(offlineContext)
 
         this._routine(
           offlineContext,
@@ -218,20 +214,17 @@ class Ongaq {
     }
 
     /*
-      @_prepareCommonGain
+      @_getCommonGain
       - すべてのaudioNodeが経由するGainNodeを作成
       - playのタイミングで毎回作り直す
     */
-    _prepareCommonGain() {
-        if (this.commonGain) return false
-        if (!this.commonComp) {
-            this.commonComp = AudioCore.context.createDynamicsCompressor()
-            this.commonComp.connect(AudioCore.context.destination)
-        }
-        this.commonGain = AudioCore.context.createGain()
-        this.commonGain.connect(this.commonComp)
-        this.commonGain.gain.setValueAtTime(this._volume, 0)
-        return false
+    _getCommonGain(ctx){
+        const comp = ctx.createDynamicsCompressor()
+        comp.connect( ctx.destination )
+        const g = ctx.createGain()
+        g.connect( comp )
+        g.gain.setValueAtTime(this._volume, 0)
+        return g
     }
 
     /*
