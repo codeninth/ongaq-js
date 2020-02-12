@@ -5,7 +5,6 @@ import toDrumNoteName from "./toDrumNoteName"
 import Cacher from "./Cacher"
 import request from "superagent"
 import nocache from "superagent-no-cache"
-
 let buffers = new Map()
 
 class BufferYard {
@@ -46,9 +45,9 @@ class BufferYard {
                Cacher.purge("soundNameMap")
                throw new Error("Cannot download instrumental master data.")
            }
-           
+
         }
-        
+
     }
 
     /*
@@ -60,7 +59,7 @@ class BufferYard {
         return new Promise((resolve, reject) => {
             // this sound is already loaded
             if (buffers.get(sound)) return resolve()
-            
+
             request
                 .get(`${ENDPOINT}/sounds/`)
                 .query({
@@ -97,14 +96,14 @@ class BufferYard {
                             if (buffers.has(sound)) buffers.delete(sound)
                             reject()
                         }
-                        
+
                     })
 
 
                 })
                 .catch(() => {
                     if (buffers.has(sound)) buffers.delete(sound)
-                    reject(`Cannot load sound resources. There are 3 possible reasons: 1) [ ${sound} ] is invalid instrumental name. 2) [ ${sound} ] is not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
+                    reject(`Cannot load sound resources. There are 4 possible reasons: 1) [ ${sound} ] is invalid as an instrumental name. 2) [ ${sound} ] is not free and you don't have a pro license. 3) Your remote IP address or hostname is not registered as an authorized origin at dashboard. 4) [ ${this.api_key} ] is not a valid API key.`)
                 })
 
         })
@@ -119,7 +118,7 @@ class BufferYard {
         const soundID = this.soundNameMap.get(sound) && this.soundNameMap.get(sound).id
         if (soundID < 20000) key = toPianoNoteName(key)
         else if (soundID < 30000) key = toDrumNoteName(key)
-        
+
         if (Array.isArray(key)) {
             return key.map(k => buffers.get(sound).get(k)).filter(b => b)
         } else if (typeof key === "string") {

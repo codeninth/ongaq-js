@@ -11,7 +11,7 @@ const DEFAULT_NOTE_LENGTH = 4
     active: n=>n%4
   }
 */
-const mapper = ( o = {}, _targetBeat = {} )=>{
+const mapper = (o = {}, _targetBeat = {}, context )=>{
 
     if(!isActive(o.active,_targetBeat)) return false
 
@@ -45,7 +45,7 @@ const mapper = ( o = {}, _targetBeat = {} )=>{
         return false
     }
     _targetBeat._hasNote = true
-    
+
     /*
       必ず自身と同じ構造のオブジェクトを返す関数を返す
       =====================================================================
@@ -61,9 +61,9 @@ const mapper = ( o = {}, _targetBeat = {} )=>{
                     startTime: _targetBeat.beatTime
                 },
                 volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null
-            })
+            }, context)
         })
-        
+
         MappedFunction.terminal[0] = MappedFunction.terminal[0] || []
         MappedFunction.terminal[0].push(...newNodes)
         MappedFunction.priority = MY_PRIORITY
