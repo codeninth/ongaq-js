@@ -59,7 +59,7 @@ class Ongaq {
         this.isPlaying = true
 
         if (!this.commonGain) this.commonGain = this._getCommonGain(AudioCore.context)
-        
+
         this.parts.forEach(p => { p._putTimerRight( AudioCore.context.currentTime ) })
 
         this._scheduler = window.setInterval(()=>{
@@ -103,7 +103,7 @@ class Ongaq {
           elem => {
               if (elem.terminal.length > 0) {
                   elem.terminal[elem.terminal.length - 1].forEach(t => {
-                      t.connect(commonGain)
+                      t && t.connect && t.connect(commonGain)
                   })
               }
               elem.initialize()
