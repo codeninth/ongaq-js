@@ -103,7 +103,7 @@ class BufferYard {
                 })
                 .catch(() => {
                     if (buffers.has(sound)) buffers.delete(sound)
-                    reject(`Cannot load sound resources. There are 3 possible reasons: 1) [ ${sound} ] is invalid instrumental name. 2) [ ${sound} ] is not free and you don't have a pro license. 3) [ ${this.api_key} ] is not a valid API key.`)
+                    reject(`Cannot load sound resources. There are 4 possible reasons: 1) [ ${sound} ] is invalid as an instrumental name. 2) [ ${sound} ] is not free and you don't have a pro license. 3) Your remote IP address or hostname is not registered as an authorized origin at dashboard. 4) [ ${this.api_key} ] is not a valid API key.`)
                 })
 
         })

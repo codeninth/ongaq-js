@@ -1,16 +1,8 @@
 import AudioCore from "./AudioCore"
 
-let metrics = {
-    required: 0,
-    retrived: 0,
-    recycled: 0
-}
-
 class Pool {
 
     constructor(o) {
-
-        this.x = AudioCore.context
 
         this.name = o.name
         this.isClass = o.isClass
@@ -21,40 +13,24 @@ class Pool {
             if (this.isClass) return new this.makeMethod(option)
             else return this.makeMethod(option)
         }
-
         this.pool = []
-        this.metrics = {
-            required: 0,
-            retrived: 0,
-            recycled: 0
-        }
 
     }
 
     allocate(option) {
 
         let obj = undefined
-        metrics.required++
-        this.metrics.required++
-
         if (this.pool.length === 0 || this.active === false) {
             obj = this.make(option)
         } else {
             obj = this.pool.pop()
-            if (obj) {
-                metrics.recycled++
-                this.metrics.recycled++
-            } else {
-                obj = this.make(option)
-            }
+            if (!obj) obj = this.make(option)
         }
         return obj
     }
 
     retrieve(obj) {
         this.pool.push(obj)
-        metrics.retrived++
-        this.metrics.retrived++
     }
 
     flush() {

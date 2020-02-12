@@ -1,6 +1,4 @@
 import AudioCore from "../AudioCore"
-const context = AudioCore.context
-
 const v = {
     w: window.innerWidth,
     h: window.innerHeight,
@@ -29,11 +27,9 @@ const _setListener = ctx => {
     }
     l.__initByOngaq = true
 }
-_setListener( context )
 
-const makePanner = ({ x }, offlineContext)=>{
-    const ctx = offlineContext || context
-    if(offlineContext && !offlineContext.listener.__initByOngaq) _setListener( offlineContext )
+const makePanner = ({ x }, ctx)=>{
+    if(!ctx.listener.__initByOngaq) _setListener( ctx )
     const p = ctx.createPanner()
     p.refDistance = 1000
     p.maxDistance = 10000
@@ -49,7 +45,7 @@ const makePanner = ({ x }, offlineContext)=>{
     }
 
     const xValue = ((_x)=>(typeof _x === "number" && _x >= -90 && _x <= 90) ? _x : 0)( x )
-    // mastering in case of width: 1000px -> multiply ratio (1000/v.w)  
+    // mastering in case of width: 1000px -> multiply ratio (1000/v.w)
     const _p = [v.w / 2 + (1000 / v.w) * v.w / 90 * xValue / 52, v.h / 2, 299 ]
 
     if(p.positionX){

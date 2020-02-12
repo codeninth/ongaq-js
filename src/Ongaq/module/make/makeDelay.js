@@ -1,14 +1,7 @@
-import AudioCore from "../AudioCore"
-const context = AudioCore.context
-
-const makeDelay = ({ delayTime }, offlineContext )=>{
-
-    let d = (offlineContext || context).createDelay()
+const makeDelay = ({ delayTime }, ctx )=>{
+    let d = ctx.createDelay()
     d.delayTime.value = delayTime
-
     return d
-
 }
-
 
 export default makeDelay
