@@ -38,8 +38,8 @@ class Ongaq {
                     if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
                 })
                 if (isAllPartsLoaded){
-                  this.allPartsLoadedOnce = true
-                  this.onReady && this.onReady()
+                    if (!this.allPartsLoadedOnce) this.onReady && this.onReady()
+                    this.allPartsLoadedOnce = true
                 }
                 resolve()
             } catch(e){
