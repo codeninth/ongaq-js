@@ -13,6 +13,7 @@ class Part {
         this.bpm = props.bpm // bpm is set through ongaq.add
         this.measure = (typeof props.measure === "number" && props.measure >= 0) ? props.measure : DEFAULTS.MEASURE
 
+        this.onLoaded = props && typeof props.onLoaded === "function" && props.onLoaded
         this.willMakeLap = props && typeof props.willMakeLap === "function" && props.willMakeLap
         /*
             maxLap:
@@ -179,6 +180,7 @@ class Part {
                 await BufferYard.import(this.sound)
                 this._isLoading = false
                 this.active = this.default.active
+                this.onLoaded && this.onLoaded()
                 resolve()
             } catch(e) {
                 this._isLoading = false

@@ -37,7 +37,10 @@ class Ongaq {
                 this.parts.forEach(p => {
                     if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
                 })
-                if (isAllPartsLoaded) this.onReady && this.onReady()
+                if (isAllPartsLoaded){
+                  this.allPartsLoadedOnce = true
+                  this.onReady && this.onReady()
+                }
                 resolve()
             } catch(e){
                 if (!this.isError){
@@ -73,9 +76,11 @@ class Ongaq {
 
     record(o = {}){
         if (this.isPlaying) throw "cannot start recording while playing sounds"
+        else if (this.isRecording) throw "cannot start recording while other recording process ongoing"
         else if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
         if (this.isPlaying || this.parts.size === 0) return false
 
+        this.isRecording = true
         GainPool.flush()
         ElementPool.flush()
 
@@ -111,7 +116,15 @@ class Ongaq {
           }
         )
 
-        return offlineContext.startRendering()
+        return new Promise((resolve,reject)=>{
+          try {
+            const buffer = offlineContext.startRendering()
+            this.isRecording = false
+            resolve(buffer)
+          } catch(e){
+            reject(e)
+          }
+        })
     }
 
     /*
@@ -199,6 +212,8 @@ class Ongaq {
     _init({ api_key, volume, bpm, onReady, onError }){
         this.parts = new Map()
         this.isPlaying = false
+        this.isRecording = false
+        this.allPartsLoadedOnce = false
         this.volume = volume || DEFAULTS.VOLUME
 
         this._nextZeroTime = 0
