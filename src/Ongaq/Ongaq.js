@@ -171,6 +171,10 @@ class Ongaq {
         }
     }
 
+    get context(){
+      return AudioCore.context
+    }
+
     get constants() {
         return {
             DRUM_NOTE,
@@ -265,6 +269,20 @@ class Ongaq {
         elem.initialize()
         ElementPool.retrieve( elem )
         return false
+    }
+
+    /*
+      @_preloadSound
+    */
+    _preloadSound({ sound }){
+      return BufferYard.import(sound)
+    }
+
+    /*
+      @_stealSound
+    */
+    _stealSound({ sound }){
+      return BufferYard.ship(sound)
     }
 
     /*

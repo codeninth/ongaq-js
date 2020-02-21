@@ -158,6 +158,18 @@ class Part {
 
     }
 
+    changeSound({ sound }){
+      return new Promise( async (resolve,reject)=>{
+        try {
+          await BufferYard.import(sound)
+          this.sound = sound
+          resolve()
+        } catch(e){
+          reject(e)
+        }
+      })
+    }
+
     detach(field) {
         if (typeof field === "string") delete this._attachment[field]
         else this._attachment = {}

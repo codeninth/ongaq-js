@@ -111,11 +111,13 @@ class BufferYard {
     }
 
     ship({ sound, key }) {
-        if (!sound || !key || !buffers.get(sound)) return false
+        if (!sound || !buffers.get(sound)) return false
         /*
             readable note name as "A1","hihat" will be converted here
         */
         const soundID = this.soundNameMap.get(sound) && this.soundNameMap.get(sound).id
+        if(!key) return buffers.get(sound)
+
         if (soundID < 20000) key = toPianoNoteName(key)
         else if (soundID < 30000) key = toDrumNoteName(key)
 
