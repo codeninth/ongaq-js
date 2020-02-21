@@ -275,14 +275,14 @@ class Ongaq {
       @_preloadSound
     */
     _preloadSound({ sound }){
-      return BufferYard.import(sound)
+      return BufferYard.import({ sound })
     }
 
     /*
       @_stealSound
     */
     _stealSound({ sound }){
-      return BufferYard.ship(sound)
+      return BufferYard.ship({ sound })
     }
 
     /*

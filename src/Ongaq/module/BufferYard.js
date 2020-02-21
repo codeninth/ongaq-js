@@ -54,7 +54,7 @@ class BufferYard {
       - load soundjsons with SoundFile API
       - restore mp3: string -> typedArray -> .mp3
     */
-    async import(sound) {
+    async import({ sound }) {
 
         return new Promise((resolve, reject) => {
             // this sound is already loaded

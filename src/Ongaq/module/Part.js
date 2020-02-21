@@ -161,7 +161,7 @@ class Part {
     changeSound({ sound }){
       return new Promise( async (resolve,reject)=>{
         try {
-          await BufferYard.import(sound)
+          await BufferYard.import({ sound })
           this.sound = sound
           resolve()
         } catch(e){
@@ -189,7 +189,7 @@ class Part {
         this._isLoading = true
         return new Promise( async (resolve,reject)=>{
             try {
-                await BufferYard.import(this.sound)
+                await BufferYard.import({ sound: this.sound })
                 this._isLoading = false
                 this.active = this.default.active
                 this.onLoaded && this.onLoaded()
