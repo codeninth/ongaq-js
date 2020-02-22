@@ -183,6 +183,10 @@ class Ongaq {
         }
     }
 
+    get soundNameMap(){
+        return BufferYard.getSoundNameMap()
+    }
+
     get version() { return VERSION }
 
     set volume(v) {
