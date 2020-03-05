@@ -66,10 +66,10 @@ class Ongaq {
         this.parts.forEach(p => { p._putTimerRight( AudioCore.context.currentTime ) })
 
         this._scheduler = window.setInterval(()=>{
-          this._routine(
-            AudioCore.context,
-            elem =>{ this._connect(elem) }
-          )
+            this._routine(
+                AudioCore.context,
+                elem =>{ this._connect(elem) }
+            )
         }, AudioCore.powerMode === "middle" ? 50 : 200)
         return false
     }
@@ -104,26 +104,26 @@ class Ongaq {
         const commonGain = this._getCommonGain(offlineContext)
 
         this._routine(
-          offlineContext,
-          elem => {
-              if (elem.terminal.length > 0) {
-                  elem.terminal[elem.terminal.length - 1].forEach(t => {
-                      t && t.connect && t.connect(commonGain)
-                  })
-              }
-              elem.initialize()
-              ElementPool.retrieve(elem)
-          }
+            offlineContext,
+            elem => {
+                if (elem.terminal.length > 0) {
+                    elem.terminal[elem.terminal.length - 1].forEach(t => {
+                        t && t.connect && t.connect(commonGain)
+                    })
+                }
+                elem.initialize()
+                ElementPool.retrieve(elem)
+            }
         )
 
         return new Promise((resolve,reject)=>{
-          try {
-            const buffer = offlineContext.startRendering()
-            this.isRecording = false
-            resolve(buffer)
-          } catch(e){
-            reject(e)
-          }
+            try {
+                const buffer = offlineContext.startRendering()
+                this.isRecording = false
+                resolve(buffer)
+            } catch(e){
+                reject(e)
+            }
         })
     }
 
@@ -172,7 +172,7 @@ class Ongaq {
     }
 
     get context(){
-      return AudioCore.context
+        return AudioCore.context
     }
 
     get constants() {
@@ -279,14 +279,14 @@ class Ongaq {
       @_preloadSound
     */
     _preloadSound({ sound }){
-      return BufferYard.import({ sound })
+        return BufferYard.import({ sound })
     }
 
     /*
       @_stealSound
     */
     _stealSound({ sound }){
-      return BufferYard.ship({ sound })
+        return BufferYard.ship({ sound })
     }
 
     /*

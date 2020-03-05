@@ -45,7 +45,7 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
     })
     if(!x) return false
 
-    if(!context instanceof AudioContext){
+    if(!(context instanceof AudioContext)){
         if(functionPool.get(`offline_${x}`)) functionPool.set(`offline_${x}`,generate(x,context))
         return functionPool.get(`offline_${x}`)
     }

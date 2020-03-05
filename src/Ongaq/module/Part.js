@@ -79,14 +79,14 @@ class Part {
 
             let hasNote = false
             let mapped = []
-            this.filters.forEach((_filter)=>{
+            this.filters.forEach(({ type, params })=>{
                 if(
-                    !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
-                    ( _filter.type !== "note" && !hasNote )
+                    !Object.hasOwnProperty.call(filterMapper, type) ||
+                    ( (type !== "note" && type !== "notelist") && !hasNote )
                 ){ return false }
-                const mappedFunction = filterMapper[_filter.type](_filter.params, this._targetBeat, context )
+                const mappedFunction = filterMapper[type](params, this._targetBeat, context )
                 if (mappedFunction){
-                    if (_filter.type === "note") hasNote = true
+                    if (type === "note" || type === "notelist") hasNote = true
                     mapped.push( mappedFunction )
                 }
             })
@@ -159,15 +159,15 @@ class Part {
     }
 
     changeSound({ sound }){
-      return new Promise( async (resolve,reject)=>{
-        try {
-          await BufferYard.import({ sound })
-          this.sound = sound
-          resolve()
-        } catch(e){
-          reject(e)
-        }
-      })
+        return new Promise( async (resolve,reject)=>{
+            try {
+                await BufferYard.import({ sound })
+                this.sound = sound
+                resolve()
+            } catch(e){
+                reject(e)
+            }
+        })
     }
 
     detach(field) {
@@ -250,11 +250,11 @@ class Part {
     get mute() { return this._mute }
 
     _shutdown(){
-      if(!this.active) return false
-      this._meanTime = 0
-      this._endTime = 0
-      this._nextBeatTime = 0
-      this.active = false
+        if(!this.active) return false
+        this._meanTime = 0
+        this._endTime = 0
+        this._nextBeatTime = 0
+        this.active = false
     }
 
     _putTimerRight(_meanTime){

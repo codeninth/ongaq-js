@@ -4,6 +4,9 @@ export { default as empty } from "./empty"
 // Priority: 140
 export { default as note } from "./note"
 
+// Priority: 145
+export { default as notelist } from "./notelist"
+
 // Priority: 240
 export { default as arpeggio } from "./arpeggio"
 

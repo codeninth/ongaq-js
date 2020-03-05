@@ -30,8 +30,8 @@ const retrieve = ctx =>{
         gainGarage.get(periods[i]) && gainGarage.get(periods[i]).forEach(usedGain => {
             usedGain.disconnect()
             if(usedGain.context === ctx){
-              // when right after context is switched from offline to normal, gainNodes in the garage can not be reused
-              gainPool.retrieve(usedGain)
+                // when right after context is switched from offline to normal, gainNodes in the garage can not be reused
+                gainPool.retrieve(usedGain)
             }
         })
         bufferSourceGarage.get(periods[i]) && bufferSourceGarage.get(periods[i]).forEach(usedSource => {
@@ -54,7 +54,7 @@ const makeAudioBuffer = ({ buffer, volume }, ctx)=>{
     s.length = buffer.length
     s.buffer = audioBuffer[0]
     let g = gainPool.allocate(ctx)
-    g.gain.setValueAtTime( AudioCore.SUPPRESSION * (( volume && volume >= 0 && volume < 1) ? volume : defaults.NOTE_VOLUME ), 0 )
+    g.gain.setValueAtTime( AudioCore.SUPPRESSION * (( typeof volume === "number" && volume >= 0 && volume < 1) ? volume : defaults.NOTE_VOLUME ), 0 )
     // Set end of sound unless the instrument is drums
     !isDrumNoteName(buffer.key) && g.gain.setValueCurveAtTime(
         Helper.getWaveShapeArray(volume),
@@ -64,7 +64,7 @@ const makeAudioBuffer = ({ buffer, volume }, ctx)=>{
     s.connect(g)
     s.start(buffer.startTime)
 
-    if (!ctx instanceof AudioContext) return g
+    if (!(ctx instanceof AudioContext)) return g
 
     // when normal audioContext, cache node to disconnect after used
     for(let i = 0, l = periods.length; i<l; i++){

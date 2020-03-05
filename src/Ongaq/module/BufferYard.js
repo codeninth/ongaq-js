@@ -61,12 +61,12 @@ class BufferYard {
             /*
                 use cached string like sound_1,10001|sound_b,10002
             */
-           try {
+            try {
                 this.soundNameMap = cacheToMap(cache)
-           } catch(e) {
-               Cacher.purge("soundNameMap")
-               throw new Error("Cannot download instrumental master data.")
-           }
+            } catch(e) {
+                Cacher.purge("soundNameMap")
+                throw new Error("Cannot download instrumental master data.")
+            }
 
         }
 

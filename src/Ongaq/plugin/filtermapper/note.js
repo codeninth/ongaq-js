@@ -27,10 +27,7 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
         object: v=> v.key,
         array: v=>v
     })
-    if(!key || key.length === 0){
-        _targetBeat._hasNote = false
-        return false
-    }
+    if (!key || key.length === 0) return false
 
     /*
       calculate relative length of note
@@ -40,11 +37,7 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
         number: v=>v,
         default: DEFAULT_NOTE_LENGTH
     })
-    if(!length){
-        _targetBeat._hasNote = false
-        return false
-    }
-    _targetBeat._hasNote = true
+    if(!length) return false
 
     /*
       必ず自身と同じ構造のオブジェクトを返す関数を返す
@@ -52,7 +45,8 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
     */
 
     return MappedFunction=>{
-        let newNodes = key.map(k=>{
+
+        const newNodes = key.map(k=>{
             return make("audiobuffer",{
                 buffer: {
                     sound: _targetBeat.sound,
