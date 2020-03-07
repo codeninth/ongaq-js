@@ -16,12 +16,12 @@ const DEFAULT_NOTE_LENGTH = 4
 */
 const mapper = (o = {}, _targetBeat = {}, context )=>{
 
-    if(!isActive(o.params && o.params.active,_targetBeat)) return false
+    if(!isActive(o.active,_targetBeat)) return false
     let notes
-    if(Array.isArray(o.params.notes)){
-        notes = o.params.notes
-    } else if(typeof o.params.notes === "function"){
-        notes = o.params.notes(_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment)
+    if(Array.isArray(o.notes)){
+        notes = o.notes
+    } else if(typeof o.notes === "function"){
+        notes = o.notes(_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment)
     } else {
         return false
     }
@@ -41,7 +41,15 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
             default: DEFAULT_NOTE_LENGTH
         })
 
-        const _volume = volume >= 0 && volume <= 100 ? volume / 100 : null
+        let _volume = inspect(volume, {
+            _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+            number: v => v,
+            string: v=> false,
+            object: v=> false,
+            array: v=> false
+        })
+        _volume = _volume >= 0 && _volume <= 100 ? _volume / 100 : null
+        
 
         if(!_key || key.length === 0 || !length) return false
         return {

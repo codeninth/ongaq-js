@@ -39,6 +39,13 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
     })
     if(!length) return false
 
+    let volume = inspect(o.volume, {
+      _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+      number: v => (v >= 0 && v <= 100) ? v / 100 : null,
+      string: v => false,
+      object: v => false,
+      array: v => false
+    })
     /*
       必ず自身と同じ構造のオブジェクトを返す関数を返す
       =====================================================================
@@ -54,7 +61,7 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
                     key: k,
                     startTime: _targetBeat.beatTime
                 },
-                volume: o.volume >= 0 && o.volume <= 100 ? o.volume / 100 : null
+                volume
             }, context)
         })
 
