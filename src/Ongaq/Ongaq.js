@@ -11,16 +11,16 @@ import VERSION from "../Constants/VERSION"
 
 class Ongaq {
 
-    constructor(o){
+    constructor(o) {
         this._init(o)
     }
 
     /*
       @add
     */
-    add(part){
+    add(part) {
 
-        return new Promise( async (resolve,reject)=>{
+        return new Promise(async(resolve, reject) => {
 
             if (typeof part.loadSound !== "function") return reject("not a Part object")
 
@@ -31,19 +31,19 @@ class Ongaq {
                 await part.loadSound()
                 let isAllPartsLoaded = true
                 /*
-                    when all parts got loaded own sound,
-                    fire this.onReady
-                */
+                                when all parts got loaded own sound,
+                                fire this.onReady
+                            */
                 this.parts.forEach(p => {
                     if (p._isLoading || p._loadingFailed) isAllPartsLoaded = false
                 })
-                if (isAllPartsLoaded){
+                if (isAllPartsLoaded) {
                     if (!this.allPartsLoadedOnce) this.onReady && this.onReady()
                     this.allPartsLoadedOnce = true
                 }
                 resolve()
-            } catch(e){
-                if (!this.isError){
+            } catch (e) {
+                if (!this.isError) {
                     this.onError && this.onError(e)
                     this.isError = true
                 }
@@ -63,18 +63,18 @@ class Ongaq {
 
         if (!this.commonGain) this.commonGain = this._getCommonGain(AudioCore.context)
 
-        this.parts.forEach(p => { p._putTimerRight( AudioCore.context.currentTime ) })
+        this.parts.forEach(p => { p._putTimerRight(AudioCore.context.currentTime) })
 
-        this._scheduler = window.setInterval(()=>{
+        this._scheduler = window.setInterval(() => {
             this._routine(
                 AudioCore.context,
-                elem =>{ this._connect(elem) }
+                elem => { this._connect(elem) }
             )
         }, AudioCore.powerMode === "middle" ? 50 : 200)
         return false
     }
 
-    record(o = {}){
+    record(o = {}) {
         if (this.isPlaying) throw "cannot start recording while playing sounds"
         else if (this.isRecording) throw "cannot start recording while other recording process ongoing"
         else if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
@@ -85,21 +85,20 @@ class Ongaq {
         ElementPool.flush()
 
         // ====== calculate the seconds of beats beforehand
-        const seconds = []
+        const secondSamples = []
         this.parts.forEach(p => {
             p._reset()
             p._putTimerRight(0)
             const _maxLap = (typeof o.maxLap === "number" && o.maxLap > 0) ? o.maxLap : p.maxLap
-            seconds.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
+            secondSamples.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
         })
-        const wavSeconds = (()=>{
-            if(typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
-            else if (Math.max(seconds) < 1) return 1
-            else if (Math.max(seconds) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(seconds)
+        const seconds = (() => {
+            if (typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
+            else if (Math.max(secondSamples) < 1) return 1
+            else if (Math.max(secondSamples) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(secondSamples)
             else return DEFAULTS.WAV_MAX_SECONDS
         })()
-        const offlineContext = new OfflineAudioContext(2, 44100 * wavSeconds, 44100)
-
+        const offlineContext = AudioCore.createOfflineContext({ seconds })
         // =======
         const commonGain = this._getCommonGain(offlineContext)
 
@@ -116,12 +115,12 @@ class Ongaq {
             }
         )
 
-        return new Promise((resolve,reject)=>{
+        return new Promise(async(resolve, reject) => {
             try {
-                const buffer = offlineContext.startRendering()
+                const buffer = await offlineContext.startRendering()
                 this.isRecording = false
                 resolve(buffer)
-            } catch(e){
+            } catch (e) {
                 reject(e)
             }
         })
@@ -150,7 +149,7 @@ class Ongaq {
         let result = []
         if (tags.length === 0) return result
         this.parts.forEach(p => {
-            if ( tags.every(tag => p.tags.includes(tag)) ) result.push(p)
+            if (tags.every(tag => p.tags.includes(tag))) result.push(p)
         })
         return result
 
@@ -171,7 +170,7 @@ class Ongaq {
         }
     }
 
-    get context(){
+    get context() {
         return AudioCore.context
     }
 
@@ -183,7 +182,7 @@ class Ongaq {
         }
     }
 
-    get soundNameMap(){
+    get soundNameMap() {
         return BufferYard.getSoundNameMap()
     }
 
@@ -217,7 +216,7 @@ class Ongaq {
       @_init
     */
 
-    _init({ api_key, volume, bpm, onReady, onError }){
+    _init({ api_key, volume, bpm, onReady, onError }) {
         this.parts = new Map()
         this.isPlaying = false
         this.isRecording = false
@@ -241,11 +240,11 @@ class Ongaq {
       - すべてのaudioNodeが経由するGainNodeを作成
       - playのタイミングで毎回作り直す
     */
-    _getCommonGain(ctx){
+    _getCommonGain(ctx) {
         const comp = ctx.createDynamicsCompressor()
-        comp.connect( ctx.destination )
+        comp.connect(ctx.destination)
         const g = ctx.createGain()
-        g.connect( comp )
+        g.connect(comp)
         g.gain.setValueAtTime(this._volume, 0)
         return g
     }
@@ -265,27 +264,27 @@ class Ongaq {
     */
     _connect(elem) {
         if (!elem || !this.isPlaying) return false
-        if(elem.terminal.length > 0){
+        if (elem.terminal.length > 0) {
             elem.terminal[elem.terminal.length - 1].forEach(t => {
                 t.connect(this.commonGain)
             })
         }
         elem.initialize()
-        ElementPool.retrieve( elem )
+        ElementPool.retrieve(elem)
         return false
     }
 
     /*
       @_preloadSound
     */
-    _preloadSound({ sound }){
+    _preloadSound({ sound }) {
         return BufferYard.import({ sound })
     }
 
     /*
       @_stealSound
     */
-    _stealSound({ sound }){
+    _stealSound({ sound }) {
         return BufferYard.ship({ sound })
     }
 
@@ -293,17 +292,17 @@ class Ongaq {
       @_routine
       - 各partに対してobserveを行う
       */
-    _routine( ctx, connect ) {
+    _routine(ctx, connect) {
         let collected, elements
         this.parts.forEach(p => {
-            elements = p.collect( ctx )
-            if (elements && elements.length > 0){
+            elements = p.collect(ctx)
+            if (elements && elements.length > 0) {
                 collected = collected || []
                 collected = collected.concat(elements)
             }
         })
-        if(!collected || collected.length === 0) return false
-        collected.forEach( connect )
+        if (!collected || collected.length === 0) return false
+        collected.forEach(connect)
         return false
     }
 

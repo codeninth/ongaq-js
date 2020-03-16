@@ -11,9 +11,9 @@ const DEFAULT_NOTE_LENGTH = 4
     active: n=>n%4
   }
 */
-const mapper = (o = {}, _targetBeat = {}, context )=>{
+const mapper = (o = {}, _targetBeat = {}, context) => {
 
-    if(!isActive(o.active,_targetBeat)) return false
+    if (!isActive(o.active, _targetBeat)) return false
 
     /*
       key should be:
@@ -21,40 +21,40 @@ const mapper = (o = {}, _targetBeat = {}, context )=>{
         - array like ["C1","G1"]
         - Chord object
     */
-    const key = inspect(o.key,{
-        _arguments: [ _targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment ],
-        string: v=>[v],
-        object: v=> v.key,
-        array: v=>v
+    const key = inspect(o.key, {
+        _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+        string: v => [v],
+        object: v => v.key,
+        array: v => v
     })
     if (!key || key.length === 0) return false
 
     /*
       calculate relative length of note
     */
-    const length = inspect(o.length,{
-        _arguments: [ _targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment ],
-        number: v=>v,
+    const length = inspect(o.length, {
+        _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+        number: v => v,
         default: DEFAULT_NOTE_LENGTH
     })
-    if(!length) return false
+    if (!length) return false
 
     let volume = inspect(o.volume, {
-      _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
-      number: v => (v >= 0 && v <= 100) ? v / 100 : null,
-      string: v => false,
-      object: v => false,
-      array: v => false
+        _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+        number: v => (v >= 0 && v <= 100) ? v / 100 : null,
+        string: () => false,
+        object: () => false,
+        array: () => false
     })
     /*
-      必ず自身と同じ構造のオブジェクトを返す関数を返す
-      =====================================================================
-    */
+          必ず自身と同じ構造のオブジェクトを返す関数を返す
+          =====================================================================
+        */
 
-    return MappedFunction=>{
+    return MappedFunction => {
 
-        const newNodes = key.map(k=>{
-            return make("audiobuffer",{
+        const newNodes = key.map(k => {
+            return make("audiobuffer", {
                 buffer: {
                     sound: _targetBeat.sound,
                     length: length * _targetBeat.secondsPerBeat,
