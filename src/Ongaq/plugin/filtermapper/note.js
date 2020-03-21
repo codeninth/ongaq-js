@@ -35,29 +35,30 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
     const length = inspect(o.length, {
         _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
         number: v => v,
+        array: v => v,
         default: DEFAULT_NOTE_LENGTH
     })
     if (!length) return false
 
     let volume = inspect(o.volume, {
-        _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
-        number: v => (v >= 0 && v <= 100) ? v / 100 : null,
-        string: () => false,
-        object: () => false,
-        array: () => false
-    })
-    /*
-          必ず自身と同じ構造のオブジェクトを返す関数を返す
-          =====================================================================
-        */
+            _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+            number: v => (v >= 0 && v <= 100) ? v / 100 : null,
+            string: () => false,
+            object: () => false,
+            array: () => false
+        })
+        /*
+              必ず自身と同じ構造のオブジェクトを返す関数を返す
+              =====================================================================
+            */
 
     return MappedFunction => {
 
-        const newNodes = key.map(k => {
+        const newNodes = key.map((k, i) => {
             return make("audiobuffer", {
                 buffer: {
                     sound: _targetBeat.sound,
-                    length: length * _targetBeat.secondsPerBeat,
+                    length: (!Array.isArray(length) ? length : (typeof length[i] === "number" ? length[i] : DEFAULT_NOTE_LENGTH)) * _targetBeat.secondsPerBeat,
                     key: k,
                     startTime: _targetBeat.beatTime
                 },
