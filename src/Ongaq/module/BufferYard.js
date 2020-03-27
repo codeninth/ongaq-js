@@ -81,7 +81,7 @@ class BufferYard {
         return new Promise((resolve, reject) => {
             // this sound is already loaded
             if (buffers.get(sound)) return resolve()
-
+            buffers.set(sound,[])
             request
                 .get(`${ENDPOINT}/sounds/`)
                 .query({
