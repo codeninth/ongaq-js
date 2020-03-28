@@ -170,9 +170,11 @@ class Part {
     syncTo(meanPart){
         if(meanPart instanceof Part === false) return false
         meanPart._syncRequest = ()=>{
-            this._currentBeatIndex = meanPart._currentBeatIndex
+            this._currentBeatIndex = (()=>{
+                const t = parseInt( meanPart._currentBeatIndex / (meanPart.measure * meanPart._beatsInMeasure), 10)
+                return meanPart._currentBeatIndex - t * (meanPart.measure * meanPart._beatsInMeasure)
+            })()
             this._nextBeatTime = meanPart._nextBeatTime
-            this._lap = meanPart._lap
         }
     }
 
