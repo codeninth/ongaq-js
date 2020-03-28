@@ -127,7 +127,6 @@ class Part {
             collect soundtrees for notepoints which come in certain range
             */
         while (this.active && this._nextBeatTime < secondToPrefetch){
-
             let element = !this.mute && this._generator( ctx )
             if(element){
                 collected = collected || []
@@ -141,8 +140,8 @@ class Part {
                 this._currentBeatIndex = 0
                 this._lap++
                 typeof this.willMakeLap === "function" && this.willMakeLap({
-                    nextLap: this._lap,
-                    meanTime: this._nextBeatTime
+                  nextLap: this._lap,
+                  meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
                     if (this.repeat) this.resetLap()
@@ -154,8 +153,27 @@ class Part {
             }
 
         }
+
+        /*
+            if there is a request from other part for it to sync to this Part,
+            execute it here
+        */
+        if(typeof this._syncRequest === "function"){
+            this._syncRequest()
+            this._syncRequest = null
+        }
+
         return collected
 
+    }
+
+    syncTo(meanPart){
+        if(meanPart instanceof Part === false) return false
+        meanPart._syncRequest = ()=>{
+            this._currentBeatIndex = meanPart._currentBeatIndex
+            this._nextBeatTime = meanPart._nextBeatTime
+            this._lap = meanPart._lap
+        }
     }
 
     changeSound({ sound }){
