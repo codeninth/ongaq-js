@@ -2,18 +2,17 @@ import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
 import isActive from "../../module/isActive"
+import PanPool from "../../module/pool.pan"
+import PanFunctionPool from "../../module/pool.panfunction"
 import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 const MY_PRIORITY = PRIORITY.pan
-
-const pannerPool = new Map()
-const functionPool = new Map()
 
 const generate = (x, context) => {
 
     return MappedFunction => {
         if (MappedFunction.terminal.length === 0) return MappedFunction
-        if (!pannerPool.get(x)) pannerPool.set(x, make("panner", { x }, context))
-        const newNode = pannerPool.get(x)
+        if (!PanPool.get(x)) PanPool.set(x, make("panner", { x }, context))
+        const newNode = PanPool.get(x)
 
         MappedFunction.terminal.push([newNode])
 
@@ -46,16 +45,16 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
     if (!x) return false
 
     if (!(context instanceof AudioContext)) {
-        if (functionPool.get(`offline_${x}`)) return functionPool.get(`offline_${x}`)
+        if (PanFunctionPool.get(`offline_${x}`)) return PanFunctionPool.get(`offline_${x}`)
         else {
-            functionPool.set(`offline_${x}`, generate(x, context))
-            return functionPool.get(`offline_${x}`)
+            PanFunctionPool.set(`offline_${x}`, generate(x, context))
+            return PanFunctionPool.get(`offline_${x}`)
         }
     } else {
-        if (functionPool.get(x)) return functionPool.get(x)
+        if (PanFunctionPool.get(x)) return PanFunctionPool.get(x)
         else {
-            functionPool.set(x, generate(x, context))
-            return functionPool.get(x)
+            PanFunctionPool.set(x, generate(x, context))
+            return PanFunctionPool.get(x)
         }
     }
 

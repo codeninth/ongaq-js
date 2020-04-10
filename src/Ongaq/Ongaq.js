@@ -4,6 +4,10 @@ import Helper from "./module/Helper"
 import DEFAULTS from "./module/defaults"
 import ElementPool from "./module/pool.element"
 import GainPool from "./module/pool.gain"
+import PanPool from "./module/pool.pan"
+import PanFunctionPool from "./module/pool.panfunction"
+import DelayPool from "./module/pool.delay"
+import DelayFunctionPool from "./module/pool.delayfunction"
 import DRUM_NOTE from "../Constants/DRUM_NOTE"
 import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
@@ -80,47 +84,52 @@ class Ongaq {
         else if (!window.OfflineAudioContext) throw "OfflineAudioContext is not supported"
         if (this.isPlaying || this.parts.size === 0) return false
 
-        this.isRecording = true
-        GainPool.flush()
-        ElementPool.flush()
-
-        // ====== calculate the seconds of beats beforehand
-        const secondSamples = []
-        this.parts.forEach(p => {
-            p._reset()
-            p._putTimerRight(0)
-            const _maxLap = (typeof o.maxLap === "number" && o.maxLap > 0) ? o.maxLap : p.maxLap
-            secondSamples.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
-        })
-        const seconds = (() => {
-            if (typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
-            else if (Math.max(secondSamples) < 1) return 1
-            else if (Math.max(secondSamples) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(secondSamples)
-            else return DEFAULTS.WAV_MAX_SECONDS
-        })()
-        const offlineContext = AudioCore.createOfflineContext({ seconds })
-        // =======
-        const commonGain = this._getCommonGain(offlineContext)
-
-        this._routine(
-            offlineContext,
-            elem => {
-                if (elem.terminal.length > 0) {
-                    elem.terminal[elem.terminal.length - 1].forEach(t => {
-                        t && t.connect && t.connect(commonGain)
-                    })
-                }
-                elem.initialize()
-                ElementPool.retrieve(elem)
-            }
-        )
-
         return new Promise(async(resolve, reject) => {
             try {
+
+                this.isRecording = true
+                GainPool.flush()
+                ElementPool.flush()
+                PanPool.flush()
+                PanFunctionPool.flush()
+                DelayPool.flush()
+                DelayFunctionPool.flush()
+                // ====== calculate the seconds of beats beforehand
+                const secondSamples = []
+                this.parts.forEach(p => {
+                  p._reset()
+                  p._putTimerRight(0)
+                  const _maxLap = (typeof o.maxLap === "number" && o.maxLap > 0) ? o.maxLap : p.maxLap
+                  secondSamples.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
+                })
+                const seconds = (() => {
+                  if (typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
+                  else if (Math.max(secondSamples) < 1) return 1
+                  else if (Math.max(secondSamples) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(secondSamples)
+                  else return DEFAULTS.WAV_MAX_SECONDS
+                })()
+                const offlineContext = AudioCore.createOfflineContext({ seconds })
+                // =======
+                const commonGain = this._getCommonGain(offlineContext)
+
+                this._routine(
+                  offlineContext,
+                  elem => {
+                    if (elem.terminal.length > 0) {
+                      elem.terminal[elem.terminal.length - 1].forEach(t => {
+                        t && t.connect && t.connect(commonGain)
+                      })
+                    }
+                    elem.initialize()
+                    ElementPool.retrieve(elem)
+                  }
+                )
+
                 const buffer = await offlineContext.startRendering()
                 this.isRecording = false
                 resolve(buffer)
             } catch (e) {
+                this.isRecording = false
                 reject(e)
             }
         })
