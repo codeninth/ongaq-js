@@ -70,7 +70,7 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
         MappedFunction.terminal[0].push(...newNodes)
         MappedFunction.priority = MY_PRIORITY
         MappedFunction.footprints = MappedFunction.footprints || {}
-        MappedFunction.footprints._noteLength = length * _targetBeat.secondsPerBeat
+        MappedFunction.footprints._noteLength = (!Array.isArray(length) ? length : (typeof length[0] === "number" ? length[0] : DEFAULT_NOTE_LENGTH)) * _targetBeat.secondsPerBeat
         MappedFunction.footprints._beatTime = _targetBeat.beatTime
         return MappedFunction
 
