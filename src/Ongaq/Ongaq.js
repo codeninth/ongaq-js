@@ -13,6 +13,14 @@ import ROOT from "../Constants/ROOT"
 import SCHEME from "../Constants/SCHEME"
 import VERSION from "../Constants/VERSION"
 
+const flushAll = ()=>{
+    GainPool.flush()
+    ElementPool.flush()
+    PanPool.flush()
+    PanFunctionPool.flush()
+    DelayPool.flush()
+    DelayFunctionPool.flush()
+}
 class Ongaq {
 
     constructor(o) {
@@ -88,12 +96,7 @@ class Ongaq {
             try {
 
                 this.isRecording = true
-                GainPool.flush()
-                ElementPool.flush()
-                PanPool.flush()
-                PanFunctionPool.flush()
-                DelayPool.flush()
-                DelayFunctionPool.flush()
+                flushAll()
                 // ====== calculate the seconds of beats beforehand
                 const secondSamples = []
                 this.parts.forEach(p => {
@@ -131,6 +134,8 @@ class Ongaq {
             } catch (e) {
                 this.isRecording = false
                 reject(e)
+            } finally {
+                flushAll()
             }
         })
     }
