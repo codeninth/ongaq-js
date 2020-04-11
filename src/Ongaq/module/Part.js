@@ -109,7 +109,7 @@ class Part {
         /*
             keep _nextBeatTime being always behind secondToPrefetch
         */
-        let secondToPrefetch = ctx.currentTime + DEFAULTS.PREFETCH_SECOND + (ctx instanceof AudioContext ? 0 : 30)
+        let secondToPrefetch = ctx.currentTime + DEFAULTS.PREFETCH_SECOND + (ctx instanceof AudioContext ? 0 : DEFAULTS.WAV_MAX_SECONDS)
         while (
             this._nextBeatTime - secondToPrefetch > 0 &&
             this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
