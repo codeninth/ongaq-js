@@ -12,6 +12,7 @@ const generate = (step, range, secondsPerBeat, ctx) => {
     return MappedFunction => {
 
         if (
+            ctx instanceof OfflineAudioContext ||
             MappedFunction.terminal.length === 0 ||
             MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length === 0
         ) return MappedFunction
