@@ -13,6 +13,7 @@ class Part {
         this.bpm = props.bpm // bpm is set through ongaq.add
         this.measure = (typeof props.measure === "number" && props.measure >= 0) ? props.measure : DEFAULTS.MEASURE
 
+        this.onLoaded = props && typeof props.onLoaded === "function" && props.onLoaded
         this.willMakeLap = props && typeof props.willMakeLap === "function" && props.willMakeLap
         /*
             maxLap:
@@ -78,14 +79,14 @@ class Part {
 
             let hasNote = false
             let mapped = []
-            this.filters.forEach((_filter)=>{
+            this.filters.forEach(({ type, params })=>{
                 if(
-                    !Object.hasOwnProperty.call(filterMapper, _filter.type) ||
-                    ( _filter.type !== "note" && !hasNote )
+                    !Object.hasOwnProperty.call(filterMapper, type) ||
+                    ( (type !== "note" && type !== "notelist") && !hasNote )
                 ){ return false }
-                const mappedFunction = filterMapper[_filter.type](_filter.params, this._targetBeat, context )
+                const mappedFunction = filterMapper[type](params, this._targetBeat, context )
                 if (mappedFunction){
-                    if (_filter.type === "note") hasNote = true
+                    if (type === "note" || type === "notelist") hasNote = true
                     mapped.push( mappedFunction )
                 }
             })
@@ -108,7 +109,7 @@ class Part {
         /*
             keep _nextBeatTime being always behind secondToPrefetch
         */
-        let secondToPrefetch = ctx.currentTime + DEFAULTS.PREFETCH_SECOND + (ctx instanceof AudioContext ? 0 : 30)
+        let secondToPrefetch = ctx.currentTime + DEFAULTS.PREFETCH_SECOND + (ctx instanceof AudioContext ? 0 : DEFAULTS.WAV_MAX_SECONDS)
         while (
             this._nextBeatTime - secondToPrefetch > 0 &&
             this._nextBeatTime - secondToPrefetch < DEFAULTS.PREFETCH_SECOND
@@ -126,7 +127,6 @@ class Part {
             collect soundtrees for notepoints which come in certain range
             */
         while (this.active && this._nextBeatTime < secondToPrefetch){
-
             let element = !this.mute && this._generator( ctx )
             if(element){
                 collected = collected || []
@@ -140,8 +140,8 @@ class Part {
                 this._currentBeatIndex = 0
                 this._lap++
                 typeof this.willMakeLap === "function" && this.willMakeLap({
-                    nextLap: this._lap,
-                    meanTime: this._nextBeatTime
+                  nextLap: this._lap,
+                  meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
                     if (this.repeat) this.resetLap()
@@ -153,8 +153,41 @@ class Part {
             }
 
         }
+
+        /*
+            if there is a request from other part for it to sync to this Part,
+            execute it here
+        */
+        if(typeof this._syncRequest === "function"){
+            this._syncRequest()
+            this._syncRequest = null
+        }
+
         return collected
 
+    }
+
+    syncTo(meanPart){
+        if(meanPart instanceof Part === false) return false
+        meanPart._syncRequest = ()=>{
+            this._currentBeatIndex = (()=>{
+                const t = parseInt( meanPart._currentBeatIndex / (meanPart.measure * meanPart._beatsInMeasure), 10)
+                return meanPart._currentBeatIndex - t * (meanPart.measure * meanPart._beatsInMeasure)
+            })()
+            this._nextBeatTime = meanPart._nextBeatTime
+        }
+    }
+
+    changeSound({ sound }){
+        return new Promise( async (resolve,reject)=>{
+            try {
+                await BufferYard.import({ sound })
+                this.sound = sound
+                resolve()
+            } catch(e){
+                reject(e)
+            }
+        })
     }
 
     detach(field) {
@@ -176,9 +209,10 @@ class Part {
         this._isLoading = true
         return new Promise( async (resolve,reject)=>{
             try {
-                await BufferYard.import(this.sound)
+                await BufferYard.import({ sound: this.sound })
                 this._isLoading = false
                 this.active = this.default.active
+                this.onLoaded && this.onLoaded()
                 resolve()
             } catch(e) {
                 this._isLoading = false
@@ -236,11 +270,11 @@ class Part {
     get mute() { return this._mute }
 
     _shutdown(){
-      if(!this.active) return false
-      this._meanTime = 0
-      this._endTime = 0
-      this._nextBeatTime = 0
-      this.active = false
+        if(!this.active) return false
+        this._meanTime = 0
+        this._endTime = 0
+        this._nextBeatTime = 0
+        this.active = false
     }
 
     _putTimerRight(_meanTime){

@@ -1,19 +1,18 @@
-import AudioCore from "../../module/AudioCore"
 import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
 import isActive from "../../module/isActive"
+import DelayPool from "../../module/pool.delay"
+import DelayFunctionPool from "../../module/pool.delayfunction"
 import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
-
-const delayPool = new Map()
-const functionPool = new Map()
 
 const generate = (step, range, secondsPerBeat, ctx) => {
 
     return MappedFunction => {
 
         if (
+            ctx instanceof OfflineAudioContext ||
             MappedFunction.terminal.length === 0 ||
             MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length === 0
         ) return MappedFunction
@@ -22,11 +21,11 @@ const generate = (step, range, secondsPerBeat, ctx) => {
         for (let i = 0, max = MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length, delayTime; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
             if (ctx instanceof AudioContext){
-                if (!delayPool.get(delayTime)) delayPool.set(delayTime, make("delay", { delayTime }, ctx))
-                newNodes.push(delayPool.get(delayTime))
+                if (!DelayPool.get(delayTime)) DelayPool.set(delayTime, make("delay", { delayTime }, ctx))
+                newNodes.push(DelayPool.get(delayTime))
             } else {
-                if (!delayPool.get(`offline_${delayTime}`)) delayPool.set(`offline_${delayTime}`, make("delay", { delayTime }, ctx))
-                newNodes.push(delayPool.get(`offline_${delayTime}`))
+                if (!DelayPool.get(`offline_${delayTime}`)) DelayPool.set(`offline_${delayTime}`, make("delay", { delayTime }, ctx))
+                newNodes.push(DelayPool.get(`offline_${delayTime}`))
             }
         }
 
@@ -73,10 +72,10 @@ const mapper = (o = {}, _targetBeat = {}, ctx ) => {
     })
 
     const cacheKey = ctx instanceof AudioContext ? `${step}_${range}_${_targetBeat.secondsPerBeat}` : `offline_${step}_${range}_${_targetBeat.secondsPerBeat}`
-    if (functionPool.get(cacheKey)) return functionPool.get(cacheKey)
+    if (DelayFunctionPool.get(cacheKey)) return DelayFunctionPool.get(cacheKey)
     else {
-        functionPool.set(cacheKey, generate(step, range, _targetBeat.secondsPerBeat, ctx))
-        return functionPool.get(cacheKey)
+        DelayFunctionPool.set(cacheKey, generate(step, range, _targetBeat.secondsPerBeat, ctx))
+        return DelayFunctionPool.get(cacheKey)
     }
 
 }

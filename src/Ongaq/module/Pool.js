@@ -1,5 +1,3 @@
-import AudioCore from "./AudioCore"
-
 class Pool {
 
     constructor(o) {
