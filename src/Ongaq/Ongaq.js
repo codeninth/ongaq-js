@@ -111,7 +111,8 @@ class Ongaq {
                   else if (Math.max(secondSamples) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(secondSamples)
                   else return DEFAULTS.WAV_MAX_SECONDS
                 })()
-                const offlineContext = AudioCore.createOfflineContext({ seconds })
+                const margin = typeof o.margin === "number" && o.margin >= 1 ? o.margin : 0
+                const offlineContext = AudioCore.createOfflineContext({ seconds: seconds + margin < DEFAULTS.WAV_MAX_SECONDS ? seconds + margin : DEFAULTS.WAV_MAX_SECONDS })
                 // =======
                 const commonGain = this._getCommonGain(offlineContext)
 
