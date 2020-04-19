@@ -91,13 +91,14 @@ class Ongaq {
         if (!o.key || !o.sound) return false
         try {
           const keys = Array.isArray(o.key) ? o.key : [o.key]
+          const step = o.step > 0 ? o.step : 0
           const ab = keys.map((key,i)=>{
             return make("audiobuffer", {
                 buffer: {
                     sound: o.sound,
                     length: 1.5,
                     key,
-                    startTime: (AudioCore.context.currentTime + 0.1) + i * 0.4
+                    startTime: (AudioCore.context.currentTime + 0.1) + i * step
                 },
                 volume: 1
             }, AudioCore.context)
