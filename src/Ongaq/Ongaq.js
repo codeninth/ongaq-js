@@ -5,6 +5,7 @@ import DEFAULTS from "./module/defaults"
 import ElementPool from "./module/pool.element"
 import GainPool from "./module/pool.gain"
 import PanPool from "./module/pool.pan"
+import make from "./module/make"
 import PanFunctionPool from "./module/pool.panfunction"
 import DelayPool from "./module/pool.delay"
 import DelayFunctionPool from "./module/pool.delayfunction"
@@ -84,6 +85,28 @@ class Ongaq {
             )
         }, AudioCore.powerMode === "middle" ? 50 : 200)
         return false
+    }
+
+    test(o = {}){
+        if (!o.key || !o.sound) return false
+        try {
+          const keys = Array.isArray(o.key) ? o.key : [o.key]
+          const ab = keys.map((key,i)=>{
+            return make("audiobuffer", {
+                buffer: {
+                    sound: o.sound,
+                    length: 1.5,
+                    key,
+                    startTime: (AudioCore.context.currentTime + 0.1) + i * 0.4
+                },
+                volume: 1
+            }, AudioCore.context)
+          }).filter(_=>_)
+          const g = this._getCommonGain(AudioCore.context)
+          ab.map(_=>_.connect(g))
+        } catch (e) {
+            return false
+        }
     }
 
     record(o = {}) {
