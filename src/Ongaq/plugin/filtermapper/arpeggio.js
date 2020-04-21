@@ -20,7 +20,7 @@ const generate = (step, range, secondsPerBeat, ctx) => {
         let newNodes = []
         for (let i = 0, max = MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length, delayTime; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
-            if (ctx instanceof AudioContext){
+            if (ctx instanceof (window.AudioContext || window.webkitAudioContext)){
                 if (!DelayPool.get(delayTime)) DelayPool.set(delayTime, make("delay", { delayTime }, ctx))
                 newNodes.push(DelayPool.get(delayTime))
             } else {
@@ -71,7 +71,7 @@ const mapper = (o = {}, _targetBeat = {}, ctx ) => {
         default: 3
     })
 
-    const cacheKey = ctx instanceof AudioContext ? `${step}_${range}_${_targetBeat.secondsPerBeat}` : `offline_${step}_${range}_${_targetBeat.secondsPerBeat}`
+    const cacheKey = ctx instanceof (window.AudioContext || window.webkitAudioContext) ? `${step}_${range}_${_targetBeat.secondsPerBeat}` : `offline_${step}_${range}_${_targetBeat.secondsPerBeat}`
     if (DelayFunctionPool.get(cacheKey)) return DelayFunctionPool.get(cacheKey)
     else {
         DelayFunctionPool.set(cacheKey, generate(step, range, _targetBeat.secondsPerBeat, ctx))

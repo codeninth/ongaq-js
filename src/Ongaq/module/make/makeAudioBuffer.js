@@ -46,7 +46,7 @@ const retrieve = ctx => {
 
 const makeAudioBuffer = ({ buffer, volume }, ctx) => {
 
-    if (ctx instanceof AudioContext) retrieve(ctx)
+    if (ctx instanceof (window.AudioContext || window.webkitAudioContext)) retrieve(ctx)
     let audioBuffer = BufferYard.ship(buffer)
     if (!audioBuffer) return false
 
@@ -64,7 +64,7 @@ const makeAudioBuffer = ({ buffer, volume }, ctx) => {
     s.connect(g)
     s.start(buffer.startTime)
 
-    if (!(ctx instanceof AudioContext)) return g
+    if (!(ctx instanceof (window.AudioContext || window.webkitAudioContext))) return g
 
     // when normal audioContext, cache node to disconnect after used
     for (let i = 0, l = periods.length; i < l; i++) {
