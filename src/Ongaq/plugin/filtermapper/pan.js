@@ -44,7 +44,7 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
     })
     if (!x) return false
 
-    if (!(context instanceof AudioContext)) {
+    if (!(context instanceof (window.AudioContext || window.webkitAudioContext))) {
         if (PanFunctionPool.get(`offline_${x}`)) return PanFunctionPool.get(`offline_${x}`)
         else {
             PanFunctionPool.set(`offline_${x}`, generate(x, context))
