@@ -40,13 +40,20 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
     })
     if (!length) return false
 
+    const _volume_number = v=>{
+      if(v > 0 && v < 100) return v / 100
+      else if(v === 0) return -1
+      else if(v === 100) return 0.999
+      else return null
+    }
     let volume = inspect(o.volume, {
             _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
-            number: v => (v >= 0 && v <= 100) ? v / 100 : null,
+            number: _volume_number,
             string: () => false,
             object: () => false,
             array: () => false
         })
+    if(volume === -1) return false // to prevent noise when 0 assigned
         /*
               必ず自身と同じ構造のオブジェクトを返す関数を返す
               =====================================================================
