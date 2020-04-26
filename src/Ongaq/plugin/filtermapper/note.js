@@ -2,8 +2,9 @@ import make from "../../module/make"
 import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 import inspect from "../../module/inspect"
 import isActive from "../../module/isActive"
+import isDrumNoteName from "../../module/isDrumNoteName"
 const MY_PRIORITY = PRIORITY.note
-const DEFAULT_NOTE_LENGTH = 4
+const DEFAULT_NOTE_LENGTH = [4,32]
 
 /*
   o: {
@@ -65,7 +66,11 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
             return make("audiobuffer", {
                 buffer: {
                     sound: _targetBeat.sound,
-                    length: (!Array.isArray(length) ? length : (typeof length[i] === "number" ? length[i] : DEFAULT_NOTE_LENGTH)) * _targetBeat.secondsPerBeat,
+                    length: (!Array.isArray(length) ?
+                      length :
+                      (typeof length[i] === "number" ?
+                        length[i]: (isDrumNoteName(k) ? DEFAULT_NOTE_LENGTH[1] : DEFAULT_NOTE_LENGTH[0]))
+                      ) * _targetBeat.secondsPerBeat,
                     key: k,
                     startTime: _targetBeat.beatTime
                 },
