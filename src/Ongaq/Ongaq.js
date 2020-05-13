@@ -321,13 +321,6 @@ class Ongaq {
     }
 
     /*
-      @_stealSound
-    */
-    _stealSound({ sound }) {
-        return BufferYard.ship({ sound })
-    }
-
-    /*
       @_routine
       - 各partに対してobserveを行う
       */
