@@ -67,6 +67,13 @@ class Ongaq {
     }
 
     /*
+      @prepare
+    */
+    prepare({ sound }) {
+      return BufferYard.import({ sound })
+    }
+
+    /*
       @start
       - 一定の間隔で collect を実行していく
       */
@@ -87,7 +94,7 @@ class Ongaq {
         return false
     }
 
-    test(o = {}){
+    sound(o = {}){
         if (!o.key || !o.sound) return false
         try {
           const keys = Array.isArray(o.key) ? o.key : [o.key]
@@ -96,7 +103,7 @@ class Ongaq {
             return make("audiobuffer", {
                 buffer: {
                     sound: o.sound,
-                    length: 1.5,
+                    length: o.second > 0 ? o.second : 1.5,
                     key,
                     startTime: (AudioCore.context.currentTime + 0.1) + i * step
                 },
@@ -109,6 +116,10 @@ class Ongaq {
             return false
         }
     }
+
+    test(o){
+        return this.sound(o)
+    }    
 
     record(o = {}) {
         if (this.isPlaying) throw "cannot start recording while playing sounds"
@@ -317,7 +328,7 @@ class Ongaq {
       @_preloadSound
     */
     _preloadSound({ sound }) {
-        return BufferYard.import({ sound })
+        return this.prepare({ sound })
     }
 
     /*
