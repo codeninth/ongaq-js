@@ -117,10 +117,6 @@ class Ongaq {
         }
     }
 
-    test(o){
-        return this.sound(o)
-    }    
-
     record(o = {}) {
         if (this.isPlaying) throw "cannot start recording while playing sounds"
         else if (this.isRecording) throw "cannot start recording while other recording process ongoing"
@@ -322,13 +318,6 @@ class Ongaq {
         elem.initialize()
         ElementPool.retrieve(elem)
         return false
-    }
-
-    /*
-      @_preloadSound
-    */
-    _preloadSound({ sound }) {
-        return this.prepare({ sound })
     }
 
     /*
