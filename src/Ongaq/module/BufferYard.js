@@ -31,7 +31,9 @@ class BufferYard {
             const map = cacheToMap(Cacher.get("soundNameMap"))
             // replace instrument id with its type
             map.forEach(dict=>{
-                dict.type = dict.id >= 20000 ? "percussive" : "scalable"
+                if (dict.id < 20000) dict.type = "scalable"
+                else if (dict.id < 30000) dict.type = "percussive"
+                else dict.type = "scalable"
                 delete dict.id
             }) 
             return map
@@ -142,6 +144,7 @@ class BufferYard {
 
         if (soundID < 20000) key = toPianoNoteName(key)
         else if (soundID < 30000) key = toDrumNoteName(key)
+        else if (soundID < 60000) key = toPianoNoteName(key)
 
         if (Array.isArray(key)) {
             return key.map(k => buffers.get(sound).get(k)).filter(b => b)
