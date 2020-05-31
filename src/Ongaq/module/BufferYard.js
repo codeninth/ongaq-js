@@ -31,7 +31,9 @@ class BufferYard {
             const map = cacheToMap(Cacher.get("soundNameMap"))
             // replace instrument id with its type
             map.forEach(dict=>{
-                dict.type = dict.id >= 20000 ? "percussive" : "scalable"
+                if (dict.id < 20000) dict.type = "scalable"
+                else if (dict.id < 30000) dict.type = "percussive"
+                else dict.type = "scalable"
                 delete dict.id
             }) 
             return map

@@ -3,8 +3,10 @@ import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 import inspect from "../../module/inspect"
 import isActive from "../../module/isActive"
 import isDrumNoteName from "../../module/isDrumNoteName"
+import BufferYard from "../../module/BufferYard"
+
 const MY_PRIORITY = PRIORITY.note
-const DEFAULT_NOTE_LENGTH = [4,32]
+const DEFAULT_NOTE_LENGTH = [4,32,64]
 
 /*
   o: {
@@ -37,7 +39,13 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
         _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
         number: v => v,
         array: v => v,
-        default: DEFAULT_NOTE_LENGTH
+        default: (()=>{
+          const m = BufferYard.getSoundNameMap().get(_targetBeat.sound)
+          if(!m) return 0
+          else if (m.tag.includes("riff")) return DEFAULT_NOTE_LENGTH[2]
+          else if (m.type === "percussive") return DEFAULT_NOTE_LENGTH[1]
+          else return DEFAULT_NOTE_LENGTH[0]
+        })()
     })
     if (!length) return false
 
