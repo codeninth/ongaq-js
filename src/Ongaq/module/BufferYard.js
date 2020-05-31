@@ -142,6 +142,7 @@ class BufferYard {
 
         if (soundID < 20000) key = toPianoNoteName(key)
         else if (soundID < 30000) key = toDrumNoteName(key)
+        else if (soundID < 60000) key = toPianoNoteName(key)
 
         if (Array.isArray(key)) {
             return key.map(k => buffers.get(sound).get(k)).filter(b => b)
