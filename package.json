@@ -30,5 +30,13 @@
   "dependencies": {
     "serialize-javascript": "^2.1.2",
     "set-value": "^3.0.1"
+  },
+  "prettier": {
+    "endOfLine": "lf",
+    "arrowParens": "always",
+    "bracketSpacing": true,
+    "printWidth": 170,
+    "singleQuote": true,
+    "trailingComma": "es5"
   }
 }
