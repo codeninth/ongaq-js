@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Ongaq JS Sample</title>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #f9f8e9;
+        background-image: url('./wall.png');
+      }
+      main {
+        position: absolute;
+        top: 200px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+        width: 400px;
+        height: 150px;
+        display: flex;
+        justify-content: center;
+        flex-flow: column;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 3px;
+        box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: bold;
+        color: #31494e;
+        margin-top: 0;
+      }
+      ul {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      li .button {
+        display: block;
+        text-decoration: none;
+        color: #33634f;
+        background-color: #aeefc4;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        padding: 10px 20px;
+        font-size: 20px;
+        border-radius: 4px;
+      }
+      li .button:not(.start):not(.pause) {
+        background-color: #eee;
+        cursor: default;
+        transition: none;
+      }
+      .button:before {
+        display: inline;
+        text-transform: capitalize;
+      }
+      .button.start:before {
+        content: 'start';
+      }
+      .button.pause:before {
+        content: 'pause';
+      }
+      .button:not(.start):not(.pause):before {
+        content: '...loading';
+      }
+      .button.start:hover,
+      .button.pause:hover {
+        opacity: 0.7;
+      }
+      footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 50px;
+        text-align: center;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        padding-top: 10px;
+      }
+      footer a {
+        color: #22b4d6;
+      }
+      p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Ongaq JS Sample</h1>
+      <ul>
+        <li><a id="button" class="button" href="javascript:;"></a></li>
+      </ul>
+    </main>
+    <footer>
+      <p>[ Ongaq JS Tutrial ]</p>
+      <p><a href="https://www.ongaqjs.com/tutorial/">https://www.ongaqjs.com/tutorial/</a></p>
+    </footer>
+    <!-- include ongaq.js before your original script -->
+    <script src="../build/ongaq.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
