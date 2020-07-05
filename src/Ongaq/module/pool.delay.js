@@ -1,4 +1,14 @@
-import DictPool from "./DictPool"
-const pool = new DictPool()
+let pool = [ [], [], [], [] ]
 
-export default pool
+export default {
+    pool,
+    flush: ()=>{
+        pool.forEach(list=>{
+            list.forEach((usedDelay,_)=>{
+                usedDelay.disconnect()
+                list[_] = null
+            })
+        })
+        pool = [ [], [], [], [] ]
+    }
+}

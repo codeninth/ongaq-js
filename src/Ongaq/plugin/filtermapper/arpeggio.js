@@ -2,7 +2,6 @@ import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
 import isActive from "../../module/isActive"
-import DelayPool from "../../module/pool.delay"
 import DelayFunctionPool from "../../module/pool.delayfunction"
 import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
