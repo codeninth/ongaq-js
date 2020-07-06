@@ -1,10 +1,9 @@
-import AudioCore from "../AudioCore"
 import DelayPool from "../pool.delay"
 let pool = DelayPool.pool
+let periods = DelayPool.periods
 
 const RETRIEVE_INTERVAL = 4
 const PADDING = 30
-let periods = [1,2,3,4].map(n => n * RETRIEVE_INTERVAL + AudioCore.context.currentTime)
 
 const makeDelay = ({ delayTime, end }, ctx )=>{
 
@@ -15,7 +14,7 @@ const makeDelay = ({ delayTime, end }, ctx )=>{
     } else if (periods[0] + PADDING < end) {
         // to free old delayNodes
         pool[0].forEach((usedDelay,_) => {
-            usedDelay.disconnect()
+            usedDelay && usedDelay.disconnect()
             pool[0][_] = null
         })
         periods = periods.slice(1)
