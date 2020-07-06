@@ -2,7 +2,6 @@ import Helper from "../../module/Helper"
 import make from "../../module/make"
 import inspect from "../../module/inspect"
 import isActive from "../../module/isActive"
-import DelayPool from "../../module/pool.delay"
 import DelayFunctionPool from "../../module/pool.delayfunction"
 import PRIORITY from "../../plugin/filtermapper/PRIORITY"
 const MY_PRIORITY = PRIORITY.arpeggio
@@ -18,14 +17,12 @@ const generate = (step, range, secondsPerBeat, ctx) => {
         ) return MappedFunction
 
         let newNodes = []
-        for (let i = 0, max = MappedFunction.terminal[ MappedFunction.terminal.length - 1 ].length, delayTime; i < max; i++) {
+        for (let i = 0, max = MappedFunction.terminal[MappedFunction.terminal.length - 1].length, delayTime, end = MappedFunction.footprints._beatTime + MappedFunction.footprints._noteLength; i < max; i++) {
             delayTime = secondsPerBeat * (i <= range ? i : range) * step
             if (ctx instanceof (window.AudioContext || window.webkitAudioContext)){
-                if (!DelayPool.get(delayTime)) DelayPool.set(delayTime, make("delay", { delayTime }, ctx))
-                newNodes.push(DelayPool.get(delayTime))
+                newNodes.push(make("delay", { delayTime, end }, ctx))
             } else {
-                if (!DelayPool.get(`offline_${delayTime}`)) DelayPool.set(`offline_${delayTime}`, make("delay", { delayTime }, ctx))
-                newNodes.push(DelayPool.get(`offline_${delayTime}`))
+                newNodes.push(make("delay", { delayTime, end }, ctx))
             }
         }
 
