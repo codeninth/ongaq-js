@@ -13,22 +13,13 @@ const makeDelay = ({ delayTime, end }, ctx )=>{
 
     } else if (periods[0] + PADDING < end) {
         // to free old delayNodes
-        pool[0].forEach((usedDelay,_) => {
-            usedDelay && usedDelay.disconnect()
-            pool[0][_] = null
+        pool[0].forEach((usedDelay) => {
+            DelayPool.retrieve(usedDelay)
         })
         periods = periods.slice(1)
         pool = pool.slice(1)
     }
-
-    let d = ctx.createDelay()
-    d.delayTime.value = delayTime
-    for(let i = 0, l = periods.length, done = false; i<l; i++){
-        if(periods[i] > end && !done){
-            pool[i].push(d), done = true
-        }
-    }
-    return d
+    return DelayPool.allocate({ delayTime, end },ctx)
 }
 
 export default makeDelay
