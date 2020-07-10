@@ -272,7 +272,7 @@ class Ongaq {
         this._nextZeroTime = 0
         this.bpm = bpm || DEFAULTS.BPM
         if (AudioCore.powerMode === "low") {
-            window.addEventListener("blur", () => { this.pauseScheduling() })
+            window.addEventListener("blur", () => { this.pause() })
         }
         this.onReady = typeof onReady === "function" && onReady
         this.onError = typeof onError === "function" && onError
