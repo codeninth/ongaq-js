@@ -18,17 +18,17 @@
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
-    "eslint": "^5.15.3",
+    "eslint": "^5.16.0",
     "hard-source-webpack-plugin": "^0.13.1",
-    "karma": "^4.0.1",
+    "karma": "^4.4.1",
     "karma-jasmine": "^2.0.1",
     "superagent": "^3.8.2",
     "superagent-no-cache": "^0.1.1",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.1"
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {
     "serialize-javascript": "^3.1.0",
-    "set-value": "^3.0.1"
+    "set-value": "^3.0.2"
   }
 }
