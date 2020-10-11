@@ -129,21 +129,16 @@ class Ongaq {
                 this.isRecording = true
                 flushAll()
                 // ====== calculate the seconds of beats beforehand
-                const secondSamples = []
                 this.parts.forEach(p => {
                   p._reset()
                   p._putTimerRight(0)
-                  const _maxLap = (typeof o.maxLap === "number" && o.maxLap > 0) ? o.maxLap : p.maxLap
-                  secondSamples.push(_maxLap * p.measure * p._beatsInMeasure * p._secondsPerBeat)
                 })
                 const seconds = (() => {
                   if (typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
-                  else if (Math.max(secondSamples) < 1) return 1
-                  else if (Math.max(secondSamples) < DEFAULTS.WAV_MAX_SECONDS) return Math.max(secondSamples)
+                  else if (typeof o.seconds === "number" && o.seconds < 1) return 1
                   else return DEFAULTS.WAV_MAX_SECONDS
                 })()
-                const margin = typeof o.margin === "number" && o.margin >= 1 ? o.margin : 0
-                const offlineContext = AudioCore.createOfflineContext({ seconds: seconds + margin < DEFAULTS.WAV_MAX_SECONDS ? seconds + margin : DEFAULTS.WAV_MAX_SECONDS })
+                const offlineContext = AudioCore.createOfflineContext({ seconds: seconds })
                 // =======
                 const commonGain = this._getCommonGain(offlineContext)
 
