@@ -2,22 +2,25 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/python:3.6-jessie
+      - image: circleci/python:3.6-jessie
     working_directory: ~/build
-    environment:
-      - AWS_S3_BUCKET_NAME: asset.ongaqjs.com
-      - CF_DIST_ID: E2Q2YOYAC5KTPH
     steps:
       - checkout
-      - run: sudo pip install awscli
       - run:
-          name: Deploy to S3 if branch is master.
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              aws s3 sync build s3://${AWS_S3_BUCKET_NAME}/ --exact-timestamps --delete
-            fi
+          name: install awscli
+          command: sudo pip install awscli
       - run:
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              aws cloudfront create-invalidation --distribution-id $CF_DIST_ID --paths "/*"
-            fi
+          name: deploy to S3
+          command: aws s3 sync build s3://${ONGAQJS_ASSET__S3}/ --acl public-read --delete
+      - run:
+          name: purge cache
+          command: aws cloudfront create-invalidation --distribution-id ${ONGAQJS_ASSET__CLOUDFRONT} --paths "/*"
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          context: settings
+          filters:
+            branches:
+              only: master
