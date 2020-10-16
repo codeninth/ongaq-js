@@ -40,25 +40,33 @@ const AudioCore = {
     originTime,
     powerMode,
     SUPPRESSION: 0.5, // To avoid noise, suppress volume with this value
-    toAudioBuffer: ({ src, length }) => {
+    toAudioBuffer: ({ src, length, arrayBuffer }) => {
+        if (
+            (!arrayBuffer && (!src || !length)) ||
+            arrayBuffer && arrayBuffer instanceof ArrayBuffer === false
+        ){
+            return false
+        }
 
-        if (!src || !length) return false
-        return new Promise((resolve, reject) => {
+        return new Promise( async (resolve, reject) => {
             try {
-                let buffer = new ArrayBuffer(length)
-                let bufView = new Uint8Array(buffer)
-                for (let i = 0; i < length; i++) bufView[i] = src.charCodeAt(i)
-                context.decodeAudioData(
-                    buffer,
-                    buffer => buffer ? resolve(buffer) : reject(),
-                    reject
-                )
+                let buffer
+                if(!arrayBuffer){
+                    buffer = new ArrayBuffer(length)
+                    let bufView = new Uint8Array(buffer)
+                    for (let i = 0; i < length; i++) bufView[i] = src.charCodeAt(i)
+                } else {
+                    buffer = arrayBuffer
+                }
+                const result = await context.decodeAudioData(buffer)
+                return resolve(result)
             } catch (err) {
                 return reject(err)
             }
         })
 
     },
+    
     createOfflineContext: ({ seconds }) => {
         return _setListener(
             new OfflineAudioContext(2, 44100 * seconds, 44100)
