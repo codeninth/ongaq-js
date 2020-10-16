@@ -26,6 +26,60 @@ class BufferYard {
         this.soundNameMap = new Map()
     }
 
+    /*
+        {
+            sound: 'my-sound-name',
+            data: {
+                C1: ArrayBuffer,
+                D2: ArrayBuffer
+            }
+        }
+    */
+    bringIn({ sound, data }){
+
+        return new Promise((resolve,reject)=>{
+
+            if(
+                typeof sound !== 'string' ||
+                typeof data !== 'object' ||
+                !Object.keys(data).length === 0
+            ){
+                return reject('invalid options')
+            } else if(
+                (()=>{
+                    const map = cacheToMap(Cacher.get("soundNameMap"))
+                    return map && map.get(sound)
+                })()
+            ){
+                return reject('cannot overwrite official instruments')
+            }
+    
+            try {
+                let thisSoundBuffers = buffers.get(sound) || new Map()
+                const keys = Object.keys(data)
+                keys.forEach( async _key=>{
+                    // check if _key is valid note name as percussive or scalable instrument
+                    let key
+                    if(toPianoNoteName(_key) !== _key) key = toPianoNoteName(_key)
+                    if(toDrumNoteName(_key) !== _key) key = toDrumNoteName(_key)
+                    if(!key) return false
+                    // check if ArrayBuffer is assigned
+                    if( (data[_key] instanceof ArrayBuffer) === false) return false
+                    
+                    const audioBuffer = await AudioCore.toAudioBuffer({
+                        arrayBuffer: data[_key]
+                    })
+                    thisSoundBuffers.set(key, audioBuffer)
+                })
+                buffers.set(sound,thisSoundBuffers)
+                resolve()
+            } catch(e){
+                reject('invalid options')
+            }
+        })
+        
+    }
+
     getSoundNameMap(){
         try {
             const map = cacheToMap(Cacher.get("soundNameMap"))
@@ -82,7 +136,16 @@ class BufferYard {
 
         return new Promise((resolve, reject) => {
             // this sound is already loaded
-            if (buffers.get(sound)) return resolve()
+            if (buffers.get(sound)){
+                return resolve()
+            } else {
+                const map = this.getSoundNameMap()
+                if(!map.get(sound)){
+                    // sound is brought by user
+                    return reject(`define instrument [ ${sound} ] with Ongaq.bringIn() first`)
+                }
+            }
+
             buffers.set(sound,[])
             request
                 .get(`${ENDPOINT}/sounds/`)
@@ -145,6 +208,7 @@ class BufferYard {
         if (soundID < 20000) key = toPianoNoteName(key)
         else if (soundID < 30000) key = toDrumNoteName(key)
         else if (soundID < 60000) key = toPianoNoteName(key)
+        else key = toPianoNoteName(key)
 
         if (Array.isArray(key)) {
             return key.map(k => buffers.get(sound).get(k)).filter(b => b)

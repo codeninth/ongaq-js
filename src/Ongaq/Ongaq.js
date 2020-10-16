@@ -67,6 +67,14 @@ class Ongaq {
     }
 
     /*
+      @bringIn
+      - bring in original sounds
+    */
+    bringIn({ sound, data }){
+        return BufferYard.bringIn({ sound, data })
+    }
+
+    /*
       @prepare
     */
     prepare({ sound }) {
@@ -75,7 +83,7 @@ class Ongaq {
 
     /*
       @start
-      - 一定の間隔で collect を実行していく
+      - start executing .collect() at regular interval
       */
     start() {
         if (this.isPlaying || this.parts.size === 0) return false
