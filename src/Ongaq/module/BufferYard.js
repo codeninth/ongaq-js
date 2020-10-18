@@ -58,13 +58,12 @@ class BufferYard {
                 let thisSoundBuffers = buffers.get(sound) || new Map()
                 const keys = Object.keys(data)
                 keys.forEach( async _key=>{
-                    // check if _key is valid note name as percussive or scalable instrument
+                    // check if _key is valid note name as scalable instrument
                     let key
                     if(toPianoNoteName(_key) !== _key) key = toPianoNoteName(_key)
-                    if(toDrumNoteName(_key) !== _key) key = toDrumNoteName(_key)
-                    if(!key) return false
+                    if(!key) return reject(`[ ${_key} ] is not a valid sound name of original instrument. Use as same notation as for piano like "C1" or "D2#".`)
                     // check if ArrayBuffer is assigned
-                    if( (data[_key] instanceof ArrayBuffer) === false) return false
+                    if( (data[_key] instanceof ArrayBuffer) === false) return reject(`value corresponding to [ ${_key} ] must be an ArrayBuffer instance`)
                     
                     const audioBuffer = await AudioCore.toAudioBuffer({
                         arrayBuffer: data[_key]
@@ -140,7 +139,7 @@ class BufferYard {
                 return resolve()
             } else {
                 const map = this.getSoundNameMap()
-                if(!map.get(sound)){
+                if(map && !map.get(sound)){
                     // sound is brought by user
                     return reject(`define instrument [ ${sound} ] with Ongaq.bringIn() first`)
                 }
