@@ -58,10 +58,13 @@ const AudioCore = {
                 } else {
                     buffer = arrayBuffer
                 }
-                const result = await context.decodeAudioData(buffer)
-                return resolve(result)
+                context.decodeAudioData(
+                    buffer,
+                    buffer => buffer ? resolve(buffer) : reject(),
+                    reject
+                )
             } catch (err) {
-                return reject(err)
+                reject(err)
             }
         })
 
