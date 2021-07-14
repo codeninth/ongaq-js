@@ -55,12 +55,12 @@ const makeAudioBuffer = ({ buffer, volume }, ctx) => {
     s.buffer = audioBuffer[0]
     let g = gainPool.allocate(ctx)
     g.gain.setValueAtTime(AudioCore.SUPPRESSION * ((typeof volume === "number" && volume >= 0 && volume < 1) ? volume : defaults.NOTE_VOLUME), 0)
-        // Set end of sound unless the instrument is drums
-        !isDrumNoteName(buffer.key) && g.gain.setValueCurveAtTime(
-            Helper.getWaveShapeArray(volume),
-            buffer.startTime + buffer.length - (0.03 < buffer.length ? 0.03 : buffer.length * 0.6),
-            0.03 < buffer.length ? 0.03 : buffer.length * 0.6
-        )
+    // Set end of sound unless the instrument is drums
+    !isDrumNoteName(buffer.key) && g.gain.setValueCurveAtTime(
+        Helper.getWaveShapeArray(volume),
+        buffer.startTime + buffer.length - (0.03 < buffer.length ? 0.03 : buffer.length * 0.6),
+        0.03 < buffer.length ? 0.03 : buffer.length * 0.6
+    )
     s.connect(g)
     s.start(buffer.startTime)
 

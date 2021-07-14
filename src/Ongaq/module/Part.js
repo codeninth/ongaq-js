@@ -140,8 +140,8 @@ class Part {
                 this._currentBeatIndex = 0
                 this._lap++
                 typeof this.willMakeLap === "function" && this.willMakeLap({
-                  nextLap: this._lap,
-                  meanTime: this._nextBeatTime
+                    nextLap: this._lap,
+                    meanTime: this._nextBeatTime
                 })
                 if(this._lap > this.maxLap){
                     if (this.repeat) this.resetLap()
