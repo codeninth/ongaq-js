@@ -1,20 +1,18 @@
 require('webpack');
 require('babel-core/register');
-const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 const path = require('path');
 
-const webpackConfig = {
+module.exports = {
   entry: {
     'build/ongaq': './src/api.js'
   },
   output: {
     path: path.resolve('./')
   },
-  plugins: [
-    // new HardSourceWebpackPlugin()
-  ],
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin()]
+  },
   mode: "production"
-};
-
-
-module.exports = webpackConfig;
+}
