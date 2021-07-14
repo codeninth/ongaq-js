@@ -78,7 +78,7 @@ class Ongaq {
       @prepare
     */
     prepare({ sound }) {
-      return BufferYard.import({ sound })
+        return BufferYard.import({ sound })
     }
 
     /*
@@ -105,21 +105,21 @@ class Ongaq {
     sound(o = {}){
         if (!o.key || !o.sound) return false
         try {
-          const keys = Array.isArray(o.key) ? o.key : [o.key]
-          const step = o.step > 0 ? o.step : 0
-          const ab = keys.map((key,i)=>{
-            return make("audiobuffer", {
-                buffer: {
-                    sound: o.sound,
-                    length: o.second > 0 ? o.second : 1.5,
-                    key,
-                    startTime: (AudioCore.context.currentTime + 0.1) + i * step
-                },
-                volume: 1
-            }, AudioCore.context)
-          }).filter(_=>_)
-          const g = this._getCommonGain(AudioCore.context)
-          ab.map(_=>_.connect(g))
+            const keys = Array.isArray(o.key) ? o.key : [o.key]
+            const step = o.step > 0 ? o.step : 0
+            const ab = keys.map((key,i)=>{
+                return make("audiobuffer", {
+                    buffer: {
+                        sound: o.sound,
+                        length: o.second > 0 ? o.second : 1.5,
+                        key,
+                        startTime: (AudioCore.context.currentTime + 0.1) + i * step
+                    },
+                    volume: 1
+                }, AudioCore.context)
+            }).filter(_=>_)
+            const g = this._getCommonGain(AudioCore.context)
+            ab.map(_=>_.connect(g))
         } catch (e) {
             return false
         }
@@ -138,29 +138,29 @@ class Ongaq {
                 flushAll()
                 // ====== calculate the seconds of beats beforehand
                 this.parts.forEach(p => {
-                  p._reset()
-                  p._putTimerRight(0)
+                    p._reset()
+                    p._putTimerRight(0)
                 })
                 const seconds = (() => {
-                  if (typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
-                  else if (typeof o.seconds === "number" && o.seconds < 1) return 1
-                  else return DEFAULTS.WAV_MAX_SECONDS
+                    if (typeof o.seconds === "number" && o.seconds >= 1 && o.seconds <= DEFAULTS.WAV_MAX_SECONDS) return o.seconds
+                    else if (typeof o.seconds === "number" && o.seconds < 1) return 1
+                    else return DEFAULTS.WAV_MAX_SECONDS
                 })()
                 const offlineContext = AudioCore.createOfflineContext({ seconds: seconds })
                 // =======
                 const commonGain = this._getCommonGain(offlineContext)
 
                 this._routine(
-                  offlineContext,
-                  elem => {
-                    if (elem.terminal.length > 0) {
-                      elem.terminal[elem.terminal.length - 1].forEach(t => {
-                        t && t.connect && t.connect(commonGain)
-                      })
+                    offlineContext,
+                    elem => {
+                        if (elem.terminal.length > 0) {
+                            elem.terminal[elem.terminal.length - 1].forEach(t => {
+                                t && t.connect && t.connect(commonGain)
+                            })
+                        }
+                        elem.initialize()
+                        ElementPool.retrieve(elem)
                     }
-                    elem.initialize()
-                    ElementPool.retrieve(elem)
-                  }
                 )
 
                 const buffer = await offlineContext.startRendering()

@@ -14,8 +14,8 @@ class DictPool {
 
     flush() {
         this.pool.forEach((_) => {
-          _.disconnect && _.disconnect()
-          _ = null
+            _.disconnect && _.disconnect()
+            _ = null
         })
         this.pool = new Map()
     }

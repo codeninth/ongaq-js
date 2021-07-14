@@ -40,30 +40,30 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
         number: v => v,
         array: v => v,
         default: (()=>{
-          const m = BufferYard.getSoundNameMap().get(_targetBeat.sound)
-          if(!m) return 0
-          else if (m.tag.includes("riff")) return DEFAULT_NOTE_LENGTH[2]
-          else if (m.type === "percussive") return DEFAULT_NOTE_LENGTH[1]
-          else return DEFAULT_NOTE_LENGTH[0]
+            const m = BufferYard.getSoundNameMap().get(_targetBeat.sound)
+            if(!m) return 0
+            else if (m.tag.includes("riff")) return DEFAULT_NOTE_LENGTH[2]
+            else if (m.type === "percussive") return DEFAULT_NOTE_LENGTH[1]
+            else return DEFAULT_NOTE_LENGTH[0]
         })()
     })
     if (!length) return false
 
     const _volume_number = v=>{
-      if(v > 0 && v < 100) return v / 100
-      else if(v === 0) return -1
-      else if(v === 100) return 0.999
-      else return null
+        if(v > 0 && v < 100) return v / 100
+        else if(v === 0) return -1
+        else if(v === 100) return 0.999
+        else return null
     }
     let volume = inspect(o.volume, {
-            _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
-            number: _volume_number,
-            string: () => false,
-            object: () => false,
-            array: () => false
-        })
+        _arguments: [_targetBeat.beatIndex, _targetBeat.measure, _targetBeat.attachment],
+        number: _volume_number,
+        string: () => false,
+        object: () => false,
+        array: () => false
+    })
     if(volume === -1) return false // to prevent noise when 0 assigned
-        /*
+    /*
               必ず自身と同じ構造のオブジェクトを返す関数を返す
               =====================================================================
             */
@@ -75,10 +75,10 @@ const mapper = (o = {}, _targetBeat = {}, context) => {
                 buffer: {
                     sound: _targetBeat.sound,
                     length: (!Array.isArray(length) ?
-                      length :
-                      (typeof length[i] === "number" ?
-                        length[i]: (isDrumNoteName(k) ? DEFAULT_NOTE_LENGTH[1] : DEFAULT_NOTE_LENGTH[0]))
-                      ) * _targetBeat.secondsPerBeat,
+                        length :
+                        (typeof length[i] === "number" ?
+                            length[i]: (isDrumNoteName(k) ? DEFAULT_NOTE_LENGTH[1] : DEFAULT_NOTE_LENGTH[0]))
+                    ) * _targetBeat.secondsPerBeat,
                     key: k,
                     startTime: _targetBeat.beatTime
                 },

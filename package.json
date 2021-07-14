@@ -1,6 +1,6 @@
 {
   "name": "ongaqjs",
-  "version": "0.2.0",
+  "version": "1.4.0",
   "description": "Ongaq JS portal site: https://www.ongaqjs.com/",
   "main": "gulpfile.js",
   "scripts": {
@@ -24,6 +24,7 @@
     "karma-jasmine": "^2.0.1",
     "superagent": "^3.8.2",
     "superagent-no-cache": "^0.1.1",
+    "terser": "^4.8.0",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   },

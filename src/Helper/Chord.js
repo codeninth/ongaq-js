@@ -124,7 +124,6 @@ class Chord {
             this.active = false
             return false
         }
-
         let rootData = (() => {
             let result = [], root, rootLabel
             ROOT.forEach((v, k) => {
@@ -136,7 +135,6 @@ class Chord {
             })
             return { root, rootLabel }
         })()
-
         if (!rootData.root) {
             this.active = false
             return false

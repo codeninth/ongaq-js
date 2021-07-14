@@ -40,18 +40,18 @@ class BufferYard {
         return new Promise((resolve,reject)=>{
 
             if(
-                typeof sound !== 'string' ||
-                typeof data !== 'object' ||
+                typeof sound !== "string" ||
+                typeof data !== "object" ||
                 !Object.keys(data).length === 0
             ){
-                return reject('invalid options')
+                return reject("invalid options")
             } else if(
                 (()=>{
                     const map = cacheToMap(Cacher.get("soundNameMap"))
                     return map && map.get(sound)
                 })()
             ){
-                return reject('cannot overwrite official instruments')
+                return reject("cannot overwrite official instruments")
             }
     
             try {
@@ -73,7 +73,7 @@ class BufferYard {
                 buffers.set(sound,thisSoundBuffers)
                 resolve()
             } catch(e){
-                reject('invalid options')
+                reject("invalid options")
             }
         })
         
