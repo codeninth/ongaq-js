@@ -24,7 +24,7 @@
     "karma-jasmine": "^2.0.1",
     "superagent": "^3.8.2",
     "superagent-no-cache": "^0.1.1",
-    "terser": "^4.8.0",
+    "terser": "^4.8.1",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   },
