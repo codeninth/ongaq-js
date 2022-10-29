@@ -20,7 +20,7 @@
     "babel-preset-react": "^6.24.1",
     "eslint": "^5.16.0",
     "hard-source-webpack-plugin": "^0.13.1",
-    "karma": "^4.4.1",
+    "karma": "^6.4.1",
     "karma-jasmine": "^2.0.1",
     "superagent": "^3.8.2",
     "superagent-no-cache": "^0.1.1",
